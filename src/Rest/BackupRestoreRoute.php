@@ -49,7 +49,9 @@ class BackupRestoreRoute
     public function handleStage(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
         ignore_user_abort(true);
+        // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for large streaming archive
         @set_time_limit(900);
+        // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for large streaming archive
         @ini_set('memory_limit', '512M');
 
         if (! OperationLock::acquire('backup_restore', 900)) {
@@ -239,7 +241,9 @@ class BackupRestoreRoute
     public function handleApply(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
         ignore_user_abort(true);
+        // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for large streaming archive
         @set_time_limit(900);
+        // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for large streaming archive
         @ini_set('memory_limit', '512M');
 
         if (! OperationLock::acquire('backup_restore', 900)) {

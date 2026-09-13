@@ -93,6 +93,7 @@ class Interceptor
 
         if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
             $ip = isset($_SERVER['REMOTE_ADDR']) ? (string) $_SERVER['REMOTE_ADDR'] : 'unknown';
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             error_log(sprintf(
                 '[clockwork-sso] redeemed nonce for user_id=%d (login=%s) from ip=%s → %s',
                 $user->ID,

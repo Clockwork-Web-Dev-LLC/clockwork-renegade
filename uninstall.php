@@ -67,9 +67,9 @@ function clockwork_renegade_uninstall_site(): void
 }
 
 if (is_multisite()) {
-    $site_ids = get_sites(['fields' => 'ids']);
-    foreach ($site_ids as $site_id) {
-        switch_to_blog($site_id);
+    $clockwork_site_ids = get_sites(['fields' => 'ids']);
+    foreach ($clockwork_site_ids as $clockwork_site_id) {
+        switch_to_blog($clockwork_site_id);
         clockwork_renegade_uninstall_site();
         restore_current_blog();
     }

@@ -120,6 +120,7 @@ class SsoRoute
         set_transient(self::OPTION_PREFIX.$nonce.'_gc', 1, $ttl + 60);
 
         if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             error_log(sprintf(
                 '[clockwork-sso] minted nonce for user_id=%d (login=%s, expires_at=%s)',
                 $user->ID,

@@ -50,7 +50,10 @@ class ElementorCacheGuard
             try {
                 self::regenerateAndRepurge($document);
             } catch (\Throwable $e) {
-                error_log('[clockwork-renegade] ElementorCacheGuard: ' . $e->getMessage());
+                if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+                    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                    error_log('[clockwork-renegade] ElementorCacheGuard: ' . $e->getMessage());
+                }
             } finally {
                 self::$running = false;
             }

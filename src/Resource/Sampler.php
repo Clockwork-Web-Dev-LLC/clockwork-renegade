@@ -99,7 +99,10 @@ class Sampler
             Repository::record($cpuUs, $wallUs, $memPeak);
         } catch (\Throwable $e) {
             if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
-                error_log('[clockwork-resource-sampler] '.$e->getMessage());
+                if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+                    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                    error_log('[clockwork-resource-sampler] '.$e->getMessage());
+                }
             }
         }
     }

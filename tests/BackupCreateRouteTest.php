@@ -64,6 +64,9 @@ class BackupCreateRouteTest extends TestCase
             public function get_var(string $query): int {
                 return 2;
             }
+            public function prepare(string $query, mixed ...$args): string {
+                return $query;
+            }
             public function get_results(string $query, string $output = 'OBJECT'): array {
                 return [
                     ['ID' => 1, 'post_title' => 'Hello World'],

@@ -202,6 +202,7 @@ class ArchiveExtractor
         }
 
         if (! defined('PCLZIP_OPT_PATH')) {
+            // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WordPress core PclZip fallback constant
             define('PCLZIP_OPT_PATH', 77001);
         }
 

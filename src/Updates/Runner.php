@@ -137,6 +137,7 @@ class Runner
         }
 
         if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             error_log(sprintf(
                 '[clockwork-updates] upgraded %s %s -> %s (was_active=%s, reactivated=%s)',
                 $slug,
@@ -202,6 +203,7 @@ class Runner
     private function fail(string $slug, string $code, string $message, float $start, array $messages = []): array
     {
         if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             error_log("[clockwork-updates] failed {$slug}: {$code} — {$message}");
         }
 

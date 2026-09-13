@@ -193,7 +193,8 @@ class HmacVerifier
         } catch (\Throwable $e) {
             // Swallow — auth path must not break on logging failures.
             if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
-                error_log('[clockwork-auth-audit] insert failed: '.$e->getMessage());
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                error_log('[clockwork-auth-audit] insert failed: ' . $e->getMessage());
             }
         }
     }

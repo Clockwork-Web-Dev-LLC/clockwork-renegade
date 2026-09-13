@@ -100,7 +100,7 @@ class DatabaseDumper
             $batchSize = 500;
 
             for ($offset = 0; $offset < $totalRows; $offset += $batchSize) {
-                $rows = $wpdb->get_results("SELECT * FROM `{$table}` LIMIT {$offset}, {$batchSize}", ARRAY_A);
+                $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM `{$table}` LIMIT %d, %d", (int) $offset, (int) $batchSize), ARRAY_A);
                 if (empty($rows)) {
                     break;
                 }

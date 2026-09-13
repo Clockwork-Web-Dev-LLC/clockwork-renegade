@@ -37,7 +37,9 @@ class BackupCreateRoute
     {
         $startTime = microtime(true);
 
+        // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for large streaming archive
         @set_time_limit(900);
+        // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for large streaming archive
         @ini_set('memory_limit', '512M');
 
         $params = $request->get_json_params();

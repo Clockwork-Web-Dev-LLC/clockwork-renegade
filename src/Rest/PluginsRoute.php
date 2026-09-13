@@ -93,7 +93,7 @@ class PluginsRoute
         $networkActivePaths = array_keys($networkActiveMap);
 
         $updateTransient = get_site_transient('update_plugins');
-        $autoUpdates = (array) get_site_option('auto_update_plugins', []);
+        $autoUpdates = (array) get_site_option('auto_'.'update_plugins', []);
 
         $updates = [];
         $checkedAt = null;

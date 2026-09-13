@@ -5,7 +5,7 @@
  * Description:       Connects your WordPress site to Clockwork Control for centralized monitoring, uptime verification, updates, and security telemetry.
  * Version:           1.0.0
  * Requires at least: 6.4
- * Tested up to:      6.7
+ * Tested up to:      7.1
  * Requires PHP:      8.0
  * Author:            Clockwork Web Dev, LLC
  * Author URI:        https://clockworkcontrol.com
@@ -53,6 +53,7 @@ register_activation_hook(__FILE__, function (): void {
 add_action('admin_init', function (): void {
     if (get_transient('clockwork_renegade_activation_redirect')) {
         delete_transient('clockwork_renegade_activation_redirect');
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         if (! isset($_GET['activate-multi']) && current_user_can('manage_options')) {
             wp_safe_redirect(admin_url('admin.php?page=clockwork-connection'));
             exit;
@@ -61,6 +62,6 @@ add_action('admin_init', function (): void {
 });
 
 add_action('plugins_loaded', function (): void {
-    load_plugin_textdomain('clockwork-renegade', false, dirname(plugin_basename(__FILE__)) . '/languages');
+    // WordPress.org automatically loads translations for community plugins since WP 4.6+.
     (new ClockworkRenegade\Plugin())->boot();
 }, 5);
