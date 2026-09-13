@@ -5,7 +5,7 @@
  * Description:       Connects your WordPress site to Clockwork Control for centralized monitoring, uptime verification, updates, and security telemetry.
  * Version:           1.0.0
  * Requires at least: 6.4
- * Tested up to:      7.1
+ * Tested up to:      6.7
  * Requires PHP:      8.0
  * Author:            Clockwork Web Dev, LLC
  * Author URI:        https://clockworkcontrol.com

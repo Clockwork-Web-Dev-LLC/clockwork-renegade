@@ -2,7 +2,7 @@
 Contributors: aaronreimann, clockworkwebdev
 Tags: monitoring, backups, updates, security, fleet
 Requires at least: 6.4
-Tested up to: 7.1
+Tested up to: 6.7
 Requires PHP: 8.0
 Stable tag: 1.0.0
 License: GPLv2 or later
