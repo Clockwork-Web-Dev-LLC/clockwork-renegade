@@ -71,10 +71,10 @@ class BackupsPage
         $isAvailableScope = is_array($report) && ($report['history_scope'] ?? 'policy') === 'available';
 
         Layout::pageHeader(
-            'Backups',
+            __('Backups', 'clockwork-renegade'),
             $isAvailableScope
-                ? 'Your host already keeps recent backups of your site — this page shows what\'s currently on record.'
-                : 'Your site is backed up to off-site storage on a schedule. This page shows the current backup configuration.'
+                ? __('Your host already keeps recent backups of your site — this page shows what\'s currently on record.', 'clockwork-renegade')
+                : __('Your site is backed up to off-site storage on a schedule. This page shows the current backup configuration.', 'clockwork-renegade')
         );
 
         if ($report === null) {
@@ -231,12 +231,12 @@ class BackupsPage
                             <?php
                             $bits = [];
                             if (! empty($storage['bucket'])) {
-                                $bits[] = esc_html((string) $storage['bucket']);
+                                $bits[] = (string) $storage['bucket'];
                             }
                             if (! empty($storage['region'])) {
-                                $bits[] = esc_html((string) $storage['region']);
+                                $bits[] = (string) $storage['region'];
                             }
-                            echo implode(' &middot; ', $bits);
+                            echo esc_html(implode(' · ', $bits));
                             ?>
                         </dd>
                     <?php endif; ?>
@@ -430,7 +430,7 @@ class BackupsPage
                     </table>
                     <?php if ($total > self::PAGE_SIZE) : ?>
                         <div style="padding: 8px 20px 12px; font-size: 12px; color: #6b7280;">
-                            Showing the most recent <?php echo self::PAGE_SIZE; ?> of <?php echo (int) $total; ?>.
+                            Showing the most recent <?php echo esc_html((string) self::PAGE_SIZE); ?> of <?php echo esc_html((string) (int) $total); ?>.
                         </div>
                     <?php endif; ?>
                 <?php endif; ?>

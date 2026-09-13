@@ -230,17 +230,17 @@ class LoginInterceptor
 </head>
 <body>
     <div class="box">
-        <h1>Two-factor verification</h1>
-        <p>Enter the 6-digit code from your authenticator app.</p>
+        <h1><?php esc_html_e('Two-factor verification', 'clockwork-renegade'); ?></h1>
+        <p><?php esc_html_e('Enter the 6-digit code from your authenticator app.', 'clockwork-renegade'); ?></p>
         <?php if ($error !== '') : ?>
             <div class="error"><?php echo wp_kses($error, []); ?></div>
         <?php endif; ?>
-        <form method="post" action="<?php echo $action; ?>">
+        <form method="post" action="<?php echo esc_url($action); ?>">
             <input type="hidden" name="clockwork_2fa_token" value="<?php echo esc_attr($token); ?>">
             <input type="text" name="clockwork_2fa_code" inputmode="numeric" autocomplete="one-time-code" autofocus required>
-            <button type="submit">Verify</button>
+            <button type="submit"><?php esc_html_e('Verify', 'clockwork-renegade'); ?></button>
         </form>
-        <div class="hint">Lost your device? Enter a backup code instead.</div>
+        <div class="hint"><?php esc_html_e('Lost your device? Enter a backup code instead.', 'clockwork-renegade'); ?></div>
     </div>
 </body>
 </html>

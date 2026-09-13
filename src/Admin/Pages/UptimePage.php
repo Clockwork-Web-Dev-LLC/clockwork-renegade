@@ -7,7 +7,7 @@ use ClockworkRenegade\Admin\Layout;
 use ClockworkRenegade\WhiteLabel\WhiteLabel;
 
 /**
- * Tools → Clockwork → Uptime admin page.
+ * Clockwork → Uptime admin page.
  *
  * Mirrors the ManageWP "Uptime Activity" layout: big UP/DOWN circle, overall
  * uptime hero with current up-since duration, three "uptime overview" cards
@@ -57,8 +57,12 @@ class UptimePage
     public static function renderBody(): void
     {
         Layout::pageHeader(
-            'Uptime',
-            WhiteLabel::getAuthorName() . ' probes this site every few minutes and tracks how often it answers. Big drops trigger an internal ' . WhiteLabel::getAuthorName() . ' alert immediately.'
+            __('Uptime', 'clockwork-renegade'),
+            sprintf(
+                /* translators: %s: agency / author display name */
+                __('%s probes this site every few minutes and tracks how often it answers. Big drops trigger an internal alert immediately.', 'clockwork-renegade'),
+                WhiteLabel::getAuthorName()
+            )
         );
 
         $view = self::resolveView();

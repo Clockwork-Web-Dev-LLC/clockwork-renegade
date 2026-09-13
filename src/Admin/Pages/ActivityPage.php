@@ -7,7 +7,7 @@ use ClockworkRenegade\Admin\Layout;
 use ClockworkRenegade\WhiteLabel\WhiteLabel;
 
 /**
- * Tools → Clockwork → Activity admin page.
+ * Clockwork → Activity admin page.
  *
  * Client-facing "what we did this month" view. Reads from the
  * wp_clockwork_renegade_action_log table that Clockwork pushes rows into via the
@@ -75,8 +75,12 @@ class ActivityPage
         $totalsRows = Repository::findInWindow($start, $end, 5000);
 
         Layout::pageHeader(
-            'Activity',
-            'A log of the maintenance work ' . WhiteLabel::getAuthorName() . ' has performed on this site.'
+            __('Activity', 'clockwork-renegade'),
+            sprintf(
+                /* translators: %s: agency / author display name */
+                __('A log of the maintenance work %s has performed on this site.', 'clockwork-renegade'),
+                WhiteLabel::getAuthorName()
+            )
         );
 
         self::renderConnectionNotice();
@@ -108,11 +112,11 @@ class ActivityPage
             <div style="display:flex;align-items:center;gap:12px;">
                 <span style="display:inline-flex;width:32px;height:32px;border-radius:50%;background:#dbeafe;color:#2563eb;align-items:center;justify-content:center;font-size:16px;font-weight:bold;">⚡</span>
                 <div>
-                    <strong style="color:#1e3a8a;font-size:14px;">Pair with Clockwork Control:</strong>
-                    <span style="color:#1e40af;font-size:13px;margin-left:4px;">This site is ready to connect. Copy your Connection Key to start monitoring and backups.</span>
+                    <strong style="color:#1e3a8a;font-size:14px;"><?php esc_html_e('Pair with Clockwork Control:', 'clockwork-renegade'); ?></strong>
+                    <span style="color:#1e40af;font-size:13px;margin-left:4px;"><?php esc_html_e('This site is ready to connect. Copy your Connection Key to start monitoring and backups.', 'clockwork-renegade'); ?></span>
                 </div>
             </div>
-            <a href="<?php echo esc_url($connectionUrl); ?>" style="background:#2563eb;color:#ffffff;text-decoration:none;font-weight:600;font-size:13px;padding:8px 16px;border-radius:6px;display:inline-block;">View Connection Key</a>
+            <a href="<?php echo esc_url($connectionUrl); ?>" style="background:#2563eb;color:#ffffff;text-decoration:none;font-weight:600;font-size:13px;padding:8px 16px;border-radius:6px;display:inline-block;"><?php esc_html_e('View Connection Key', 'clockwork-renegade'); ?></a>
         </div>
         <?php
     }
@@ -123,11 +127,11 @@ class ActivityPage
             ?>
             <div class="cwk-plan-banner cwk-plan-banner--on">
                 <div class="cwk-plan-banner__icon-wrap">
-                    <?php echo self::confettiIcon(); ?>
+                    <?php echo wp_kses(self::confettiIcon(), ['svg' => ['viewbox' => true, 'fill' => true, 'width' => true, 'height' => true], 'path' => ['d' => true], 'g' => ['fill' => true], 'circle' => ['cx' => true, 'cy' => true, 'r' => true]]); ?>
                 </div>
                 <div class="cwk-plan-banner__text">
-                    <strong class="cwk-plan-banner__title">You're on a care plan</strong>
-                    <span class="cwk-plan-banner__sub">Sit back and relax — everything below is handled for you and fully covered by your plan.</span>
+                    <strong class="cwk-plan-banner__title"><?php esc_html_e("You're on a care plan", 'clockwork-renegade'); ?></strong>
+                    <span class="cwk-plan-banner__sub"><?php esc_html_e('Sit back and relax — everything below is handled for you and fully covered by your plan.', 'clockwork-renegade'); ?></span>
                 </div>
             </div>
             <?php
@@ -135,11 +139,19 @@ class ActivityPage
             ?>
             <div class="cwk-plan-banner cwk-plan-banner--off">
                 <div class="cwk-plan-banner__icon-wrap">
-                    <?php echo self::clockIcon(); ?>
+                    <?php echo wp_kses(self::clockIcon(), ['svg' => ['viewbox' => true, 'fill' => true, 'width' => true, 'height' => true, 'stroke' => true, 'stroke-width' => true], 'path' => ['d' => true], 'circle' => ['cx' => true, 'cy' => true, 'r' => true]]); ?>
                 </div>
                 <div class="cwk-plan-banner__text">
-                    <strong class="cwk-plan-banner__title">You're not on a care plan</strong>
-                    <span class="cwk-plan-banner__sub">Work shown here may be billed separately. A care plan covers updates, scans, and monitoring automatically — <button type="button" class="cwk-support-trigger cwk-link-btn">talk to <?php echo esc_html(WhiteLabel::getAuthorName()); ?></button> about adding one.</span>
+                    <strong class="cwk-plan-banner__title"><?php esc_html_e("You're not on a care plan", 'clockwork-renegade'); ?></strong>
+                    <span class="cwk-plan-banner__sub"><?php
+                        echo esc_html__('Work shown here may be billed separately. A care plan covers updates, scans, and monitoring automatically —', 'clockwork-renegade');
+                        ?> <button type="button" class="cwk-support-trigger cwk-link-btn"><?php
+                        echo esc_html(sprintf(
+                            /* translators: %s: agency name */
+                            __('talk to %s', 'clockwork-renegade'),
+                            WhiteLabel::getAuthorName()
+                        ));
+                        ?></button> <?php esc_html_e('about adding one.', 'clockwork-renegade'); ?></span>
                 </div>
             </div>
             <?php
@@ -226,7 +238,7 @@ class ActivityPage
                         $iconName = $cfg ? $cfg['icon'] : 'default';
                         ?>
                         <div class="cwk-action-tile">
-                            <span class="cwk-action-tile__icon"><?php echo self::typeIcon($iconName); ?></span>
+                            <span class="cwk-action-tile__icon"><?php echo wp_kses(self::typeIcon($iconName), ['svg' => ['viewbox' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'width' => true, 'height' => true], 'path' => ['d' => true], 'circle' => ['cx' => true, 'cy' => true, 'r' => true], 'polyline' => ['points' => true], 'rect' => ['x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true]]); ?></span>
                             <span class="cwk-action-tile__label"><?php echo esc_html($label); ?></span>
                             <span class="cwk-action-tile__count"><?php echo (int) $count; ?></span>
                         </div>
@@ -245,9 +257,9 @@ class ActivityPage
         ?>
         <div class="clockwork-card">
             <div class="clockwork-card__body">
-                <h3 style="margin-top: 0;">All activity</h3>
+                <h3 style="margin-top: 0;"><?php esc_html_e('All activity', 'clockwork-renegade'); ?></h3>
                 <?php if (empty($rows)) : ?>
-                    <p style="color: #6b7280;">No activity recorded for this month yet.</p>
+                    <p style="color: #6b7280;"><?php esc_html_e('No activity recorded for this month yet.', 'clockwork-renegade'); ?></p>
                 <?php else : ?>
                     <table class="wp-list-table widefat striped">
                         <thead>

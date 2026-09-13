@@ -34,12 +34,12 @@ class RunSecurityScanAction
     public function handle(): void
     {
         if (! current_user_can('manage_options')) {
-            wp_die('You do not have permission to run security scans on this site.', 403);
+            wp_die(esc_html__('You do not have permission to run security scans on this site.', 'clockwork-renegade'), 403);
         }
 
         $nonce = isset($_POST['_wpnonce']) ? (string) $_POST['_wpnonce'] : '';
         if (! wp_verify_nonce($nonce, self::NONCE_ACTION)) {
-            wp_die('Invalid request — please return to the Security page and try again.', 400);
+            wp_die(esc_html__('Invalid request — please return to the Security page and try again.', 'clockwork-renegade'), 400);
         }
 
         $type = isset($_POST['scan_type']) ? (string) $_POST['scan_type'] : '';
@@ -51,14 +51,14 @@ class RunSecurityScanAction
 
             case 'core_checksums':
                 if (! ChecksumsRunner::isAvailable()) {
-                    $message = 'Core checksum verification is not available on this host.';
+                    $message = __('Core checksum verification is not available on this host.', 'clockwork-renegade');
                     break;
                 }
                 $message = (new ChecksumsRunner())->runAndPersist();
                 break;
 
             default:
-                wp_die('Unknown scan type.', 400);
+                wp_die(esc_html__('Unknown scan type.', 'clockwork-renegade'), 400);
         }
 
         $redirect = add_query_arg(

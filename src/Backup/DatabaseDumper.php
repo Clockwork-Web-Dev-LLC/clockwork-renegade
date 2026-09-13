@@ -2,6 +2,9 @@
 
 namespace ClockworkRenegade\Backup;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions -- backup/restore streams large archives; WP_Filesystem and wp_remote_* cannot do this I/O.
+// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- dump iterates $wpdb table names; values are not user-supplied SQL.
+
 /**
  * Pure PHP WordPress Database Dumper.
  *

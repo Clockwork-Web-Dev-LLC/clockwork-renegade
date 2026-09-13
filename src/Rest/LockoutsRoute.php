@@ -2,6 +2,8 @@
 
 namespace ClockworkRenegade\Rest;
 
+// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- LLAR table is prefix + hardcoded name; SHOW TABLES LIKE is prepared.
+
 use ClockworkRenegade\Auth\HmacVerifier;
 use WP_REST_Request;
 use WP_REST_Response;

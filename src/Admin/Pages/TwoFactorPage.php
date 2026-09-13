@@ -44,8 +44,8 @@ class TwoFactorPage
     public static function renderBody(): void
     {
         Layout::pageHeader(
-            'Login Security',
-            'Two-factor authentication for this site\'s sign-ins — codes from your authenticator app, with backup codes for recovery.'
+            __('Login Security', 'clockwork-renegade'),
+            __('Two-factor authentication for this site\'s sign-ins — codes from your authenticator app, with backup codes for recovery.', 'clockwork-renegade')
         );
 
         if (! empty($_GET['flash'])) {
@@ -369,7 +369,7 @@ class TwoFactorPage
             $onSubmit = '';
         }
         ?>
-        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline;"<?php echo $onSubmit; ?>>
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline;"<?php echo $onSubmit; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built with esc_attr() ?>>
             <input type="hidden" name="action" value="<?php echo esc_attr(\ClockworkRenegade\Admin\Actions\TwoFactorActions::ACTION_HOOK); ?>">
             <input type="hidden" name="op" value="<?php echo esc_attr($op); ?>">
             <?php wp_nonce_field(\ClockworkRenegade\Admin\Actions\TwoFactorActions::NONCE_ACTION); ?>

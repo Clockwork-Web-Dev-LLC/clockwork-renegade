@@ -46,6 +46,7 @@ class ConnectionPageTest extends TestCase
         $this->assertStringContainsString('https://mysite.example.com', $output);
         $this->assertStringContainsString('Awaiting Connection', $output);
         $this->assertStringContainsString('cwkCopyConnectionKey', $output);
+        $this->assertStringContainsString('Shared secret', $output);
     }
 
     public function testHmacVerificationUpdatesLastContactOption(): void

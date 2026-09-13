@@ -25,19 +25,39 @@ class WhiteLabelPage
         $settings = WhiteLabel::getSettings();
         $donationState = WhiteLabel::getDonationState();
         $isPromptVisible = WhiteLabel::isDonationPromptVisible();
+        $managedByControl = WhiteLabel::isManagedByControl();
         $nonce = wp_create_nonce('clockwork_whitelabel_save');
         $donatedNonce = wp_create_nonce('clockwork_whitelabel_donated');
         $dismissNonce = wp_create_nonce('clockwork_whitelabel_dismiss');
 
         $saved = isset($_GET['saved']) && $_GET['saved'] === '1';
+        $locked = isset($_GET['locked']) && $_GET['locked'] === '1';
         $justDonated = isset($_GET['donated']) && $_GET['donated'] === '1';
         $justDismissed = isset($_GET['dismissed']) && $_GET['dismissed'] === '1';
+        $headerSubtitle = $managedByControl
+            ? __('These colors, names, and logos come from Clockwork Control. Edit them there — this page is a preview.', 'clockwork-renegade')
+            : __('Customize the plugin name, author credits, dashboard colors, and logo to match your agency.', 'clockwork-renegade');
         ?>
-        <?php Layout::pageHeader('White Label & Agency Branding', 'Customize the plugin name, author credits, dashboard colors, and logo to match your agency.'); ?>
+        <?php Layout::pageHeader(__('White Label & Agency Branding', 'clockwork-renegade'), $headerSubtitle); ?>
+
+        <?php if ($managedByControl) : ?>
+            <div class="notice notice-info" style="margin:16px 0;padding:12px 16px;border-left:4px solid #2563eb;border-radius:6px;background:#eff6ff;">
+                <p style="margin:0;font-weight:600;color:#1e3a8a;"><?php esc_html_e('Branding is managed by Clockwork Control.', 'clockwork-renegade'); ?></p>
+                <p style="margin:6px 0 0;color:#1e40af;">
+                    <?php esc_html_e('The last push from Control is the source of truth. Local edits are disabled so this site stays in sync with the rest of the fleet.', 'clockwork-renegade'); ?>
+                </p>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($locked) : ?>
+            <div class="notice notice-warning is-dismissible" style="margin:16px 0;padding:12px 16px;border-left:4px solid #d97706;border-radius:6px;background:#fffbeb;">
+                <p style="margin:0;font-weight:600;color:#92400e;"><?php esc_html_e('Local branding changes were not saved. Update White Label settings in Clockwork Control instead.', 'clockwork-renegade'); ?></p>
+            </div>
+        <?php endif; ?>
 
         <?php if ($saved) : ?>
             <div class="notice notice-success is-dismissible" style="margin:16px 0;padding:12px 16px;border-left:4px solid #10b981;border-radius:6px;background:#f0fdf4;">
-                <p style="margin:0;font-weight:600;color:#065f46;">✓ Branding settings saved successfully! Changes are now active across wp-admin.</p>
+                <p style="margin:0;font-weight:600;color:#065f46;"><?php esc_html_e('Branding settings saved. Changes are now active across wp-admin.', 'clockwork-renegade'); ?></p>
             </div>
         <?php endif; ?>
 
@@ -104,6 +124,7 @@ class WhiteLabelPage
             <form id="cwk-whitelabel-form" method="POST" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <input type="hidden" name="action" value="clockwork_whitelabel_save">
                 <input type="hidden" name="clockwork_whitelabel_nonce" value="<?php echo esc_attr($nonce); ?>">
+                <fieldset <?php echo $managedByControl ? 'disabled' : ''; ?> style="border:0;margin:0;padding:0;min-inline-size:0;">
 
                 <!-- Card 1: Master Toggle -->
                 <div class="clockwork-card" style="margin-bottom:24px;border-radius:10px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);background:#ffffff;">
@@ -304,12 +325,15 @@ class WhiteLabelPage
                 </div>
 
                 <!-- Submit Button -->
+                <?php if (! $managedByControl) : ?>
                 <div style="display:flex;align-items:center;gap:16px;margin-top:20px;">
                     <button type="submit" class="button button-primary" style="height:40px;padding:0 24px;font-size:14px;font-weight:700;border-radius:8px;background:var(--cwk-primary);border-color:var(--cwk-primary);">
-                        Save Branding Changes
+                        <?php esc_html_e('Save Branding Changes', 'clockwork-renegade'); ?>
                     </button>
-                    <span style="font-size:12px;color:#6b7280;">Changes take effect immediately across all wp-admin screens.</span>
+                    <span style="font-size:12px;color:#6b7280;"><?php esc_html_e('Changes take effect immediately across all wp-admin screens.', 'clockwork-renegade'); ?></span>
                 </div>
+                <?php endif; ?>
+                </fieldset>
             </form>
 
             <!-- Right Column: Interactive Real-Time Live Preview -->

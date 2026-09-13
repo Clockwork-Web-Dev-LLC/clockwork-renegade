@@ -10,7 +10,7 @@ use ClockworkRenegade\ActionLog\Repository as ActionLogRepository;
  * Hits Sucuri's free public v3 API directly from the WP host, parses the
  * payload using the same decision tree Clockwork uses, and writes a
  * security_scan row into the local wp_clockwork_renegade_action_log table so the
- * Tools → Clockwork → Security page reflects the result immediately.
+ * Clockwork → Security page reflects the result immediately.
  *
  * Auth: none. Sucuri intentionally exposes the same scanner ManageWP and
  * dozens of other dashboards resell. Free tier is rate-limited around

@@ -36,12 +36,12 @@ class TwoFactorActions
     public function handle(): void
     {
         if (! current_user_can('manage_options')) {
-            wp_die('You do not have permission to manage login security on this site.', 403);
+            wp_die(esc_html__('You do not have permission to manage login security on this site.', 'clockwork-renegade'), 403);
         }
 
         $nonce = isset($_POST['_wpnonce']) ? (string) $_POST['_wpnonce'] : '';
         if (! wp_verify_nonce($nonce, self::NONCE_ACTION)) {
-            wp_die('Invalid request — please return to the Login Security page and try again.', 400);
+            wp_die(esc_html__('Invalid request — please return to the Login Security page and try again.', 'clockwork-renegade'), 400);
         }
 
         $userId = get_current_user_id();
@@ -54,39 +54,39 @@ class TwoFactorActions
 
             case 'cancel':
                 delete_user_meta($userId, UserSettings::META_PENDING_SECRET);
-                $this->redirect(['flash' => 'Setup cancelled — nothing was changed.']);
+                $this->redirect(['flash' => __('Setup cancelled — nothing was changed.', 'clockwork-renegade')]);
 
             case 'confirm':
                 $codes = UserSettings::confirmEnrollment($userId, (string) ($_POST['code'] ?? ''));
                 if ($codes === false) {
-                    $this->redirect(['flash_error' => 'That code didn\'t match — check your authenticator app and try again.']);
+                    $this->redirect(['flash_error' => __('That code didn\'t match — check your authenticator app and try again.', 'clockwork-renegade')]);
                 }
                 $this->redirect([
-                    'flash' => 'Two-factor authentication is on. Your next sign-in will ask for a code.',
+                    'flash' => __('Two-factor authentication is on. Your next sign-in will ask for a code.', 'clockwork-renegade'),
                     'codes' => $this->stashCodes($userId, $codes),
                 ]);
 
             case 'disable':
                 UserSettings::disable($userId);
-                $this->redirect(['flash' => 'Two-factor authentication is off for your account.']);
+                $this->redirect(['flash' => __('Two-factor authentication is off for your account.', 'clockwork-renegade')]);
 
             case 'regenerate':
                 if (! UserSettings::isEnabled($userId)) {
-                    $this->redirect(['flash_error' => 'Two-factor isn\'t enabled — nothing to regenerate.']);
+                    $this->redirect(['flash_error' => __('Two-factor isn\'t enabled — nothing to regenerate.', 'clockwork-renegade')]);
                 }
                 $codes = UserSettings::generateBackupCodes($userId);
                 $this->redirect([
-                    'flash' => 'Fresh backup codes generated — the old set no longer works.',
+                    'flash' => __('Fresh backup codes generated — the old set no longer works.', 'clockwork-renegade'),
                     'codes' => $this->stashCodes($userId, $codes),
                 ]);
 
             case 'migrate':
                 $codes = WflsMigrator::migrate($userId);
                 if ($codes === false) {
-                    $this->redirect(['flash_error' => 'Nothing to migrate for your account.']);
+                    $this->redirect(['flash_error' => __('Nothing to migrate for your account.', 'clockwork-renegade')]);
                 }
                 $this->redirect([
-                    'flash' => 'Migrated from Wordfence Login Security — the same authenticator app entry now protects your Clockwork sign-ins.',
+                    'flash' => __('Migrated from Wordfence Login Security — the same authenticator app entry now protects your Clockwork sign-ins.', 'clockwork-renegade'),
                     'codes' => $this->stashCodes($userId, $codes),
                 ]);
 
@@ -97,7 +97,7 @@ class TwoFactorActions
                     : ['flash_error' => $result['message']]);
 
             default:
-                wp_die('Unknown operation.', 400);
+                wp_die(esc_html__('Unknown operation.', 'clockwork-renegade'), 400);
         }
     }
 

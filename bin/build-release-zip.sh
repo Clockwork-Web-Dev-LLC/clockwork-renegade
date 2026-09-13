@@ -19,6 +19,9 @@ cp "${REPO_ROOT}/uninstall.php" "${STAGE_DIR}/"
 cp "${REPO_ROOT}/LICENSE" "${STAGE_DIR}/"
 cp -R "${REPO_ROOT}/src" "${STAGE_DIR}/"
 cp -R "${REPO_ROOT}/assets" "${STAGE_DIR}/"
+if [ -d "${REPO_ROOT}/languages" ]; then
+    cp -R "${REPO_ROOT}/languages" "${STAGE_DIR}/"
+fi
 
 # Remove any stray IDE or OS metadata files
 find "${STAGE_DIR}" -name ".DS_Store" -delete || true

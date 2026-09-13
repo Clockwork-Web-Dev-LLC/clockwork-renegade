@@ -40,16 +40,28 @@ function clockwork_renegade_uninstall_site(): void
     }
 
     // Wildcard cleanup for any dynamic options or transients
-    $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE 'clockwork\_renegade\_%' OR option_name LIKE '\_transient\_clockwork\_renegade\_%' OR option_name LIKE '\_transient\_timeout\_clockwork\_renegade\_%' OR option_name LIKE 'clockwork\_sso\_%'");
+    $wpdb->query(
+        $wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s",
+            $wpdb->esc_like('clockwork_renegade_').'%',
+            $wpdb->esc_like('_transient_clockwork_renegade_').'%',
+            $wpdb->esc_like('_transient_timeout_clockwork_renegade_').'%',
+            $wpdb->esc_like('clockwork_sso_').'%'
+        )
+    );
 
-    // Drop custom tables
+    // Drop custom tables (names are hardcoded suffixes on this site's prefix).
     $tables = [
-        $wpdb->prefix . 'clockwork_renegade_action_log',
-        $wpdb->prefix . 'clockwork_renegade_auth_failures',
-        $wpdb->prefix . 'clockwork_renegade_resource_samples',
+        $wpdb->prefix.'clockwork_renegade_action_log',
+        $wpdb->prefix.'clockwork_renegade_auth_failures',
+        $wpdb->prefix.'clockwork_renegade_resource_samples',
     ];
 
     foreach ($tables as $table) {
+        if (! preg_match('/^[A-Za-z0-9_]+$/', $table)) {
+            continue;
+        }
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name validated above.
         $wpdb->query("DROP TABLE IF EXISTS `{$table}`");
     }
 }

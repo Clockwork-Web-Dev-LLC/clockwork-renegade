@@ -2,6 +2,9 @@
 
 namespace ClockworkRenegade\Backup;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions -- backup/restore streams large archives; WP_Filesystem and wp_remote_* cannot do this I/O.
+// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- replaying a trusted SQL dump cannot use per-statement placeholders.
+
 /**
  * Streams and executes statements from a .sql or .sql.gz dump file.
  * Scope: current-prefix tables only ($wpdb->prefix), passing through SET statements.

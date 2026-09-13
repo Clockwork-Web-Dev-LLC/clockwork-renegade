@@ -70,9 +70,9 @@ class Plugin
         'malware-scan',
         // Secret rotation endpoint (1.14.3+).
         'secret-rotate',
-        // Auth-failure audit log surfaced on Tools → Clockwork → Security (1.14.4+).
+        // Auth-failure audit log surfaced on Clockwork → Security (1.14.4+).
         'auth-audit',
-        // Daily 30-day traffic report surfaced on Tools → Clockwork → Traffic
+        // Daily 30-day traffic report surfaced on Clockwork → Traffic
         // (1.16.0+). Push-only; agency rolls up nginx access logs and ships
         // a digest each night.
         'traffic-report',

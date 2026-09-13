@@ -243,4 +243,55 @@ class WhiteLabelTest extends TestCase
         $softSum = hexdec(substr($soft, 1, 2)) + hexdec(substr($soft, 3, 2)) + hexdec(substr($soft, 5, 2));
         $this->assertGreaterThan(600, $softSum);
     }
+
+    public function testIsManagedByControlWhenControlHasSynced(): void
+    {
+        $this->assertFalse(WhiteLabel::isManagedByControl());
+
+        update_option(WhiteLabel::OPTION_KEY, [
+            'enabled' => true,
+            'plugin_name' => 'Local Only',
+        ]);
+        $this->assertFalse(WhiteLabel::isManagedByControl());
+
+        update_option(WhiteLabel::OPTION_KEY, [
+            'enabled' => true,
+            'plugin_name' => 'Fleet Brand',
+            'synced_at' => '2026-09-13T00:00:00+00:00',
+        ]);
+        $this->assertTrue(WhiteLabel::isManagedByControl());
+    }
+
+    public function testPersistLocalSettingsWritesWhenNotManagedByControl(): void
+    {
+        $ok = WhiteLabel::persistLocalSettings([
+            'enabled' => true,
+            'plugin_name' => 'Local Agency',
+        ]);
+
+        $this->assertTrue($ok);
+        $saved = get_option(WhiteLabel::OPTION_KEY);
+        $this->assertSame('Local Agency', $saved['plugin_name']);
+    }
+
+    public function testPersistLocalSettingsRefusesToOverwriteControlBranding(): void
+    {
+        update_option(WhiteLabel::OPTION_KEY, [
+            'enabled' => true,
+            'plugin_name' => 'Control Brand',
+            'company_name' => 'Control Agency',
+            'synced_at' => '2026-09-13T00:00:00+00:00',
+        ]);
+
+        $ok = WhiteLabel::persistLocalSettings([
+            'enabled' => true,
+            'plugin_name' => 'Hijacked Local Name',
+        ]);
+
+        $this->assertFalse($ok);
+        $saved = get_option(WhiteLabel::OPTION_KEY);
+        $this->assertSame('Control Brand', $saved['plugin_name']);
+        $this->assertSame('Control Agency', $saved['company_name']);
+        $this->assertSame('2026-09-13T00:00:00+00:00', $saved['synced_at']);
+    }
 }

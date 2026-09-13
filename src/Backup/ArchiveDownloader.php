@@ -2,6 +2,8 @@
 
 namespace ClockworkRenegade\Backup;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions -- HTTPS download streams to disk via cURL; wp_remote_get loads the body into memory.
+
 /**
  * Downloads an off-site archive from a presigned HTTPS URL to a local destination file.
  * Memory efficient: streams directly to disk via curl (CURLOPT_FILE).
@@ -215,7 +217,7 @@ class ArchiveDownloader
             return false;
         }
 
-        $host = parse_url($url, PHP_URL_HOST);
+        $host = wp_parse_url($url, PHP_URL_HOST);
         if (! is_string($host) || $host === '') {
             return false;
         }

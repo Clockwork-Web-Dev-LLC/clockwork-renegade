@@ -6,7 +6,7 @@ It connects a WordPress site to a central Clockwork Control dashboard via HMAC-S
 
 ## Architecture & Features
 
-- **Pairing & Authentication**: Cryptographic Connection Key exchange via Tools → Clockwork. Per-site 256-bit shared secrets, HMAC-SHA256 request signing, and 5-minute replay window validation.
+- **Pairing & Authentication**: Cryptographic Connection Key exchange via Clockwork → Connection. Per-site 256-bit shared secrets, HMAC-SHA256 request signing, and 5-minute replay window validation.
 - **Telemetry & Monitoring**: Instant health checks, WP-Cron schedules, plugin/theme version inventory, and resource diagnostics.
 - **Safe Remote Updates**: Remote triggers for WordPress core's native upgrader pipelines (`Plugin_Upgrader`, `Theme_Upgrader`, `Core_Upgrader`). No arbitrary remote execution.
 - **Backups**: On-demand streaming of compressed database and file archives directly to AWS S3 Glacier Instant Retrieval.

@@ -2,6 +2,8 @@
 
 namespace ClockworkRenegade\Backup;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions -- backup/restore streams large archives; WP_Filesystem and wp_remote_* cannot do this I/O.
+
 /**
  * Streams a local backup archive directly to AWS S3 using a presigned PUT URL.
  * Memory efficient: uses curl stream upload (CURLOPT_INFILE) so large files

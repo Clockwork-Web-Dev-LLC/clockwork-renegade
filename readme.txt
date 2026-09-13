@@ -2,7 +2,7 @@
 Contributors: aaronreimann, clockworkwebdev
 Tags: monitoring, backups, updates, security, fleet
 Requires at least: 6.4
-Tested up to: 6.7
+Tested up to: 7.1
 Requires PHP: 8.0
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -36,27 +36,55 @@ This plugin acts as a client interface to an external service:
 * **Privacy Policy**: [https://clockworkcontrol.com/privacy](https://clockworkcontrol.com/privacy)
 
 **Affirmative Consent & Data Transmission**:
-No communication occurs between Clockwork Renegade and Clockwork Control until an authorized administrator affirmatively connects the site. To connect, the site administrator copies the unique cryptographic Connection Key generated in **Tools → Clockwork** and pastes it into their Clockwork Control instance.
+No communication occurs between Clockwork Renegade and Clockwork Control until an authorized administrator affirmatively connects the site. To connect, the site administrator copies the unique cryptographic Connection Key generated under **Clockwork → Connection** and pastes it into their Clockwork Control instance.
 
 When paired, the following data is transmitted to your configured Clockwork Control dashboard via HMAC-authenticated HTTPS requests:
 1. Site domain, PHP version, WordPress version, and web server software.
 2. Active and inactive plugin and theme lists with current version numbers.
-3. WP-Cron task execution schedules and overdue status.
-4. Database table sizes and media disk usage metrics.
-5. Uptime probe receipts and optional contact-form test verification.
+3. WordPress administrator and editor accounts (usernames, display names, and email addresses) used for fleet admin audit and one-click SSO login.
+4. WP-Cron task execution schedules and overdue status.
+5. Database table sizes and media disk usage metrics.
+6. Uptime probe receipts and optional contact-form test verification.
+7. Local malware-scan findings (file paths and signature matches). Wordfence / Limit Login Attempts Reloaded lockout summaries when those plugins are installed.
+8. Optional one-click SSO: Clockwork Control may request a single-use magic login URL for a named administrator. That URL is consumed locally and is not reused.
+
+= Amazon Web Services (S3 / Glacier) =
+
+Off-site backup and restore stream your WordPress **database dump and wp-content files** to an Amazon S3 bucket that your Clockwork Control operator configures (typically Glacier Instant Retrieval). Clockwork Renegade never stores AWS access keys. Control mints a short-lived presigned HTTPS URL; this plugin uploads or downloads only that object.
+
+* **Service**: Amazon Simple Storage Service (S3)
+* **Provider**: Amazon Web Services, Inc.
+* **Service URL**: https://aws.amazon.com/s3/
+* **Terms**: https://aws.amazon.com/service-terms/
+* **Privacy**: https://aws.amazon.com/privacy/
+
+A backup includes whatever is in your database (comments, users, form entries, and other site content). Treat restore as a full-site overwrite of matching tables and files.
+
+= Sucuri SiteCheck =
+
+The Security screen can run an on-demand malware/blacklist scan by sending your site's public home URL to Sucuri's free SiteCheck API. This happens only when an administrator clicks **Run** on that scan. No Clockwork pairing is required for that local button.
+
+* **Service**: Sucuri SiteCheck
+* **Provider**: GoDaddy Security / Sucuri
+* **Service URL**: https://sitecheck.sucuri.net/
+* **Terms**: https://sitecheck.sucuri.net/terms/
+* **Privacy**: https://www.sucuri.net/privacy-policy/
 
 == Installation ==
 
 1. Upload the `clockwork-renegade` folder to your `/wp-content/plugins/` directory, or install it directly via the WordPress Plugin Directory (**Plugins → Add New**).
 2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Navigate to **Tools → Clockwork** in the WordPress admin.
+3. Navigate to **Clockwork → Connection** (the Clockwork menu in wp-admin).
 4. Click **Copy Connection Key**.
 5. In your Clockwork Control dashboard, click **+ Add Site**, paste the Connection Key, and confirm.
 
 == Frequently Asked Questions ==
 
 = Does Clockwork Renegade work without Clockwork Control? =
-Clockwork Renegade includes a local administration area in **Tools → Clockwork** that provides diagnostic tools and site telemetry. However, connecting to a self-hosted or cloud Clockwork Control dashboard unlocks the full power of centralized updates, uptime alerting, and off-site backup orchestration.
+Clockwork Renegade includes a local administration area under **Clockwork → Connection** that provides diagnostic tools and site telemetry. However, connecting to a self-hosted or cloud Clockwork Control dashboard unlocks the full power of centralized updates, uptime alerting, and off-site backup orchestration.
+
+= Where are the Terms of Service? =
+Clockwork Control’s Terms of Service are published at https://clockworkcontrol.com/terms. They describe pairing consent, the self-hosted data model, native WordPress upgraders only (no eval), and clean uninstall.
 
 = How is communication secured? =
 All communications between Clockwork Control and Clockwork Renegade are encrypted over HTTPS and authenticated using per-site 256-bit HMAC-SHA256 signatures with 5-minute replay-window guards.

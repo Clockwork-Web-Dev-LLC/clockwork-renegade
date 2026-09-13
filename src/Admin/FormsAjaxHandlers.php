@@ -40,16 +40,21 @@ class FormsAjaxHandlers
         $formId = isset($_POST['form_id']) ? sanitize_text_field((string) $_POST['form_id']) : '';
         $plugin = isset($_POST['plugin']) ? sanitize_text_field((string) $_POST['plugin']) : '';
         if ($formId === '' || $plugin === '') {
-            wp_send_json_error(['message' => 'form_id and plugin are required.'], 400);
+            wp_send_json_error(['message' => __('form_id and plugin are required.', 'clockwork-renegade')], 400);
         }
         if (SubscriptionsService::atCap() && ! SubscriptionsService::isSubscribed($formId)) {
             wp_send_json_error([
-                'message' => 'You\'re at the maximum of ' . SubscriptionsService::MAX . ' monitored forms. Unsubscribe one to add another, or contact ' . WhiteLabel::getAuthorName() . ' to raise the limit.',
+                'message' => sprintf(
+                    /* translators: 1: maximum number of monitored forms, 2: agency author name */
+                    __('You\'re at the maximum of %1$s monitored forms. Unsubscribe one to add another, or contact %2$s to raise the limit.', 'clockwork-renegade'),
+                    (string) SubscriptionsService::MAX,
+                    WhiteLabel::getAuthorName()
+                ),
             ], 409);
         }
         $ok = SubscriptionsService::subscribe($formId, $plugin);
         if (! $ok) {
-            wp_send_json_error(['message' => 'Could not subscribe.'], 500);
+            wp_send_json_error(['message' => __('Could not subscribe.', 'clockwork-renegade')], 500);
         }
         wp_send_json_success(['subscribed' => true, 'form_id' => $formId]);
     }
@@ -59,7 +64,7 @@ class FormsAjaxHandlers
         $this->guard();
         $formId = isset($_POST['form_id']) ? sanitize_text_field((string) $_POST['form_id']) : '';
         if ($formId === '') {
-            wp_send_json_error(['message' => 'form_id is required.'], 400);
+            wp_send_json_error(['message' => __('form_id is required.', 'clockwork-renegade')], 400);
         }
         SubscriptionsService::unsubscribe($formId);
         wp_send_json_success(['subscribed' => false, 'form_id' => $formId]);
@@ -72,7 +77,7 @@ class FormsAjaxHandlers
         $formId = isset($_POST['form_id']) ? sanitize_text_field((string) $_POST['form_id']) : '';
         $plugin = isset($_POST['plugin']) ? sanitize_text_field((string) $_POST['plugin']) : '';
         if ($formId === '' || $plugin === '') {
-            wp_send_json_error(['message' => 'form_id and plugin are required.'], 400);
+            wp_send_json_error(['message' => __('form_id and plugin are required.', 'clockwork-renegade')], 400);
         }
         // Build a marker that's unique per click — same shape as the
         // Clockwork-initiated test. Mode = lab so we don't actually email
@@ -103,11 +108,11 @@ class FormsAjaxHandlers
     private function guard(): void
     {
         if (! current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Forbidden.'], 403);
+            wp_send_json_error(['message' => __('Forbidden.', 'clockwork-renegade')], 403);
         }
         $nonce = isset($_POST[self::NONCE_NAME]) ? (string) $_POST[self::NONCE_NAME] : '';
         if (! wp_verify_nonce($nonce, self::NONCE_ACTION)) {
-            wp_send_json_error(['message' => 'Bad nonce.'], 403);
+            wp_send_json_error(['message' => __('Bad nonce.', 'clockwork-renegade')], 403);
         }
     }
 
@@ -126,7 +131,11 @@ class FormsAjaxHandlers
     {
         if (! Repository::latestCarePlanFlag()) {
             wp_send_json_error([
-                'message' => 'Form monitoring requires an active care plan. Talk to ' . WhiteLabel::getAuthorName() . ' about adding one.',
+                'message' => sprintf(
+                    /* translators: %s: agency author name */
+                    __('Form monitoring requires an active care plan. Talk to %s about adding one.', 'clockwork-renegade'),
+                    WhiteLabel::getAuthorName()
+                ),
                 'error'   => 'care_plan_required',
             ], 403);
         }

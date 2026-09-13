@@ -13,7 +13,7 @@ use WP_REST_Response;
  *
  * Mirror endpoint — Clockwork posts a row from its action_logs table here
  * after each successful local write. The site stores its own copy in
- * wp_clockwork_renegade_action_log so the Tools → Clockwork "Activity" admin page
+ * wp_clockwork_renegade_action_log so the Clockwork → Activity admin page
  * can show clients what we've done.
  *
  * Push-once-from-Clockwork semantics: if Clockwork's call fails, the

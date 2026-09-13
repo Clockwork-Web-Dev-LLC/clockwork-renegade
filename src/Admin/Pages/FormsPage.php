@@ -10,7 +10,7 @@ use ClockworkRenegade\ContactForm\SubscriptionsService;
 use ClockworkRenegade\WhiteLabel\WhiteLabel;
 
 /**
- * Tools → Clockwork → Forms admin page.
+ * Clockwork → Forms admin page.
  *
  * Self-service surface for the local WP admin user. Three logical sections:
  *
@@ -46,8 +46,12 @@ class FormsPage
     public static function renderBody(): void
     {
         Layout::pageHeader(
-            'Forms',
-            'Keep your contact forms working. ' . WhiteLabel::getAuthorName() . ' periodically submits each monitored form like a real visitor would, verifies the submission email actually leaves your server, and alerts their team immediately if a form starts silently failing.'
+            __('Forms', 'clockwork-renegade'),
+            sprintf(
+                /* translators: %s: agency / author display name */
+                __('Keep your contact forms working. %s periodically submits each monitored form like a real visitor would, verifies the submission email actually leaves your server, and alerts their team immediately if a form starts silently failing.', 'clockwork-renegade'),
+                WhiteLabel::getAuthorName()
+            )
         );
 
         $onCarePlan = Repository::latestCarePlanFlag();
@@ -191,7 +195,7 @@ class FormsPage
                     <p class="clockwork-empty">No form plugins active, or no forms configured. Install Contact Form 7, WPForms, or Gravity Forms and create a form, then click <em>Re-detect now</em>.</p>
                 <?php else : ?>
                     <?php if ($onCarePlan) : ?>
-                        <p class="clockwork-help">Toggle a form on to have <?php echo esc_html(WhiteLabel::getAuthorName()); ?> test it on a schedule (weekly). Up to <?php echo SubscriptionsService::MAX; ?> forms can be monitored at once.</p>
+                        <p class="clockwork-help">Toggle a form on to have <?php echo esc_html(WhiteLabel::getAuthorName()); ?> test it on a schedule (weekly). Up to <?php echo esc_html((string) SubscriptionsService::MAX); ?> forms can be monitored at once.</p>
                     <?php else : ?>
                         <p class="clockwork-help">Below is every form we'd test for you on a weekly schedule once your care plan is active. The toggles are locked until then — see the banner above.</p>
                     <?php endif; ?>
@@ -247,7 +251,7 @@ class FormsPage
                     </table>
                     <?php if ($atCap) : ?>
                         <p class="clockwork-help" style="margin-top: 12px;">
-                            <strong>You're at the maximum of <?php echo SubscriptionsService::MAX; ?> monitored forms.</strong>
+                            <strong>You're at the maximum of <?php echo esc_html((string) SubscriptionsService::MAX); ?> monitored forms.</strong>
                             Unsubscribe one below to free up a slot, or contact <?php echo esc_html(WhiteLabel::getAuthorName()); ?> to raise the limit.
                         </p>
                     <?php endif; ?>
@@ -277,7 +281,7 @@ class FormsPage
                             <span class="dashicons dashicons-pause"></span> Care plan paused
                         </span> ·
                     <?php endif; ?>
-                    <?php echo count($subs); ?> / <?php echo SubscriptionsService::MAX; ?>
+                    <?php echo esc_html((string) count($subs)); ?> / <?php echo esc_html((string) SubscriptionsService::MAX); ?>
                 </span>
             </div>
             <div class="clockwork-card__body">

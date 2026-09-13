@@ -2,6 +2,8 @@
 
 namespace ClockworkRenegade\Resource;
 
+// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- table name comes from Schema::tableName(), values are passed to $wpdb->prepare().
+
 /**
  * Read/write for wp_clockwork_resource_hourly.
  *

@@ -29,11 +29,11 @@ class NotificationsPage
         $saved = isset($_GET['saved']) && $_GET['saved'] === '1';
         $nonce = wp_create_nonce('clockwork_save_notifications');
         ?>
-        <?php Layout::pageHeader('Notifications', 'Configure where alerts are delivered when something breaks on this site.'); ?>
+        <?php Layout::pageHeader(__('Notifications', 'clockwork-renegade'), __('Configure where alerts are delivered when something breaks on this site.', 'clockwork-renegade')); ?>
 
         <?php if ($saved) : ?>
             <div class="notice notice-success is-dismissible" style="margin:16px 0;">
-                <p><strong>Notification settings saved.</strong></p>
+                <p><strong><?php esc_html_e('Notification settings saved.', 'clockwork-renegade'); ?></strong></p>
             </div>
         <?php endif; ?>
 
@@ -43,19 +43,23 @@ class NotificationsPage
 
             <div class="clockwork-card" style="max-width:640px;">
                 <div class="clockwork-card__head">
-                    <h2>Slack</h2>
+                    <h2><?php esc_html_e('Slack', 'clockwork-renegade'); ?></h2>
                 </div>
                 <div class="clockwork-card__body">
                     <p style="color:#6b7280;font-size:13px;margin:0 0 16px;">
-                        Enter a Slack <a href="https://api.slack.com/messaging/webhooks" target="_blank" rel="noopener">incoming webhook URL</a>
-                        to receive alerts in your Slack workspace when a contact form stops working
-                        or this site goes down. Leave blank to disable.
+                        <?php
+                        echo wp_kses_post(sprintf(
+                            /* translators: %s: Slack incoming webhooks documentation URL */
+                            __('Enter a Slack <a href="%s" target="_blank" rel="noopener">incoming webhook URL</a> to receive alerts in your Slack workspace when a contact form stops working or this site goes down. Leave blank to disable.', 'clockwork-renegade'),
+                            'https://api.slack.com/messaging/webhooks'
+                        ));
+                        ?>
                     </p>
 
                     <table class="form-table" role="presentation">
                         <tr>
                             <th scope="row" style="width:180px;">
-                                <label for="slack_webhook_url">Webhook URL</label>
+                                <label for="slack_webhook_url"><?php esc_html_e('Webhook URL', 'clockwork-renegade'); ?></label>
                             </th>
                             <td>
                                 <input type="url"
@@ -66,8 +70,7 @@ class NotificationsPage
                                        class="regular-text"
                                        style="width:100%;max-width:480px;">
                                 <p class="description" style="margin-top:6px;">
-                                    Must be an <code>https://</code> URL. Generate one at
-                                    <strong>Your Slack App → Incoming Webhooks → Add New Webhook to Workspace</strong>.
+                                    <?php echo wp_kses_post(__('Must be an <code>https://</code> URL. Generate one at <strong>Your Slack App → Incoming Webhooks → Add New Webhook to Workspace</strong>.', 'clockwork-renegade')); ?>
                                 </p>
                             </td>
                         </tr>
@@ -75,18 +78,24 @@ class NotificationsPage
 
                     <?php if ($webhookUrl !== '') : ?>
                         <div style="margin-top:8px;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:12px;color:#166534;">
-                            ✓ A webhook URL is configured. The monitoring app will send alerts to this workspace.
+                            <?php esc_html_e('✓ A webhook URL is configured. The monitoring app will send alerts to this workspace.', 'clockwork-renegade'); ?>
                         </div>
                     <?php else : ?>
                         <div style="margin-top:8px;padding:10px 14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#6b7280;">
-                            No webhook URL configured. Alerts will only go to <?php echo esc_html(WhiteLabel::getAuthorName()); ?>'s internal channel.
+                            <?php
+                            printf(
+                                /* translators: %s: agency author name */
+                                esc_html__('No webhook URL configured. Alerts will only go to %s\'s internal channel.', 'clockwork-renegade'),
+                                esc_html(WhiteLabel::getAuthorName())
+                            );
+                            ?>
                         </div>
                     <?php endif; ?>
                 </div>
             </div>
 
             <p style="margin-top:16px;">
-                <button type="submit" class="button button-primary">Save notification settings</button>
+                <button type="submit" class="button button-primary"><?php esc_html_e('Save notification settings', 'clockwork-renegade'); ?></button>
             </p>
         </form>
         <?php
@@ -95,7 +104,7 @@ class NotificationsPage
     public static function handleSave(): void
     {
         if (! current_user_can('manage_options')) {
-            wp_die('Unauthorized', 403);
+            wp_die(esc_html__('Unauthorized', 'clockwork-renegade'), 403);
         }
 
         check_admin_referer('clockwork_save_notifications');

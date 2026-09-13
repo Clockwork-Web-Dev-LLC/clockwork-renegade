@@ -16,7 +16,7 @@ class PrivacyPolicy
             '<p>%s</p>',
             __('This website connects to Clockwork Control (operated by Clockwork Web Dev, LLC) for remote site health monitoring, automated backups, and routine maintenance.', 'clockwork-renegade'),
             __('What Data Is Collected and Transmitted:', 'clockwork-renegade'),
-            __('When paired with a Clockwork Control dashboard, Clockwork Renegade transmits server environment telemetry, active WordPress core, theme, and plugin inventory versions, scheduled cron health, and diagnostic performance metrics via HMAC-authenticated HTTPS requests. No visitor personal data or comment author PII is collected or sent to Clockwork Control without explicit administrator configuration.', 'clockwork-renegade')
+            __('When paired, Clockwork Renegade transmits environment telemetry (PHP, WordPress, and server software), plugin and theme inventories, cron health, disk metrics, administrator account names and emails, optional contact-form test results, malware-scan findings, and — when an operator starts a backup — a full database dump plus wp-content files to the AWS S3 bucket configured in Clockwork Control. Clockwork Control may also request a one-time SSO login URL for a named administrator. Nothing is sent until an administrator pastes the Connection Key into Clockwork Control. An optional Sucuri SiteCheck run (administrator-clicked) sends this site\'s public URL to sitecheck.sucuri.net.', 'clockwork-renegade')
         );
 
         wp_add_privacy_policy_content(

@@ -105,10 +105,10 @@ class SupportForm
         self::renderStatsGrid();
         ?>
         <p style="margin: 0 0 12px; color: #374151; font-size: 13px; line-height: 1.5;">
-            Need help with your website? Send us a message and we'll get back to you shortly.
+            <?php esc_html_e('Need help with your website? Send us a message and we\'ll get back to you shortly.', 'clockwork-renegade'); ?>
         </p>
         <button type="button" class="button button-primary cwk-support-trigger">
-            Open Support Form
+            <?php esc_html_e('Open Support Form', 'clockwork-renegade'); ?>
         </button>
         <?php
     }
@@ -121,7 +121,7 @@ class SupportForm
      * tasks done) in a uniform brand-indigo style so the two rows read as
      * "is something wrong?" vs. "here's what we've been doing." Reuses each
      * page's summary() so the numbers here always agree with the full
-     * Tools → Clockwork pages they link to.
+     * Clockwork admin pages they link to.
      */
     private static function renderStatsGrid(): void
     {
@@ -140,34 +140,46 @@ class SupportForm
         };
         $uptimeValue = $uptime['pct30'] !== null
             ? number_format($uptime['pct30'], 2).'%'
-            : ($uptime['state'] === 'up' ? 'Up' : '—');
-        $uptimeSub = $uptime['state'] === 'down' ? 'Site is down' : '30-day uptime';
+            : ($uptime['state'] === 'up' ? __('Up', 'clockwork-renegade') : '—');
+        $uptimeSub = $uptime['state'] === 'down' ? __('Site is down', 'clockwork-renegade') : __('30-day uptime', 'clockwork-renegade');
 
         $backupsVariant = ! $backups['hasReport'] ? 'muted' : ($backups['active'] ? 'green' : 'warn');
-        $backupsValue = ! $backups['hasReport'] ? 'Pending' : ($backups['active'] ? 'Backed up' : 'Disabled');
-        $backupsSub = $backups['lastRunLabel'] !== null ? 'Last: '.$backups['lastRunLabel'] : 'No runs yet';
+        $backupsValue = ! $backups['hasReport'] ? __('Pending', 'clockwork-renegade') : ($backups['active'] ? __('Backed up', 'clockwork-renegade') : __('Disabled', 'clockwork-renegade'));
+        $backupsSub = $backups['lastRunLabel'] !== null
+            ? sprintf(
+                /* translators: %s: last backup timestamp */
+                __('Last: %s', 'clockwork-renegade'),
+                $backups['lastRunLabel']
+            )
+            : __('No runs yet', 'clockwork-renegade');
 
-        $perfValue = $performance['hasScore'] ? $performance['score'].'/100' : 'Pending';
-        $perfSub = $performance['hasScore'] ? 'Grade '.$performance['grade'].' · mobile' : 'No scan yet';
+        $perfValue = $performance['hasScore'] ? $performance['score'].'/100' : __('Pending', 'clockwork-renegade');
+        $perfSub = $performance['hasScore']
+            ? sprintf(
+                /* translators: %s: letter grade */
+                __('Grade %s · mobile', 'clockwork-renegade'),
+                $performance['grade']
+            )
+            : __('No scan yet', 'clockwork-renegade');
 
-        $trafficValue = $traffic['visits30dLabel'] ?? 'Pending';
-        $trafficSub = $traffic['hasReport'] ? 'Visits (30 days)' : 'No report yet';
+        $trafficValue = $traffic['visits30dLabel'] ?? __('Pending', 'clockwork-renegade');
+        $trafficSub = $traffic['hasReport'] ? __('Visits (30 days)', 'clockwork-renegade') : __('No report yet', 'clockwork-renegade');
 
         $tasksValue = (string) $activity['tasksThisMonth'];
-        $tasksSub = 'Done this month';
+        $tasksSub = __('Done this month', 'clockwork-renegade');
 
         ?>
-        <p class="cwk-dash-stats__intro">Here's what we're watching for you:</p>
+        <p class="cwk-dash-stats__intro"><?php esc_html_e('Here\'s what we\'re watching for you:', 'clockwork-renegade'); ?></p>
         <div class="cwk-dash-stats">
             <?php
-            self::renderStatTile('pulse', 'Uptime', $uptimeValue, $uptimeSub, $uptimeVariant, UptimePage::SLUG);
-            self::renderStatTile('shield', 'Security', $security['label'], 'Last scans', $security['variant'], SecurityPage::SLUG);
-            self::renderStatTile('cloud', 'Backups', $backupsValue, $backupsSub, $backupsVariant, BackupsPage::SLUG);
-            self::renderStatTile('gauge', 'Performance', $perfValue, $perfSub, $performance['variant'], PerformancePage::SLUG);
+            self::renderStatTile('pulse', __('Uptime', 'clockwork-renegade'), $uptimeValue, $uptimeSub, $uptimeVariant, UptimePage::SLUG);
+            self::renderStatTile('shield', __('Security', 'clockwork-renegade'), $security['label'], __('Last scans', 'clockwork-renegade'), $security['variant'], SecurityPage::SLUG);
+            self::renderStatTile('cloud', __('Backups', 'clockwork-renegade'), $backupsValue, $backupsSub, $backupsVariant, BackupsPage::SLUG);
+            self::renderStatTile('gauge', __('Performance', 'clockwork-renegade'), $perfValue, $perfSub, $performance['variant'], PerformancePage::SLUG);
             if (TrafficPage::isSupported()) {
-                self::renderStatTile('bars', 'Traffic', $trafficValue, $trafficSub, $traffic['hasReport'] ? 'info' : 'muted', TrafficPage::SLUG);
+                self::renderStatTile('bars', __('Traffic', 'clockwork-renegade'), $trafficValue, $trafficSub, $traffic['hasReport'] ? 'info' : 'muted', TrafficPage::SLUG);
             }
-            self::renderStatTile('check', 'Tasks done', $tasksValue, $tasksSub, 'info', ActivityPage::SLUG);
+            self::renderStatTile('check', __('Tasks done', 'clockwork-renegade'), $tasksValue, $tasksSub, 'info', ActivityPage::SLUG);
             ?>
         </div>
         <style>
@@ -248,7 +260,7 @@ class SupportForm
         $url = admin_url('admin.php?page='.$pageSlug);
         ?>
         <a href="<?php echo esc_url($url); ?>" class="cwk-dash-stat cwk-dash-stat--<?php echo esc_attr($variant); ?>">
-            <span class="cwk-dash-stat__head"><?php echo self::dashIcon($icon); ?> <?php echo esc_html($label); ?></span>
+            <span class="cwk-dash-stat__head"><?php echo wp_kses(self::dashIcon($icon), self::iconKses()); ?> <?php echo esc_html($label); ?></span>
             <span class="cwk-dash-stat__value"><?php echo esc_html($value); ?></span>
             <span class="cwk-dash-stat__sub"><?php echo esc_html($sub); ?></span>
         </a>
@@ -260,6 +272,27 @@ class SupportForm
      * font-icon kit. Stroke-based, currentColor — picks up each tile's
      * status color.
      */
+    /**
+     * @return array<string, array<string, bool>>
+     */
+    private static function iconKses(): array
+    {
+        return [
+            'svg' => [
+                'viewbox' => true,
+                'fill' => true,
+                'stroke' => true,
+                'stroke-width' => true,
+                'stroke-linecap' => true,
+                'stroke-linejoin' => true,
+                'width' => true,
+                'height' => true,
+            ],
+            'path' => ['d' => true],
+            'polyline' => ['points' => true],
+        ];
+    }
+
     private static function dashIcon(string $name): string
     {
         if ($name === 'pulse') {
@@ -296,68 +329,68 @@ class SupportForm
                 <div class="cwk-modal-head">
                     <span id="cwk-modal-title" class="cwk-modal-title">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-                        Clockwork Support
+                        <?php esc_html_e('Clockwork Support', 'clockwork-renegade'); ?>
                     </span>
-                    <button type="button" class="cwk-modal-close" aria-label="Close support form">
+                    <button type="button" class="cwk-modal-close" aria-label="<?php echo esc_attr__('Close support form', 'clockwork-renegade'); ?>">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
                     </button>
                 </div>
                 <div class="cwk-modal-body">
-                    <p class="cwk-modal-intro">Send us a message and we'll get back to you shortly.</p>
+                    <p class="cwk-modal-intro"><?php esc_html_e('Send us a message and we\'ll get back to you shortly.', 'clockwork-renegade'); ?></p>
                     <form id="cwk-support-form" novalidate>
                         <input type="hidden" name="action" value="clockwork_support_submit">
                         <input type="hidden" name="nonce" id="cwk-nonce-field">
 
                         <div class="cwk-form-row cwk-form-row--half">
                             <div class="cwk-form-group">
-                                <label for="cwk-first-name">First name <span class="cwk-required" aria-hidden="true">*</span></label>
+                                <label for="cwk-first-name"><?php esc_html_e('First name', 'clockwork-renegade'); ?> <span class="cwk-required" aria-hidden="true">*</span></label>
                                 <input type="text" id="cwk-first-name" name="first_name" required autocomplete="given-name">
                             </div>
                             <div class="cwk-form-group">
-                                <label for="cwk-last-name">Last name <span class="cwk-required" aria-hidden="true">*</span></label>
+                                <label for="cwk-last-name"><?php esc_html_e('Last name', 'clockwork-renegade'); ?> <span class="cwk-required" aria-hidden="true">*</span></label>
                                 <input type="text" id="cwk-last-name" name="last_name" required autocomplete="family-name">
                             </div>
                         </div>
 
                         <div class="cwk-form-row cwk-form-row--half">
                             <div class="cwk-form-group">
-                                <label for="cwk-email">Email <span class="cwk-required" aria-hidden="true">*</span></label>
+                                <label for="cwk-email"><?php esc_html_e('Email', 'clockwork-renegade'); ?> <span class="cwk-required" aria-hidden="true">*</span></label>
                                 <input type="email" id="cwk-email" name="email" required autocomplete="email">
                             </div>
                             <div class="cwk-form-group">
-                                <label for="cwk-site-url">Website URL <span class="cwk-required" aria-hidden="true">*</span></label>
+                                <label for="cwk-site-url"><?php esc_html_e('Website URL', 'clockwork-renegade'); ?> <span class="cwk-required" aria-hidden="true">*</span></label>
                                 <input type="url" id="cwk-site-url" name="website_url" required>
                             </div>
                         </div>
 
                         <div class="cwk-form-group">
-                            <label for="cwk-subject">Subject <span class="cwk-required" aria-hidden="true">*</span></label>
-                            <input type="text" id="cwk-subject" name="short_desc" required placeholder="Brief description of your request">
+                            <label for="cwk-subject"><?php esc_html_e('Subject', 'clockwork-renegade'); ?> <span class="cwk-required" aria-hidden="true">*</span></label>
+                            <input type="text" id="cwk-subject" name="short_desc" required placeholder="<?php echo esc_attr__('Brief description of your request', 'clockwork-renegade'); ?>">
                         </div>
 
                         <div class="cwk-form-group">
-                            <label for="cwk-message">Message <span class="cwk-required" aria-hidden="true">*</span></label>
-                            <textarea id="cwk-message" name="long_desc" required rows="5" placeholder="Please describe your issue in detail…"></textarea>
+                            <label for="cwk-message"><?php esc_html_e('Message', 'clockwork-renegade'); ?> <span class="cwk-required" aria-hidden="true">*</span></label>
+                            <textarea id="cwk-message" name="long_desc" required rows="5" placeholder="<?php echo esc_attr__('Please describe your issue in detail…', 'clockwork-renegade'); ?>"></textarea>
                         </div>
 
                         <div class="cwk-form-group cwk-form-checkbox">
                             <label class="cwk-checkbox-label">
                                 <input type="checkbox" name="approved" value="1" required>
-                                <span><?php echo esc_html(self::BILLING_NOTICE); ?> <span class="cwk-required" aria-hidden="true">*</span></span>
+                                <span><?php esc_html_e('I understand that my request may be subject to a minimum charge of one billable hour at an hourly rate of $200', 'clockwork-renegade'); ?> <span class="cwk-required" aria-hidden="true">*</span></span>
                             </label>
                         </div>
 
                         <div class="cwk-form-group cwk-form-checkbox">
                             <label class="cwk-checkbox-label">
                                 <input type="checkbox" name="subscribe" value="1">
-                                <span>Yes! I'd like to receive occasional email updates from Clockwork.</span>
+                                <span><?php esc_html_e('Yes! I\'d like to receive occasional email updates from Clockwork.', 'clockwork-renegade'); ?></span>
                             </label>
                         </div>
 
                         <div class="cwk-form-actions">
                             <button type="submit" class="cwk-submit-btn">
-                                <span class="cwk-submit-label">Send My Message</span>
-                                <span class="cwk-submit-spinner" aria-hidden="true" style="display:none;">Sending…</span>
+                                <span class="cwk-submit-label"><?php esc_html_e('Send My Message', 'clockwork-renegade'); ?></span>
+                                <span class="cwk-submit-spinner" aria-hidden="true" style="display:none;"><?php esc_html_e('Sending…', 'clockwork-renegade'); ?></span>
                             </button>
                         </div>
 
@@ -368,8 +401,8 @@ class SupportForm
                         <div class="cwk-form-success__icon">
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
                         </div>
-                        <strong>Message sent!</strong>
-                        <p>We'll get back to you shortly.</p>
+                        <strong><?php esc_html_e('Message sent!', 'clockwork-renegade'); ?></strong>
+                        <p><?php esc_html_e('We\'ll get back to you shortly.', 'clockwork-renegade'); ?></p>
                     </div>
                 </div>
             </div>
@@ -477,7 +510,7 @@ class SupportForm
         // handler, which proxies to the agency's Gravity Forms endpoint using
         // the shared GF API credentials. Restrict to site administrators.
         if (! current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Insufficient permissions.'], 403);
+            wp_send_json_error(['message' => __('Insufficient permissions.', 'clockwork-renegade')], 403);
         }
 
         $firstName = sanitize_text_field((string) ($_POST['first_name'] ?? ''));
@@ -490,13 +523,13 @@ class SupportForm
         $subscribe = ! empty($_POST['subscribe']);
 
         if (! $firstName || ! $lastName || ! $email || ! $shortDesc || ! $longDesc) {
-            wp_send_json_error(['message' => 'Please fill in all required fields.'], 422);
+            wp_send_json_error(['message' => __('Please fill in all required fields.', 'clockwork-renegade')], 422);
         }
         if (! is_email($email)) {
-            wp_send_json_error(['message' => 'Please enter a valid email address.'], 422);
+            wp_send_json_error(['message' => __('Please enter a valid email address.', 'clockwork-renegade')], 422);
         }
         if (! $approved) {
-            wp_send_json_error(['message' => 'Please accept the billing terms to continue.'], 422);
+            wp_send_json_error(['message' => __('Please accept the billing terms to continue.', 'clockwork-renegade')], 422);
         }
 
         $body = [
@@ -524,13 +557,13 @@ class SupportForm
         // the support system" alongside a link to nowhere.
         if (trim($baseUrl) === '') {
             wp_send_json_error([
-                'message' => 'The support form isn\'t configured on this site. Set CLOCKWORK_SUPPORT_SITE_URL in wp-config.php, or contact your agency directly.',
+                'message' => __('The support form isn\'t configured on this site. Set CLOCKWORK_SUPPORT_SITE_URL in wp-config.php, or contact your agency directly.', 'clockwork-renegade'),
             ], 501);
         }
 
         $endpoint     = rtrim($baseUrl, '/') . '/wp-json/gf/v2/forms/' . self::GF_FORM_ID . '/submissions';
         $supportUrl   = esc_url(rtrim($baseUrl, '/') . '/support');
-        $fallbackLink = ' <a href="' . $supportUrl . '" target="_blank" rel="noopener">Open our support page →</a>';
+        $fallbackLink = ' <a href="' . $supportUrl . '" target="_blank" rel="noopener">' . esc_html__('Open our support page →', 'clockwork-renegade') . '</a>';
 
         $headers = [
             'Accept'       => 'application/json',
@@ -549,24 +582,37 @@ class SupportForm
         ]);
 
         if (is_wp_error($response)) {
-            wp_send_json_error(['message' => 'Could not reach the support system. Please try again or' . $fallbackLink], 503);
+            wp_send_json_error([
+                'message' => sprintf(
+                    /* translators: %s: HTML link to the support page */
+                    __('Could not reach the support system. Please try again or%s', 'clockwork-renegade'),
+                    $fallbackLink
+                ),
+            ], 503);
         }
 
         $code         = wp_remote_retrieve_response_code($response);
         $responseBody = json_decode(wp_remote_retrieve_body($response), true);
 
         if ((int) $code === 200 && ! empty($responseBody['is_valid'])) {
-            wp_send_json_success(['message' => "Thanks — we'll get back to you shortly."]);
+            wp_send_json_success(['message' => __('Thanks — we\'ll get back to you shortly.', 'clockwork-renegade')]);
         }
 
         if (isset($responseBody['is_valid']) && $responseBody['is_valid'] === false) {
-            wp_send_json_error(['message' => 'The support form returned a validation error. Please try again.'], 422);
+            wp_send_json_error(['message' => __('The support form returned a validation error. Please try again.', 'clockwork-renegade')], 422);
         }
 
         if ((int) $code === 401 || (int) $code === 403) {
-            wp_send_json_error(['message' => 'The support system requires authentication. Please contact Clockwork to configure API credentials.'], 500);
+            wp_send_json_error(['message' => __('The support system requires authentication. Please contact Clockwork to configure API credentials.', 'clockwork-renegade')], 500);
         }
 
-        wp_send_json_error(['message' => 'Something went wrong (HTTP ' . (int) $code . '). Please try again or' . $fallbackLink], 500);
+        wp_send_json_error([
+            'message' => sprintf(
+                /* translators: 1: HTTP status code, 2: HTML link to the support page */
+                __('Something went wrong (HTTP %1$s). Please try again or%2$s', 'clockwork-renegade'),
+                (string) (int) $code,
+                $fallbackLink
+            ),
+        ], 500);
     }
 }

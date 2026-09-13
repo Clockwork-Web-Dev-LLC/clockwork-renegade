@@ -10,7 +10,7 @@ use ClockworkRenegade\SecurityScans\ChecksumsRunner;
 use ClockworkRenegade\WhiteLabel\WhiteLabel;
 
 /**
- * Tools → Clockwork → Security admin page.
+ * Clockwork → Security admin page.
  *
  * Two-card layout that mirrors the Clockwork dashboard's per-site Security
  * tab — same shape, same fields, same status pills — so a client clicking
@@ -110,8 +110,8 @@ class SecurityPage
         $checksumsRunnable = ChecksumsRunner::isAvailable();
 
         Layout::pageHeader(
-            'Security',
-            'Checks Clockwork runs against this site to flag domain blacklist hits, malware, and tampering with WordPress core files.'
+            __('Security', 'clockwork-renegade'),
+            __('Checks Clockwork runs against this site to flag domain blacklist hits, malware, and tampering with WordPress core files.', 'clockwork-renegade')
         );
 
         self::renderFlash();
@@ -236,7 +236,7 @@ class SecurityPage
     }
 
     /**
-     * Renders a card on Tools → Clockwork → Security showing recent failed
+     * Renders a card on Clockwork → Security showing recent failed
      * HMAC verifications. Operator-facing visibility into probing/brute-force
      * attempts: 30-fail-per-IP-per-min rate limit silently locks attackers out
      * but historically left no trace. This is that trace.
@@ -628,7 +628,7 @@ class SecurityPage
         <div class="clockwork-scan-card <?php echo $disabled ? 'is-disabled' : ''; ?>">
             <div class="clockwork-scan-card__head">
                 <div class="clockwork-scan-card__title">
-                    <span class="clockwork-scan-card__icon"><?php echo self::iconSvg($card['icon']); ?></span>
+                    <span class="clockwork-scan-card__icon"><?php echo wp_kses_post(self::iconSvg($card['icon'])); ?></span>
                     <h2><?php echo esc_html($card['title']); ?></h2>
                 </div>
                 <span class="clockwork-pill clockwork-pill--<?php echo esc_attr($pill['variant']); ?>">
@@ -713,7 +713,7 @@ class SecurityPage
                     <div class="clockwork-scan-card__alert-note">
                         <span class="dashicons dashicons-warning" aria-hidden="true"></span>
                         <strong><?php echo esc_html(WhiteLabel::getAuthorName()); ?> has been alerted to these findings and is investigating.</strong>
-                        <?php echo WhiteLabel::supportLink('Reach out'); ?> if you have questions or haven't heard back.
+                        <?php echo WhiteLabel::supportLink('Reach out'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside supportLink() ?> if you have questions or haven't heard back.
                     </div>
                 <?php endif; ?>
             <?php endif; ?>

@@ -2,6 +2,8 @@
 
 namespace ClockworkRenegade\Rest;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions -- backup/restore streams large archives; WP_Filesystem and wp_remote_* cannot do this I/O.
+
 use ClockworkRenegade\Auth\HmacVerifier;
 use ClockworkRenegade\Backup\ArchiveDownloader;
 use ClockworkRenegade\Backup\BackupArchiver;

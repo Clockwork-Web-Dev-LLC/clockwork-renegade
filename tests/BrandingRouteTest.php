@@ -52,6 +52,10 @@ class BrandingRouteTest extends TestCase
         $this->assertTrue($saved['hide_plugin_row']);
         $this->assertTrue($saved['hide_help_links']);
         $this->assertSame('Maintained by Vanguard Web Services', $saved['footer_text']);
+        $this->assertNotSame('', $saved['synced_at']);
+        $this->assertTrue(WhiteLabel::isManagedByControl());
+        $this->assertFalse(WhiteLabel::persistLocalSettings(['plugin_name' => 'Should Not Stick']));
+        $this->assertSame('Vanguard Monitor', get_option(WhiteLabel::OPTION_KEY)['plugin_name']);
     }
 
     public function testHandlePostRejectsNonArrayBody(): void

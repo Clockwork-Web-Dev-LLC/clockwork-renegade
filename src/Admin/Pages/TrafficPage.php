@@ -98,10 +98,10 @@ class TrafficPage
         $isPeriodSummary = empty($report['daily']) && $periodSummary !== null;
 
         Layout::pageHeader(
-            'Traffic',
+            __('Traffic', 'clockwork-renegade'),
             $isPeriodSummary
-                ? 'How much traffic your site is serving — sourced from your host\'s own traffic stats and refreshed nightly.'
-                : 'A 30-day view of how much traffic your site is serving — sourced from your server\'s access logs and refreshed nightly.'
+                ? __('How much traffic your site is serving — sourced from your host\'s own traffic stats and refreshed nightly.', 'clockwork-renegade')
+                : __('A 30-day view of how much traffic your site is serving — sourced from your server\'s access logs and refreshed nightly.', 'clockwork-renegade')
         );
 
         if ($report === null || (empty($report['daily']) && $periodSummary === null)) {
@@ -383,7 +383,8 @@ class TrafficPage
                         <?php
                         // Y-axis baseline
                         $baselineY = $padTop + $plotH;
-                        echo '<line x1="'.$padLeft.'" x2="'.($padLeft + $plotW).'" y1="'.$baselineY.'" y2="'.$baselineY.'" stroke="#d1d5db" stroke-width="1" />';
+                        // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- SVG geometry is numeric; text nodes use esc_html.
+                        echo '<line x1="'.esc_attr((string) $padLeft).'" x2="'.esc_attr((string) ($padLeft + $plotW)).'" y1="'.esc_attr((string) $baselineY).'" y2="'.esc_attr((string) $baselineY).'" stroke="#d1d5db" stroke-width="1" />';
 
                         $i = 0;
                         foreach ($rows as $r) {
@@ -429,7 +430,11 @@ class TrafficPage
                                 $cursorY -= $segH;
                                 printf(
                                     '<rect x="%.2f" y="%.2f" width="%.2f" height="%.2f" fill="%s" />',
-                                    $barX, $cursorY, $barW, $segH, $colors[$seg['key']]
+                                    $barX,
+                                    $cursorY,
+                                    $barW,
+                                    $segH,
+                                    esc_attr($colors[$seg['key']])
                                 );
                             }
                             // Date tick labels — every ~5 days to avoid crowding.
@@ -441,7 +446,7 @@ class TrafficPage
                             // 30-day chart (their centers exceed x=1000).
                             if ($i % 5 === 0 || $i === $colCount - 1) {
                                 $label = strlen($date) >= 10 ? substr($date, 5) : $date;
-                                echo '<text x="'.number_format($colCenter, 2, '.', '').'" y="'.($baselineY + 14).'" text-anchor="middle" font-size="10" fill="#6b7280">'.esc_html($label).'</text>';
+                                echo '<text x="'.esc_attr(number_format($colCenter, 2, '.', '')).'" y="'.esc_attr((string) ($baselineY + 14)).'" text-anchor="middle" font-size="10" fill="#6b7280">'.esc_html($label).'</text>';
                             }
                             echo '</g>';
                             $i++;
@@ -458,8 +463,9 @@ class TrafficPage
                                     (float) $padLeft, (float) ($padLeft + $plotW), $tickY, $tickY
                                 );
                             }
-                            echo '<text x="'.($padLeft - 6).'" y="'.number_format($tickY + 4, 2, '.', '').'" text-anchor="end" font-size="10" fill="#6b7280">'.esc_html($tickValue === 0 ? '0' : self::shortNumber($tickValue)).'</text>';
+                            echo '<text x="'.esc_attr((string) ($padLeft - 6)).'" y="'.esc_attr(number_format($tickY + 4, 2, '.', '')).'" text-anchor="end" font-size="10" fill="#6b7280">'.esc_html($tickValue === 0 ? '0' : self::shortNumber($tickValue)).'</text>';
                         }
+                        // phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
                         ?>
                     </svg>
                 </div>
@@ -480,7 +486,7 @@ class TrafficPage
                     <?php endforeach; ?>
                 </div>
                 <p style="margin: 10px 0 0; font-size: 12px; color: #6b7280;">
-                    Seeing a spike in 4xx or 5xx errors? <?php echo WhiteLabel::supportLink('Reach out to ' . WhiteLabel::getAuthorName()); ?> and we can help investigate.
+                    Seeing a spike in 4xx or 5xx errors? <?php echo WhiteLabel::supportLink('Reach out to ' . WhiteLabel::getAuthorName()); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside supportLink() ?> and we can help investigate.
                 </p>
             </div>
         </div>

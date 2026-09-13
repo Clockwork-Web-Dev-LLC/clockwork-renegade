@@ -7,7 +7,7 @@ use ClockworkRenegade\Admin\Layout;
 use ClockworkRenegade\WhiteLabel\WhiteLabel;
 
 /**
- * Tools → Clockwork → Performance admin page.
+ * Clockwork → Performance admin page.
  *
  * Shows the latest Lighthouse score, Core Web Vitals (LCP, CLS, TBT, FCP, SI),
  * and a scan-history table — care-plan-only.
@@ -77,7 +77,7 @@ class PerformancePage
             ))
             : [];
 
-        Layout::pageHeader('Performance');
+        Layout::pageHeader(__('Performance', 'clockwork-renegade'));
 
         self::renderCarePlanBanner($onCarePlan);
         self::renderLatestHero($onCarePlan, $latest);
@@ -183,7 +183,7 @@ class PerformancePage
                 <?php if ($scoreClass === 'orange' || $scoreClass === 'red') : ?>
                     <p class="clockwork-perf-hero__improve-note">
                         There may be opportunities to improve this score.
-                        <?php echo WhiteLabel::supportLink('Talk to ' . WhiteLabel::getAuthorName()); ?>
+                        <?php echo WhiteLabel::supportLink('Talk to ' . WhiteLabel::getAuthorName()); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside supportLink() ?>
                         about performance optimization for this site.
                     </p>
                 <?php endif; ?>
@@ -216,7 +216,7 @@ class PerformancePage
                 <?php if (! $onCarePlan) : ?>
                     <div style="padding: 20px;">
                         <div class="clockwork-notice clockwork-notice--muted">
-                            Performance history is part of the care plan. <?php echo WhiteLabel::supportLink('Talk to ' . WhiteLabel::getAuthorName()); ?> about adding one.
+                            Performance history is part of the care plan. <?php echo WhiteLabel::supportLink('Talk to ' . WhiteLabel::getAuthorName()); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside supportLink() ?> about adding one.
                         </div>
                     </div>
                 <?php elseif ($total === 0) : ?>

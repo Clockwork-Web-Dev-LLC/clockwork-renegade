@@ -11,7 +11,6 @@ use ClockworkRenegade\Admin\Pages\SecurityPage;
 use ClockworkRenegade\Admin\Pages\TrafficPage;
 use ClockworkRenegade\Admin\Pages\TwoFactorPage;
 use ClockworkRenegade\Admin\Pages\NotificationsPage;
-use ClockworkRenegade\Admin\Pages\UnlockPage;
 use ClockworkRenegade\Admin\Pages\UptimePage;
 use ClockworkRenegade\Admin\Pages\WhiteLabelPage;
 use ClockworkRenegade\WhiteLabel\WhiteLabel;
@@ -59,10 +58,6 @@ class Menu
         add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
         add_action('admin_head', [$this, 'outputIconCss']);
         add_action('admin_post_clockwork_save_notifications', [NotificationsPage::class, 'handleSave']);
-
-        if (defined('CLOCKWORK_UNLOCK_HUB') && CLOCKWORK_UNLOCK_HUB) {
-            UnlockPage::registerAjax();
-        }
     }
 
     /**
@@ -184,8 +179,8 @@ class Menu
         // is reference info they look at less often.
         add_submenu_page(
             self::SLUG,
-            'Activity',
-            'Activity',
+            __('Activity', 'clockwork-renegade'),
+            __('Activity', 'clockwork-renegade'),
             self::CAPABILITY,
             self::SLUG,
             [ActivityPage::class, 'render']
@@ -196,8 +191,8 @@ class Menu
         // because "is my site up?" is the question clients ask first.
         add_submenu_page(
             self::SLUG,
-            'Uptime',
-            'Uptime',
+            __('Uptime', 'clockwork-renegade'),
+            __('Uptime', 'clockwork-renegade'),
             self::CAPABILITY,
             UptimePage::SLUG,
             [UptimePage::class, 'render']
@@ -205,8 +200,8 @@ class Menu
 
         add_submenu_page(
             self::SLUG,
-            'Security',
-            'Security',
+            __('Security', 'clockwork-renegade'),
+            __('Security', 'clockwork-renegade'),
             self::CAPABILITY,
             SecurityPage::SLUG,
             [SecurityPage::class, 'render']
@@ -215,8 +210,8 @@ class Menu
         // Login Security sits right after Security — same mental bucket.
         add_submenu_page(
             self::SLUG,
-            'Login Security',
-            'Login Security',
+            __('Login Security', 'clockwork-renegade'),
+            __('Login Security', 'clockwork-renegade'),
             self::CAPABILITY,
             TwoFactorPage::SLUG,
             [TwoFactorPage::class, 'render']
@@ -224,8 +219,8 @@ class Menu
 
         add_submenu_page(
             self::SLUG,
-            'Performance',
-            'Performance',
+            __('Performance', 'clockwork-renegade'),
+            __('Performance', 'clockwork-renegade'),
             self::CAPABILITY,
             PerformancePage::SLUG,
             [PerformancePage::class, 'render']
@@ -235,8 +230,8 @@ class Menu
         if (TrafficPage::isSupported()) {
             add_submenu_page(
                 self::SLUG,
-                'Traffic',
-                'Traffic',
+                __('Traffic', 'clockwork-renegade'),
+                __('Traffic', 'clockwork-renegade'),
                 self::CAPABILITY,
                 TrafficPage::SLUG,
                 [TrafficPage::class, 'render']
@@ -247,8 +242,8 @@ class Menu
         // runs. Lives between Traffic and Backups per Layout::tabs().
         add_submenu_page(
             self::SLUG,
-            'Forms',
-            'Forms',
+            __('Forms', 'clockwork-renegade'),
+            __('Forms', 'clockwork-renegade'),
             self::CAPABILITY,
             FormsPage::SLUG,
             [FormsPage::class, 'render']
@@ -256,8 +251,8 @@ class Menu
 
         add_submenu_page(
             self::SLUG,
-            'Backups',
-            'Backups',
+            __('Backups', 'clockwork-renegade'),
+            __('Backups', 'clockwork-renegade'),
             self::CAPABILITY,
             BackupsPage::SLUG,
             [BackupsPage::class, 'render']
@@ -265,8 +260,8 @@ class Menu
 
         add_submenu_page(
             self::SLUG,
-            'Notifications',
-            'Notifications',
+            __('Notifications', 'clockwork-renegade'),
+            __('Notifications', 'clockwork-renegade'),
             self::CAPABILITY,
             NotificationsPage::SLUG,
             [NotificationsPage::class, 'render']
@@ -274,8 +269,8 @@ class Menu
 
         add_submenu_page(
             self::SLUG,
-            'Branding',
-            'Branding',
+            __('Branding', 'clockwork-renegade'),
+            __('Branding', 'clockwork-renegade'),
             self::CAPABILITY,
             WhiteLabelPage::SLUG,
             [WhiteLabelPage::class, 'render']
@@ -283,23 +278,12 @@ class Menu
 
         add_submenu_page(
             self::SLUG,
-            'Connection',
-            'Connection',
+            __('Connection', 'clockwork-renegade'),
+            __('Connection', 'clockwork-renegade'),
             self::CAPABILITY,
             ConnectionPage::SLUG,
             [ConnectionPage::class, 'render']
         );
-
-        if (defined('CLOCKWORK_UNLOCK_HUB') && CLOCKWORK_UNLOCK_HUB) {
-            add_submenu_page(
-                self::SLUG,
-                'Unlock',
-                'Unlock',
-                self::CAPABILITY,
-                UnlockPage::SLUG,
-                [UnlockPage::class, 'render']
-            );
-        }
     }
 
     public function enqueueAssets(string $hookSuffix): void

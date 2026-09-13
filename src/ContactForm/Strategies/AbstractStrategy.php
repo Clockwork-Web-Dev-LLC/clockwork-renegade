@@ -52,7 +52,7 @@ abstract class AbstractStrategy
         }
 
         $host = function_exists('home_url')
-            ? (string) parse_url((string) home_url(), PHP_URL_HOST)
+            ? (string) wp_parse_url((string) home_url(), PHP_URL_HOST)
             : '';
         $host = preg_replace('/^www\./i', '', $host) ?: '';
 

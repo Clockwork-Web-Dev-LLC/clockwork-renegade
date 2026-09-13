@@ -67,7 +67,7 @@ class MaintenanceGuard
         }
 
         $uri = $_SERVER['REQUEST_URI'] ?? '';
-        $path = (string) (parse_url($uri, PHP_URL_PATH) ?: $uri);
+        $path = (string) (wp_parse_url($uri, PHP_URL_PATH) ?: $uri);
         if (str_contains($path, 'wp-login.php')) {
             return true;
         }
@@ -89,8 +89,8 @@ class MaintenanceGuard
     public static function isClockworkApiRequest(): bool
     {
         $uri = $_SERVER['REQUEST_URI'] ?? '';
-        $path = (string) (parse_url($uri, PHP_URL_PATH) ?: '');
-        $query = (string) (parse_url($uri, PHP_URL_QUERY) ?: '');
+        $path = (string) (wp_parse_url($uri, PHP_URL_PATH) ?: '');
+        $query = (string) (wp_parse_url($uri, PHP_URL_QUERY) ?: '');
 
         if (str_contains($path, '/wp-json/clockwork-renegade/') || str_contains($path, '/wp-json/clockwork/')) {
             return true;
@@ -132,15 +132,18 @@ class MaintenanceGuard
         }
 
         $title = esc_html($config['title'] ?? 'Scheduled Maintenance');
-        $message = nl2br(esc_html($config['message'] ?? 'We are performing maintenance. Please check back shortly.'));
+        $message = wp_kses(
+            nl2br(esc_html($config['message'] ?? 'We are performing maintenance. Please check back shortly.')),
+            ['br' => []]
+        );
 
-        echo <<<HTML
-<!DOCTYPE html>
+        // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- $title/$message are escaped above (same 503 page as Companion).
+        echo '<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{$title}</title>
+    <title>' . $title . '</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -198,12 +201,12 @@ class MaintenanceGuard
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
             </svg>
         </div>
-        <h1>{$title}</h1>
-        <p>{$message}</p>
+        <h1>' . $title . '</h1>
+        <p>' . $message . '</p>
     </div>
 </body>
-</html>
-HTML;
+</html>';
+        // phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
         exit;
     }
 }

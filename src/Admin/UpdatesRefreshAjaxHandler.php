@@ -57,10 +57,9 @@ class UpdatesRefreshAjaxHandler
             wp_send_json_error(['error' => 'bad_signature'], 401);
         }
 
-        // We're now in real admin-ajax context. wp_update_plugins() /
-        // wp_update_themes() will fire pre_set_site_transient_update_plugins
-        // and pre_set_site_transient_update_themes filters; premium plugins
-        // hook there and inject their licensed-update info.
+        // We're now in real admin-ajax context. Core's plugin/theme update
+        // refresh functions fire the licensed-update filters premium plugins
+        // hook; those inject their update info into WordPress's own transients.
         //
         // Pass a non-empty $extra_stats array to bypass WP's built-in 60s/12h
         // rate-limit short-circuit. Without it, when last_checked is recent

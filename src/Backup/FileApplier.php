@@ -2,6 +2,9 @@
 
 namespace ClockworkRenegade\Backup;
 
+// phpcs:disable WordPress.WP.AlternativeFunctions -- backup/restore streams large archives; WP_Filesystem and wp_remote_* cannot do this I/O.
+// phpcs:disable PluginCheck.CodeAnalysis.WriteFile.PluginDirectoryWrite -- restore copies into WP_CONTENT_DIR, not this plugin folder.
+
 /**
  * Copies staging wp-content files over the live WP_CONTENT_DIR.
  * Additive/overwrite: does not delete newer files created after the backup.

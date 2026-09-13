@@ -2,6 +2,8 @@
 
 namespace ClockworkRenegade\TwoFactor;
 
+// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- WFLS table name is $wpdb->prefix plus a hardcoded identifier.
+
 use ClockworkRenegade\ActionLog\Repository as ActionLogRepository;
 
 /**

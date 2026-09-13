@@ -79,7 +79,7 @@ class HmacVerifier
 
         $secret = Secret::get();
         if ($secret === '') {
-            return new \WP_Error('no_secret', 'Companion secret not initialised', ['status' => 500]);
+            return new \WP_Error('no_secret', 'Renegade secret not initialised', ['status' => 500]);
         }
 
         $payload = strtoupper($request->get_method())

@@ -19,30 +19,26 @@ class Layout
     public static function tabs(): array
     {
         $all = [
-            ['slug' => 'activity', 'label' => 'Activity', 'page' => Menu::SLUG],
-            ['slug' => 'uptime', 'label' => 'Uptime', 'page' => \ClockworkRenegade\Admin\Pages\UptimePage::SLUG],
-            ['slug' => 'security', 'label' => 'Security', 'page' => \ClockworkRenegade\Admin\Pages\SecurityPage::SLUG],
-            ['slug' => 'two-factor', 'label' => '2FA', 'page' => \ClockworkRenegade\Admin\Pages\TwoFactorPage::SLUG],
-            ['slug' => 'performance', 'label' => 'Performance', 'page' => \ClockworkRenegade\Admin\Pages\PerformancePage::SLUG],
+            ['slug' => 'activity', 'label' => __('Activity', 'clockwork-renegade'), 'page' => Menu::SLUG],
+            ['slug' => 'uptime', 'label' => __('Uptime', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\UptimePage::SLUG],
+            ['slug' => 'security', 'label' => __('Security', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\SecurityPage::SLUG],
+            ['slug' => 'two-factor', 'label' => __('2FA', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\TwoFactorPage::SLUG],
+            ['slug' => 'performance', 'label' => __('Performance', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\PerformancePage::SLUG],
         ];
 
         if (\ClockworkRenegade\Admin\Pages\TrafficPage::isSupported()) {
-            $all[] = ['slug' => 'traffic', 'label' => 'Traffic', 'page' => \ClockworkRenegade\Admin\Pages\TrafficPage::SLUG];
+            $all[] = ['slug' => 'traffic', 'label' => __('Traffic', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\TrafficPage::SLUG];
         }
 
-        $all[] = ['slug' => 'forms', 'label' => 'Forms', 'page' => \ClockworkRenegade\Admin\Pages\FormsPage::SLUG];
-        $all[] = ['slug' => 'backups', 'label' => 'Backups', 'page' => \ClockworkRenegade\Admin\Pages\BackupsPage::SLUG];
-        $all[] = ['slug' => 'notifications', 'label' => 'Notifications', 'page' => \ClockworkRenegade\Admin\Pages\NotificationsPage::SLUG];
+        $all[] = ['slug' => 'forms', 'label' => __('Forms', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\FormsPage::SLUG];
+        $all[] = ['slug' => 'backups', 'label' => __('Backups', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\BackupsPage::SLUG];
+        $all[] = ['slug' => 'notifications', 'label' => __('Notifications', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\NotificationsPage::SLUG];
 
         if (! WhiteLabel::isEnabled()) {
-            $all[] = ['slug' => 'branding', 'label' => 'Branding', 'page' => \ClockworkRenegade\Admin\Pages\WhiteLabelPage::SLUG];
+            $all[] = ['slug' => 'branding', 'label' => __('Branding', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\WhiteLabelPage::SLUG];
         }
 
-        if (defined('CLOCKWORK_UNLOCK_HUB') && CLOCKWORK_UNLOCK_HUB) {
-            $all[] = ['slug' => 'unlock', 'label' => 'Unlock', 'page' => \ClockworkRenegade\Admin\Pages\UnlockPage::SLUG];
-        }
-
-        $all[] = ['slug' => 'connection', 'label' => 'Connection', 'page' => \ClockworkRenegade\Admin\Pages\ConnectionPage::SLUG];
+        $all[] = ['slug' => 'connection', 'label' => __('Connection', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\ConnectionPage::SLUG];
 
         return $all;
     }
@@ -147,29 +143,36 @@ class Layout
                 <?php printf(
                     /* translators: 1: start row, 2: end row, 3: total row count */
                     esc_html__('%1$s – %2$s of %3$s', 'clockwork-renegade'),
-                    number_format_i18n($startRow),
-                    number_format_i18n($endRow),
-                    number_format_i18n($totalRows)
+                    esc_html(number_format_i18n($startRow)),
+                    esc_html(number_format_i18n($endRow)),
+                    esc_html(number_format_i18n($totalRows))
                 ); ?>
             </span>
             <span class="clockwork-pagination__nav">
                 <?php if ($currentPage > 1) : ?>
-                    <a class="button" href="<?php echo $linkFor(1); ?>" aria-label="First page">«</a>
-                    <a class="button" href="<?php echo $linkFor($currentPage - 1); ?>" aria-label="Previous page">‹ Prev</a>
+                    <a class="button" href="<?php echo esc_url($linkFor(1)); ?>" aria-label="<?php esc_attr_e('First page', 'clockwork-renegade'); ?>">«</a>
+                    <a class="button" href="<?php echo esc_url($linkFor($currentPage - 1)); ?>" aria-label="<?php esc_attr_e('Previous page', 'clockwork-renegade'); ?>"><?php esc_html_e('‹ Prev', 'clockwork-renegade'); ?></a>
                 <?php else : ?>
                     <span class="button disabled" aria-disabled="true">«</span>
-                    <span class="button disabled" aria-disabled="true">‹ Prev</span>
+                    <span class="button disabled" aria-disabled="true"><?php esc_html_e('‹ Prev', 'clockwork-renegade'); ?></span>
                 <?php endif; ?>
 
                 <span class="clockwork-pagination__page">
-                    Page <?php echo (int) $currentPage; ?> of <?php echo (int) $totalPages; ?>
+                    <?php
+                    echo esc_html(sprintf(
+                        /* translators: 1: current page number, 2: total pages */
+                        __('Page %1$s of %2$s', 'clockwork-renegade'),
+                        (string) $currentPage,
+                        (string) $totalPages
+                    ));
+                    ?>
                 </span>
 
                 <?php if ($currentPage < $totalPages) : ?>
-                    <a class="button" href="<?php echo $linkFor($currentPage + 1); ?>" aria-label="Next page">Next ›</a>
-                    <a class="button" href="<?php echo $linkFor($totalPages); ?>" aria-label="Last page">»</a>
+                    <a class="button" href="<?php echo esc_url($linkFor($currentPage + 1)); ?>" aria-label="<?php esc_attr_e('Next page', 'clockwork-renegade'); ?>"><?php esc_html_e('Next ›', 'clockwork-renegade'); ?></a>
+                    <a class="button" href="<?php echo esc_url($linkFor($totalPages)); ?>" aria-label="<?php esc_attr_e('Last page', 'clockwork-renegade'); ?>">»</a>
                 <?php else : ?>
-                    <span class="button disabled" aria-disabled="true">Next ›</span>
+                    <span class="button disabled" aria-disabled="true"><?php esc_html_e('Next ›', 'clockwork-renegade'); ?></span>
                     <span class="button disabled" aria-disabled="true">»</span>
                 <?php endif; ?>
             </span>

@@ -115,6 +115,37 @@ class WhiteLabel
     }
 
     /**
+     * True when Clockwork Control last wrote this site's branding.
+     * Local White Label saves must not overwrite that payload.
+     */
+    public static function isManagedByControl(): bool
+    {
+        $saved = get_option(self::OPTION_KEY, null);
+        if (! is_array($saved)) {
+            return false;
+        }
+
+        return isset($saved['synced_at']) && is_string($saved['synced_at']) && $saved['synced_at'] !== '';
+    }
+
+    /**
+     * Persist a local White Label form save. Returns false when Control
+     * already pushed branding so the operator cannot clobber fleet settings.
+     *
+     * @param  array<string, mixed>  $clean
+     */
+    public static function persistLocalSettings(array $clean): bool
+    {
+        if (self::isManagedByControl()) {
+            return false;
+        }
+
+        update_option(self::OPTION_KEY, $clean, false);
+
+        return true;
+    }
+
+    /**
      * Get the active plugin name.
      */
     public static function getPluginName(): string
@@ -634,19 +665,19 @@ class WhiteLabel
 
         if ($isClockworkPage) {
             echo ":root {\n";
-            echo "    --cwk-primary: {$primary};\n";
-            echo "    --cwk-primary-dark: {$primaryDark};\n";
-            echo "    --cwk-primary-soft: {$primarySoft};\n";
-            echo "    --cwk-accent: {$accent};\n";
-            echo "    --cwk-page-bg: {$pageBg};\n";
-            echo "    --cwk-card: {$cardBg};\n";
+            echo '    --cwk-primary: ' . esc_html($primary) . ";\n";
+            echo '    --cwk-primary-dark: ' . esc_html($primaryDark) . ";\n";
+            echo '    --cwk-primary-soft: ' . esc_html($primarySoft) . ";\n";
+            echo '    --cwk-accent: ' . esc_html($accent) . ";\n";
+            echo '    --cwk-page-bg: ' . esc_html($pageBg) . ";\n";
+            echo '    --cwk-card: ' . esc_html($cardBg) . ";\n";
             echo "}\n";
         }
 
         if (! empty($menuIcon) && filter_var($menuIcon, FILTER_VALIDATE_URL)) {
             $escIcon = esc_url($menuIcon);
             echo "#adminmenu #toplevel_page_clockwork .wp-menu-image img {\n";
-            echo "    content: url('{$escIcon}') !important;\n";
+            echo '    content: url(\'' . $escIcon . "') !important;\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $escIcon is esc_url()
             echo "    width: 20px !important;\n";
             echo "    height: 20px !important;\n";
             echo "}\n";
@@ -813,7 +844,13 @@ class WhiteLabel
             ),
         ];
 
-        update_option(self::OPTION_KEY, $clean);
+        if (! self::persistLocalSettings($clean)) {
+            wp_safe_redirect(add_query_arg([
+                'page' => 'clockwork-branding',
+                'locked' => '1',
+            ], admin_url('admin.php')));
+            exit;
+        }
 
         $redirectUrl = add_query_arg([
             'page' => 'clockwork-branding',

@@ -2,6 +2,8 @@
 
 namespace ClockworkRenegade\Rest;
 
+// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Wordfence table is prefix + wfBlocks7; existence is checked with prepare() first.
+
 use ClockworkRenegade\Auth\HmacVerifier;
 use WP_REST_Request;
 use WP_REST_Response;

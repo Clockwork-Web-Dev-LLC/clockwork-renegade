@@ -26,13 +26,22 @@ class LifecycleTest extends TestCase
         $this->assertFalse(get_transient('clockwork_renegade_activation_redirect'));
     }
 
+    public function testBootstrapRedirectsActivationToConnectionMenuSlug(): void
+    {
+        $bootstrap = (string) file_get_contents(dirname(__DIR__).'/clockwork-renegade.php');
+        $this->assertStringContainsString("admin_url('admin.php?page=clockwork-connection')", $bootstrap);
+        $this->assertStringNotContainsString('clockwork-renegade-connection', $bootstrap);
+        $this->assertSame('clockwork-connection', \ClockworkRenegade\Admin\Pages\ConnectionPage::SLUG);
+    }
+
     public function testPrivacyPolicyRegistersContent(): void
     {
         PrivacyPolicy::register();
 
         $this->assertArrayHasKey('Clockwork Renegade', $GLOBALS['wp_test_privacy_content']);
         $this->assertStringContainsString('Clockwork Control', $GLOBALS['wp_test_privacy_content']['Clockwork Renegade']);
-        $this->assertStringContainsString('HMAC-authenticated', $GLOBALS['wp_test_privacy_content']['Clockwork Renegade']);
+        $this->assertStringContainsString('Connection Key', $GLOBALS['wp_test_privacy_content']['Clockwork Renegade']);
+        $this->assertStringContainsString('AWS S3', $GLOBALS['wp_test_privacy_content']['Clockwork Renegade']);
     }
 
     public function testUninstallRemovesOptionsAndDropsTables(): void
@@ -68,6 +77,11 @@ class LifecycleTest extends TestCase
             'code-snippets',
             Plugin::CAPABILITIES,
             'code-snippets capability must not be advertised in Clockwork Renegade.'
+        );
+
+        $this->assertFileDoesNotExist(
+            dirname(__DIR__).'/src/Admin/Pages/UnlockPage.php',
+            'UnlockPage must not ship in the public WordPress.org plugin.'
         );
     }
 }

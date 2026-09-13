@@ -80,19 +80,20 @@ class EnrollmentNudge
 
         if ($daysLeft > 0) {
             printf(
-                '<div class="notice notice-warning"><p><strong>Set up two-factor authentication</strong> — %d day%s left before it&rsquo;s required on this account. <a href="%s">Set it up now</a>, it only takes a minute. &nbsp;%s</p></div>',
-                $daysLeft,
+                /* translators: 1: days remaining, 2: empty or "s", 3: setup URL, 4: dismiss link HTML */
+                '<div class="notice notice-warning"><p><strong>' . esc_html__('Set up two-factor authentication', 'clockwork-renegade') . '</strong> — %1$d day%2$s ' . esc_html__('left before it&rsquo;s required on this account.', 'clockwork-renegade') . ' <a href="%3$s">' . esc_html__('Set it up now', 'clockwork-renegade') . '</a>, ' . esc_html__('it only takes a minute.', 'clockwork-renegade') . ' &nbsp;%4$s</p></div>',
+                (int) $daysLeft,
                 $daysLeft === 1 ? '' : 's',
-                $setupUrl,
-                self::dismissLink()
+                esc_url($setupUrl),
+                wp_kses(self::dismissLink(), ['a' => ['href' => true]])
             );
 
             return;
         }
 
         printf(
-            '<div class="notice notice-error"><p><strong>Two-factor authentication is now required</strong> on this account — wp-admin is locked to the <a href="%s">Login Security page</a> until it&rsquo;s set up. It only takes a minute.</p></div>',
-            $setupUrl
+            '<div class="notice notice-error"><p><strong>' . esc_html__('Two-factor authentication is now required', 'clockwork-renegade') . '</strong> ' . esc_html__('on this account — wp-admin is locked to the', 'clockwork-renegade') . ' <a href="%s">' . esc_html__('Login Security page', 'clockwork-renegade') . '</a> ' . esc_html__('until it&rsquo;s set up. It only takes a minute.', 'clockwork-renegade') . '</p></div>',
+            esc_url($setupUrl)
         );
     }
 
