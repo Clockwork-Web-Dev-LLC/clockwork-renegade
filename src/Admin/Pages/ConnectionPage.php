@@ -29,9 +29,11 @@ class ConnectionPage
         $connectionKey = base64_encode(function_exists('wp_json_encode') ? wp_json_encode([
             'url' => $siteUrl,
             'secret' => $secret,
+            'variant' => 'renegade',
         ]) : json_encode([
             'url' => $siteUrl,
             'secret' => $secret,
+            'variant' => 'renegade',
         ]));
 
         $lastContact = (int) get_option('clockwork_renegade_last_contact_at', 0);

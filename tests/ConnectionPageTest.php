@@ -25,12 +25,14 @@ class ConnectionPageTest extends TestCase
         $connectionKey = base64_encode(wp_json_encode([
             'url' => $siteUrl,
             'secret' => $secret,
+            'variant' => 'renegade',
         ]));
 
         $decoded = json_decode(base64_decode($connectionKey), true);
         $this->assertIsArray($decoded);
         $this->assertSame('https://mysite.example.com', $decoded['url']);
         $this->assertSame($secret, $decoded['secret']);
+        $this->assertSame('renegade', $decoded['variant']);
         $this->assertSame(64, strlen($decoded['secret']));
     }
 
