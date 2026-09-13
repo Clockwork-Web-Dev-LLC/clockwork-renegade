@@ -1,0 +1,162 @@
+<?php
+
+namespace ClockworkRenegade\Rest;
+
+use ClockworkRenegade\Admin\Pages\TrafficPage;
+use ClockworkRenegade\Auth\HmacVerifier;
+use WP_REST_Request;
+use WP_REST_Response;
+
+/**
+ * POST /wp-json/clockwork-renegade/v1/traffic-report
+ *
+ * Inbound endpoint — Clockwork pushes a 30-day rollup of nginx access-log
+ * stats here on a daily schedule (06:35 UTC). Companion stores the latest
+ * report in wp_options and the TrafficPage renders it. Last-write-wins; no
+ * history kept on the WP side (the agency is the source of truth).
+ *
+ * Push-only by design — Companion does NOT poll back to the agency. The
+ * Traffic page is intentionally not "live"; the cadence-honesty banner on
+ * the rendered page makes that explicit so clients don't expect realtime
+ * counts.
+ *
+ * Request body shape (loose-validated, see Backups doctrine):
+ *   {
+ *     "source": "clockwork-monitoring",
+ *     "fetched_at": "2026-05-07T18:00:00+00:00",
+ *     "refresh_cadence": "daily",
+ *     "daily": [
+ *       {
+ *         "date": "YYYY-MM-DD",
+ *         "requests": <int>,
+ *         "visits": <int>,        // WP-Engine-style: DISTINCT IP, ex-403, ex-static
+ *         "status_2xx": <int>,
+ *         "status_3xx": <int>,
+ *         "status_4xx": <int>,
+ *         "status_5xx": <int>
+ *       },
+ *       ...
+ *     ],
+ *     "totals": { "today": N, "week_7d": N, "month_30d": N },
+ *     "today_partial": <bool>,    // today's bar may still be growing
+ *     "has_data": <bool>,
+ *     "top_paths": [ { "path": "/", "hits": N }, ... ],   // most-recent day, capped at 10
+ *     "top_paths_date": "YYYY-MM-DD",
+ *     "period_summary": {   // period-totals-only hosts (Pressable); "daily" is [] when this is set
+ *       "today": { "views": N, "visitors": N }, "yesterday": {...},
+ *       "current_month": {...}, "last_12_months": {...}
+ *     }
+ *   }
+ *
+ * Response: { "ok": true }
+ */
+class TrafficReportRoute
+{
+    public function register(): void
+    {
+        register_rest_route(CLOCKWORK_RENEGADE_NAMESPACE, '/traffic-report', [
+            'methods' => 'POST',
+            'callback' => [$this, 'handle'],
+            'permission_callback' => [HmacVerifier::class, 'verify'],
+        ]);
+    }
+
+    public function handle(WP_REST_Request $request): WP_REST_Response
+    {
+        $payload = $request->get_json_params();
+        if (! is_array($payload)) {
+            return new WP_REST_Response(
+                ['ok' => false, 'error' => 'invalid_body', 'message' => 'Body must be a JSON object'],
+                400
+            );
+        }
+
+        if (isset($payload['supported']) && ! $payload['supported']) {
+            $stored = [
+                'source' => isset($payload['source']) ? (string) $payload['source'] : 'clockwork-monitoring',
+                'supported' => false,
+                'reason' => isset($payload['reason']) ? (string) $payload['reason'] : '',
+                'fetched_at' => isset($payload['fetched_at']) ? (string) $payload['fetched_at'] : gmdate('c'),
+                'daily' => [],
+                'totals' => [],
+                'has_data' => false,
+                'top_paths' => ['pages' => [], 'api' => [], 'uploads' => []],
+                'top_paths_date' => '',
+                'period_summary' => null,
+            ];
+
+            update_option(TrafficPage::OPTION, $stored, false);
+
+            return new WP_REST_Response(['ok' => true, 'supported' => false]);
+        }
+
+        if (! isset($payload['daily']) || ! is_array($payload['daily'])) {
+            return new WP_REST_Response(
+                ['ok' => false, 'error' => 'missing_daily', 'message' => 'Missing required key: daily'],
+                400
+            );
+        }
+
+        $stored = [
+            'source' => isset($payload['source']) ? (string) $payload['source'] : 'clockwork-monitoring',
+            'supported' => isset($payload['supported']) ? (bool) $payload['supported'] : true,
+            'fetched_at' => isset($payload['fetched_at']) ? (string) $payload['fetched_at'] : gmdate('c'),
+            'refresh_cadence' => isset($payload['refresh_cadence']) ? (string) $payload['refresh_cadence'] : 'daily',
+            'daily' => array_values(array_filter($payload['daily'], 'is_array')),
+            'totals' => isset($payload['totals']) && is_array($payload['totals']) ? $payload['totals'] : [],
+            'today_partial' => ! empty($payload['today_partial']),
+            'has_data' => ! empty($payload['has_data']),
+            'top_paths' => self::normaliseTopPaths($payload['top_paths'] ?? null),
+            'top_paths_date' => isset($payload['top_paths_date']) ? (string) $payload['top_paths_date'] : '',
+            // Period-totals-only hosts (Pressable — no daily rollup available)
+            // send this instead of a populated 'daily' array. See TrafficPage.
+            'period_summary' => isset($payload['period_summary']) && is_array($payload['period_summary'])
+                ? $payload['period_summary'] : null,
+        ];
+
+        update_option(TrafficPage::OPTION, $stored, false);
+
+        return new WP_REST_Response(['ok' => true]);
+    }
+
+    /**
+     * Coerce the inbound top_paths into the structured three-bucket shape
+     * Companion renders. Two valid input shapes:
+     *
+     *   1. Structured (1.16.1+ sender):
+     *      { pages: [{path,hits}], api: [{path,hits}], uploads: [{path,hits}] }
+     *
+     *   2. Flat list (1.16.0 sender — single mixed top-10):
+     *      [ {path,hits}, {path,hits}, ... ]
+     *      → folds into 'pages' so something still renders during the
+     *        sender-side deploy → backfill window.
+     *
+     * @param  mixed  $raw
+     * @return array{pages: list<array>, api: list<array>, uploads: list<array>}
+     */
+    private static function normaliseTopPaths($raw): array
+    {
+        if (! is_array($raw)) {
+            return ['pages' => [], 'api' => [], 'uploads' => []];
+        }
+
+        // Structured object — has at least one of the bucket keys.
+        if (isset($raw['pages']) || isset($raw['api']) || isset($raw['uploads'])) {
+            return [
+                'pages' => isset($raw['pages']) && is_array($raw['pages'])
+                    ? array_values(array_filter($raw['pages'], 'is_array')) : [],
+                'api' => isset($raw['api']) && is_array($raw['api'])
+                    ? array_values(array_filter($raw['api'], 'is_array')) : [],
+                'uploads' => isset($raw['uploads']) && is_array($raw['uploads'])
+                    ? array_values(array_filter($raw['uploads'], 'is_array')) : [],
+            ];
+        }
+
+        // Flat list fallback — fold into pages.
+        return [
+            'pages' => array_values(array_filter($raw, 'is_array')),
+            'api' => [],
+            'uploads' => [],
+        ];
+    }
+}
