@@ -29,6 +29,8 @@ foreach ([
     'class-core-upgrader.php',
     'class-wp-ajax-upgrader-skin.php',
     'update.php',
+    'revision.php',
+    'plugin-install.php',
 ] as $stubFile) {
     if (! file_exists(ABSPATH . 'wp-admin/includes/' . $stubFile)) {
         @touch(ABSPATH . 'wp-admin/includes/' . $stubFile);
@@ -287,7 +289,9 @@ if (! class_exists('WP_REST_Request')) {
             }
             return null;
         }
-        public function get_body(): string { return $this->body; }
+        public function set_body(string $body): void { $this->body = $body; }
+        public function set_param(string $key, mixed $value): void { $this->jsonParams[$key] = $value; }
+        public function get_body(): string { return $this->body ?: (!empty($this->jsonParams) ? json_encode($this->jsonParams) : ''); }
         public function get_param(string $key): mixed { return $this->jsonParams[$key] ?? null; }
         public function get_params(): array { return (array) $this->jsonParams; }
     }
@@ -501,6 +505,10 @@ if (! class_exists('wpdb')) {
         public string $prefix = 'wp_';
         public string $options = 'wp_options';
         public string $comments = 'wp_comments';
+        public string $posts = 'wp_posts';
+        public string $postmeta = 'wp_postmeta';
+        public string $commentmeta = 'wp_commentmeta';
+        public string $users = 'wp_users';
         public array $queries = [];
 
         public function query(string $query): int
@@ -531,6 +539,21 @@ if (! class_exists('wpdb')) {
         public function get_results(?string $query = null, string $output = 'ARRAY_A'): array
         {
             return [];
+        }
+
+        public function get_col(?string $query = null, int $x = 0): array
+        {
+            return [];
+        }
+
+        public function db_version(): string
+        {
+            return '8.0.36';
+        }
+
+        public function db_server_info(): string
+        {
+            return 'MySQL 8.0.36';
         }
     }
 }
@@ -678,7 +701,7 @@ if (! function_exists('get_site_transient')) {
 if (! function_exists('get_plugins')) {
     function get_plugins(): array
     {
-        return [];
+        return $GLOBALS['wp_test_plugins'] ?? [];
     }
 }
 
@@ -743,10 +766,176 @@ if (! function_exists('_get_cron_array')) {
 if (! function_exists('is_plugin_active')) {
     function is_plugin_active(string $plugin): bool
     {
-        return false;
+        return in_array($plugin, $GLOBALS['wp_test_active_plugins'] ?? [], true);
     }
 }
 
 if (! defined('WP_PLUGIN_DIR')) {
     define('WP_PLUGIN_DIR', WP_CONTENT_DIR . '/plugins');
+}
+
+if (! function_exists('wp_delete_post_revision')) {
+    function wp_delete_post_revision(int $id): bool
+    {
+        return true;
+    }
+}
+
+if (! function_exists('wp_delete_post')) {
+    function wp_delete_post(int $id, bool $force = false): bool
+    {
+        return true;
+    }
+}
+
+if (! function_exists('activate_plugin')) {
+    function activate_plugin(string $slug, string $redirect = '', bool $networkWide = false, bool $silent = false): mixed
+    {
+        if (isset($GLOBALS['wp_test_activate_plugin_error'])) {
+            return $GLOBALS['wp_test_activate_plugin_error'];
+        }
+        $GLOBALS['wp_test_active_plugins'][] = $slug;
+        return null;
+    }
+}
+
+if (! function_exists('deactivate_plugins')) {
+    function deactivate_plugins(string|array $plugins, bool $silent = false, ?bool $networkWide = null): void
+    {
+        $slugs = (array) $plugins;
+        $active = $GLOBALS['wp_test_active_plugins'] ?? [];
+        $GLOBALS['wp_test_active_plugins'] = array_values(array_diff($active, $slugs));
+    }
+}
+
+if (! function_exists('delete_plugins')) {
+    function delete_plugins(array $plugins): bool|\WP_Error
+    {
+        if (isset($GLOBALS['wp_test_delete_plugins_result'])) {
+            return $GLOBALS['wp_test_delete_plugins_result'];
+        }
+        return true;
+    }
+}
+
+if (! function_exists('plugins_api')) {
+    function plugins_api(string $action, array|object $args = []): object
+    {
+        if (isset($GLOBALS['wp_test_plugins_api_result'])) {
+            return $GLOBALS['wp_test_plugins_api_result'];
+        }
+        return (object) [
+            'name'          => 'Classic Editor',
+            'slug'          => 'classic-editor',
+            'version'       => '1.6.5',
+            'download_link' => 'https://downloads.wordpress.org/plugin/classic-editor.1.6.5.zip',
+        ];
+    }
+}
+
+if (! function_exists('is_plugin_active_for_network')) {
+    function is_plugin_active_for_network(string $slug): bool
+    {
+        return ! empty($GLOBALS['wp_test_network_active_plugins'][$slug]);
+    }
+}
+
+if (! function_exists('get_home_url')) {
+    function get_home_url(?int $blog_id = null, string $path = '', ?string $scheme = null): string
+    {
+        return 'https://example.com' . $path;
+    }
+}
+
+if (! function_exists('get_site_url')) {
+    function get_site_url(?int $blog_id = null, string $path = '', ?string $scheme = null): string
+    {
+        return 'https://example.com' . $path;
+    }
+}
+
+if (! function_exists('is_ssl')) {
+    function is_ssl(): bool
+    {
+        return true;
+    }
+}
+
+if (! function_exists('wp_upload_dir')) {
+    function wp_upload_dir(?string $time = null, bool $create_dir = true, bool $refresh_cache = false): array
+    {
+        return [
+            'path'    => WP_CONTENT_DIR . '/uploads/2026/09',
+            'url'     => 'https://example.com/wp-content/uploads/2026/09',
+            'subdir'  => '/2026/09',
+            'basedir' => WP_CONTENT_DIR . '/uploads',
+            'baseurl' => 'https://example.com/wp-content/uploads',
+            'error'   => false,
+        ];
+    }
+}
+
+if (! class_exists('WP_Ajax_Upgrader_Skin')) {
+    class WP_Ajax_Upgrader_Skin
+    {
+        public function get_errors(): \WP_Error
+        {
+            return new \WP_Error();
+        }
+    }
+}
+
+if (! class_exists('Plugin_Upgrader')) {
+    class Plugin_Upgrader
+    {
+        public function __construct(public mixed $skin = null) {}
+
+        public function install(string $package, array $args = []): bool|\WP_Error
+        {
+            if (isset($GLOBALS['wp_test_plugin_upgrader_install_result'])) {
+                return $GLOBALS['wp_test_plugin_upgrader_install_result'];
+            }
+            return true;
+        }
+
+        public function plugin_info(): string
+        {
+            return 'classic-editor/classic-editor.php';
+        }
+    }
+}
+
+if (! function_exists('get_user_meta')) {
+    function get_user_meta(int $user_id, string $key = '', bool $single = false): mixed
+    {
+        return $single ? '' : [];
+    }
+}
+
+if (! function_exists('update_user_meta')) {
+    function update_user_meta(int $user_id, string $meta_key, mixed $meta_value, mixed $prev_value = ''): bool|int
+    {
+        return true;
+    }
+}
+
+if (! function_exists('wp_unslash')) {
+    function wp_unslash(mixed $val): mixed
+    {
+        return is_string($val) ? stripslashes($val) : $val;
+    }
+}
+
+if (! function_exists('wp_remote_post')) {
+    function wp_remote_post(string $url, array $args = []): array|\WP_Error
+    {
+        return ['response' => ['code' => 200]];
+    }
+}
+
+if (! function_exists('wp_remote_get')) {
+    function wp_remote_get(string $url, array $args = []): array|\WP_Error
+    {
+        return ['response' => ['code' => 200]];
+    }
 }
