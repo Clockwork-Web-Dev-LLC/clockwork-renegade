@@ -53,7 +53,8 @@ class SitecheckScanner
                 'care_plan_enabled' => ActionLogRepository::latestCarePlanFlag(),
             ]);
 
-            return "Sucuri SiteCheck request failed: {$err}";
+            /* translators: %s: transport error message. */
+            return sprintf(__('Sucuri SiteCheck request failed: %s', 'clockwork-renegade'), $err);
         }
 
         $code = (int) wp_remote_retrieve_response_code($response);
@@ -70,7 +71,8 @@ class SitecheckScanner
                 'care_plan_enabled' => ActionLogRepository::latestCarePlanFlag(),
             ]);
 
-            return 'Sucuri SiteCheck returned HTTP '.$code;
+            /* translators: %d: HTTP status code. */
+            return sprintf(__('Sucuri SiteCheck returned HTTP %d', 'clockwork-renegade'), $code);
         }
 
         $body = (string) wp_remote_retrieve_body($response);
@@ -88,7 +90,7 @@ class SitecheckScanner
                 'care_plan_enabled' => ActionLogRepository::latestCarePlanFlag(),
             ]);
 
-            return 'Sucuri SiteCheck returned an unexpected response.';
+            return __('Sucuri SiteCheck returned an unexpected response.', 'clockwork-renegade');
         }
 
         $result = self::interpret($payload, $elapsed);

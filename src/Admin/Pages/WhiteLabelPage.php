@@ -63,11 +63,11 @@ class WhiteLabelPage
 
         <?php if ($justDonated) : ?>
             <div class="notice notice-success is-dismissible" style="margin:16px 0;padding:12px 16px;border-left:4px solid #10b981;border-radius:6px;background:#f0fdf4;">
-                <p style="margin:0;font-weight:600;color:#065f46;">❤️ Thank you so much for supporting Clockwork! The donation reminder is snoozed for 1 full year.</p>
+                <p style="margin:0;font-weight:600;color:#065f46;">❤️ <?php esc_html_e('Thank you so much for supporting Clockwork! The donation reminder is snoozed for 1 full year.', 'clockwork-renegade'); ?></p>
             </div>
         <?php elseif ($justDismissed) : ?>
             <div class="notice notice-info is-dismissible" style="margin:16px 0;padding:12px 16px;border-left:4px solid #6b7280;border-radius:6px;background:#f9fafb;">
-                <p style="margin:0;color:#374151;">Donation reminder snoozed for 90 days.</p>
+                <p style="margin:0;color:#374151;"><?php esc_html_e('Donation reminder snoozed for 90 days.', 'clockwork-renegade'); ?></p>
             </div>
         <?php endif; ?>
 
@@ -81,30 +81,35 @@ class WhiteLabelPage
                         </div>
                         <div>
                             <div style="font-weight:700;font-size:15px;color:#78350f;margin-bottom:3px;display:flex;align-items:center;gap:8px;">
-                                <span>Support Clockwork's Open Fleet Development</span>
-                                <span style="font-size:10px;text-transform:uppercase;padding:2px 7px;background:#fef3c7;border:1px solid #f59e0b;color:#92400e;border-radius:9999px;font-weight:700;">Free & Open Feature</span>
+                                <span><?php esc_html_e('Support Clockwork\'s Open Fleet Development', 'clockwork-renegade'); ?></span>
+                                <span style="font-size:10px;text-transform:uppercase;padding:2px 7px;background:#fef3c7;border:1px solid #f59e0b;color:#92400e;border-radius:9999px;font-weight:700;"><?php esc_html_e('Free & Open Feature', 'clockwork-renegade'); ?></span>
                             </div>
                             <p style="margin:0;font-size:13px;line-height:1.55;color:#92400e;">
-                                White-labeling is <strong>100% free and fully unlocked</strong> for your agency — nothing is held behind a paywall. If Clockwork saves you billable time and maintenance headaches, please consider buying us a coffee or donating to support ongoing updates!
+                                <?php
+                                echo wp_kses(
+                                    __('White-labeling is <strong>100% free and fully unlocked</strong> for your agency — nothing is held behind a paywall. If Clockwork saves you billable time and maintenance headaches, please consider buying us a coffee or donating to support ongoing updates!', 'clockwork-renegade'),
+                                    ['strong' => []]
+                                );
+                                ?>
                             </p>
                         </div>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;align-self:center;">
                         <a href="https://www.paypal.com/donate?business=abc@123_example.com" target="_blank" rel="noopener noreferrer" class="button button-primary" style="background:#d97706;border-color:#b45309;font-weight:600;padding:4px 14px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-                            Donate via PayPal &rarr;
+                            <?php echo wp_kses(__('Donate via PayPal &rarr;', 'clockwork-renegade'), []); ?>
                         </a>
                         <form method="POST" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline;">
                             <input type="hidden" name="action" value="clockwork_whitelabel_donated">
                             <input type="hidden" name="nonce" value="<?php echo esc_attr($donatedNonce); ?>">
-                            <button type="submit" class="button" style="font-weight:600;background:#ffffff;border-color:#d97706;color:#92400e;border-radius:6px;" title="Snoozes this reminder for a full year">
-                                I Donated! ❤️
+                            <button type="submit" class="button" style="font-weight:600;background:#ffffff;border-color:#d97706;color:#92400e;border-radius:6px;" title="<?php esc_attr_e('Snoozes this reminder for a full year', 'clockwork-renegade'); ?>">
+                                <?php esc_html_e('I Donated! ❤️', 'clockwork-renegade'); ?>
                             </button>
                         </form>
                         <form method="POST" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline;">
                             <input type="hidden" name="action" value="clockwork_whitelabel_dismiss_donation">
                             <input type="hidden" name="nonce" value="<?php echo esc_attr($dismissNonce); ?>">
                             <button type="submit" class="button button-link" style="color:#b45309;text-decoration:underline;font-size:12px;padding:4px 8px;">
-                                Remind me later
+                                <?php esc_html_e('Remind me later', 'clockwork-renegade'); ?>
                             </button>
                         </form>
                     </div>
@@ -112,8 +117,17 @@ class WhiteLabelPage
             </div>
         <?php elseif ($donationState['has_donated']) : ?>
             <div style="margin-bottom:20px;padding:10px 16px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;font-size:12px;color:#065f46;display:flex;align-items:center;justify-content:space-between;">
-                <span>❤️ <strong>Supporting Agency:</strong> Thank you for donating! Your annual check-in is snoozed for <strong><?php echo (int) $donationState['days_remaining']; ?> more days</strong>.</span>
-                <a href="https://www.paypal.com/donate?business=abc@123_example.com" target="_blank" rel="noopener" style="color:#047857;text-decoration:underline;font-weight:600;">Donate again</a>
+                <span>❤️ <?php
+                echo wp_kses(
+                    sprintf(
+                        /* translators: %d: number of days remaining in the donation snooze */
+                        __('<strong>Supporting Agency:</strong> Thank you for donating! Your annual check-in is snoozed for <strong>%d more days</strong>.', 'clockwork-renegade'),
+                        (int) $donationState['days_remaining']
+                    ),
+                    ['strong' => []]
+                );
+                ?></span>
+                <a href="https://www.paypal.com/donate?business=abc@123_example.com" target="_blank" rel="noopener" style="color:#047857;text-decoration:underline;font-weight:600;"><?php esc_html_e('Donate again', 'clockwork-renegade'); ?></a>
             </div>
         <?php endif; ?>
 
@@ -130,8 +144,8 @@ class WhiteLabelPage
                 <div class="clockwork-card" style="margin-bottom:24px;border-radius:10px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);background:#ffffff;">
                     <div class="clockwork-card__head" style="padding:16px 20px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;">
                         <div>
-                            <h2 style="font-size:16px;font-weight:700;margin:0;color:#111827;">White Label Mode</h2>
-                            <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Toggle white-label overrides on or off without losing your saved settings.</p>
+                            <h2 style="font-size:16px;font-weight:700;margin:0;color:#111827;"><?php esc_html_e('White Label Mode', 'clockwork-renegade'); ?></h2>
+                            <p style="margin:2px 0 0;font-size:12px;color:#6b7280;"><?php esc_html_e('Toggle white-label overrides on or off without losing your saved settings.', 'clockwork-renegade'); ?></p>
                         </div>
                         <label class="cwk-switch" style="position:relative;display:inline-block;width:44px;height:24px;">
                             <input type="checkbox" id="field_enabled" name="whitelabel[enabled]" value="1" <?php checked(!empty($settings['enabled'])); ?> style="opacity:0;width:0;height:0;">
@@ -143,40 +157,40 @@ class WhiteLabelPage
                 <!-- Card 2: Plugin Metadata (plugins.php) -->
                 <div class="clockwork-card" style="margin-bottom:24px;border-radius:10px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);background:#ffffff;">
                     <div class="clockwork-card__head" style="padding:16px 20px;border-bottom:1px solid #f3f4f6;">
-                        <h2 style="font-size:16px;font-weight:700;margin:0;color:#111827;">WordPress Plugins Screen Rebranding</h2>
-                        <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Replaces the metadata displayed on <code>Plugins &rarr; Installed Plugins</code> and Must-Use plugins list.</p>
+                        <h2 style="font-size:16px;font-weight:700;margin:0;color:#111827;"><?php esc_html_e('WordPress Plugins Screen Rebranding', 'clockwork-renegade'); ?></h2>
+                        <p style="margin:2px 0 0;font-size:12px;color:#6b7280;"><?php echo wp_kses(__('Replaces the metadata displayed on <code>Plugins &rarr; Installed Plugins</code> and Must-Use plugins list.', 'clockwork-renegade'), ['code' => []]); ?></p>
                     </div>
                     <div class="clockwork-card__body" style="padding:20px;">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
                             <div>
-                                <label for="field_plugin_name" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;">Plugin Name</label>
+                                <label for="field_plugin_name" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Plugin Name', 'clockwork-renegade'); ?></label>
                                 <input type="text" id="field_plugin_name" name="whitelabel[plugin_name]" value="<?php echo esc_attr($settings['plugin_name']); ?>" class="regular-text" style="width:100%;box-sizing:border-box;border-radius:6px;height:36px;">
-                                <span style="font-size:11px;color:#6b7280;">e.g. Acme Site Companion, Client Care Tools</span>
+                                <span style="font-size:11px;color:#6b7280;"><?php esc_html_e('e.g. Acme Site Tools, Client Care Tools', 'clockwork-renegade'); ?></span>
                             </div>
                             <div>
-                                <label for="field_author_name" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;">Author Name</label>
+                                <label for="field_author_name" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Author Name', 'clockwork-renegade'); ?></label>
                                 <input type="text" id="field_author_name" name="whitelabel[author_name]" value="<?php echo esc_attr($settings['author_name']); ?>" class="regular-text" style="width:100%;box-sizing:border-box;border-radius:6px;height:36px;">
-                                <span style="font-size:11px;color:#6b7280;">e.g. Your Agency Name, LLC</span>
+                                <span style="font-size:11px;color:#6b7280;"><?php esc_html_e('e.g. Your Agency Name, LLC', 'clockwork-renegade'); ?></span>
                             </div>
                         </div>
 
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
                             <div>
-                                <label for="field_author_url" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;">Author Website URL</label>
+                                <label for="field_author_url" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Author Website URL', 'clockwork-renegade'); ?></label>
                                 <input type="url" id="field_author_url" name="whitelabel[author_url]" value="<?php echo esc_attr($settings['author_url']); ?>" class="regular-text" style="width:100%;box-sizing:border-box;border-radius:6px;height:36px;">
                                 <span style="font-size:11px;color:#6b7280;">https://youragency.com</span>
                             </div>
                             <div>
-                                <label for="field_plugin_url" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;">Plugin URL</label>
+                                <label for="field_plugin_url" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Plugin URL', 'clockwork-renegade'); ?></label>
                                 <input type="url" id="field_plugin_url" name="whitelabel[plugin_url]" value="<?php echo esc_attr($settings['plugin_url']); ?>" class="regular-text" style="width:100%;box-sizing:border-box;border-radius:6px;height:36px;">
-                                <span style="font-size:11px;color:#6b7280;">Link for plugin row details</span>
+                                <span style="font-size:11px;color:#6b7280;"><?php esc_html_e('Link for plugin row details', 'clockwork-renegade'); ?></span>
                             </div>
                         </div>
 
                         <div>
-                            <label for="field_plugin_description" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;">Plugin Description</label>
+                            <label for="field_plugin_description" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Plugin Description', 'clockwork-renegade'); ?></label>
                             <textarea id="field_plugin_description" name="whitelabel[plugin_description]" rows="3" style="width:100%;box-sizing:border-box;border-radius:6px;padding:8px;font-size:13px;"><?php echo esc_textarea($settings['plugin_description']); ?></textarea>
-                            <span style="font-size:11px;color:#6b7280;">Custom description displayed to site administrators.</span>
+                            <span style="font-size:11px;color:#6b7280;"><?php esc_html_e('Custom description displayed to site administrators.', 'clockwork-renegade'); ?></span>
                         </div>
                     </div>
                 </div>
@@ -184,37 +198,37 @@ class WhiteLabelPage
                 <!-- Card 3: Color Palette & Themes -->
                 <div class="clockwork-card" style="margin-bottom:24px;border-radius:10px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);background:#ffffff;">
                     <div class="clockwork-card__head" style="padding:16px 20px;border-bottom:1px solid #f3f4f6;">
-                        <h2 style="font-size:16px;font-weight:700;margin:0;color:#111827;">Brand Colors & Themes</h2>
-                        <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Choose a curated 1-click theme or dial in custom hex colors.</p>
+                        <h2 style="font-size:16px;font-weight:700;margin:0;color:#111827;"><?php esc_html_e('Brand Colors & Themes', 'clockwork-renegade'); ?></h2>
+                        <p style="margin:2px 0 0;font-size:12px;color:#6b7280;"><?php esc_html_e('Choose a curated 1-click theme or dial in custom hex colors.', 'clockwork-renegade'); ?></p>
                     </div>
                     <div class="clockwork-card__body" style="padding:20px;">
                         <!-- 1-Click Presets -->
                         <div style="margin-bottom:20px;">
-                            <span style="display:block;font-size:12px;font-weight:600;color:#4b5563;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">1-Click Theme Presets</span>
+                            <span style="display:block;font-size:12px;font-weight:600;color:#4b5563;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;"><?php esc_html_e('1-Click Theme Presets', 'clockwork-renegade'); ?></span>
                             <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:10px;">
                                 <button type="button" class="cwk-preset-btn" data-primary="#6953C4" data-dark="#2D2062" data-soft="#D1C9F4" data-accent="#7EFF83">
                                     <span class="cwk-preset-swatch" style="background:#6953C4;"><span style="background:#7EFF83;"></span></span>
-                                    <span>Clockwork</span>
+                                    <span><?php esc_html_e('Clockwork', 'clockwork-renegade'); ?></span>
                                 </button>
                                 <button type="button" class="cwk-preset-btn" data-primary="#059669" data-dark="#064E3B" data-soft="#A7F3D0" data-accent="#10B981">
                                     <span class="cwk-preset-swatch" style="background:#059669;"><span style="background:#10B981;"></span></span>
-                                    <span>Emerald Forest</span>
+                                    <span><?php esc_html_e('Emerald Forest', 'clockwork-renegade'); ?></span>
                                 </button>
                                 <button type="button" class="cwk-preset-btn" data-primary="#4F46E5" data-dark="#1E1B4B" data-soft="#C7D2FE" data-accent="#06B6D4">
                                     <span class="cwk-preset-swatch" style="background:#4F46E5;"><span style="background:#06B6D4;"></span></span>
-                                    <span>Royal Indigo</span>
+                                    <span><?php esc_html_e('Royal Indigo', 'clockwork-renegade'); ?></span>
                                 </button>
                                 <button type="button" class="cwk-preset-btn" data-primary="#2563EB" data-dark="#0F172A" data-soft="#BAE6FD" data-accent="#38BDF8">
                                     <span class="cwk-preset-swatch" style="background:#2563EB;"><span style="background:#38BDF8;"></span></span>
-                                    <span>Ocean Midnight</span>
+                                    <span><?php esc_html_e('Ocean Midnight', 'clockwork-renegade'); ?></span>
                                 </button>
                                 <button type="button" class="cwk-preset-btn" data-primary="#DC2626" data-dark="#450A0A" data-soft="#FECACA" data-accent="#F59E0B">
                                     <span class="cwk-preset-swatch" style="background:#DC2626;"><span style="background:#F59E0B;"></span></span>
-                                    <span>Crimson Amber</span>
+                                    <span><?php esc_html_e('Crimson Amber', 'clockwork-renegade'); ?></span>
                                 </button>
                                 <button type="button" class="cwk-preset-btn" data-primary="#374151" data-dark="#111827" data-soft="#E5E7EB" data-accent="#6B7280">
                                     <span class="cwk-preset-swatch" style="background:#374151;"><span style="background:#6B7280;"></span></span>
-                                    <span>Monochrome</span>
+                                    <span><?php esc_html_e('Monochrome', 'clockwork-renegade'); ?></span>
                                 </button>
                             </div>
                         </div>
@@ -222,39 +236,39 @@ class WhiteLabelPage
                         <!-- Color Pickers Grid -->
                         <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:16px;">
                             <div>
-                                <label for="field_primary_color" style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;">Primary Brand Color</label>
+                                <label for="field_primary_color" style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Primary Brand Color', 'clockwork-renegade'); ?></label>
                                 <div style="display:flex;align-items:center;gap:8px;">
                                     <input type="color" id="picker_primary_color" value="<?php echo esc_attr($settings['primary_color']); ?>" style="width:38px;height:36px;padding:1px;border-radius:6px;cursor:pointer;border:1px solid #d1d5db;">
                                     <input type="text" id="field_primary_color" name="whitelabel[primary_color]" value="<?php echo esc_attr($settings['primary_color']); ?>" class="code" style="width:100%;height:36px;border-radius:6px;">
                                 </div>
-                                <span style="font-size:11px;color:#6b7280;">Tabs active state, links, badges</span>
+                                <span style="font-size:11px;color:#6b7280;"><?php esc_html_e('Tabs active state, links, badges', 'clockwork-renegade'); ?></span>
                             </div>
 
                             <div>
-                                <label for="field_primary_dark_color" style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;">Header Band Color</label>
+                                <label for="field_primary_dark_color" style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Header Band Color', 'clockwork-renegade'); ?></label>
                                 <div style="display:flex;align-items:center;gap:8px;">
                                     <input type="color" id="picker_primary_dark_color" value="<?php echo esc_attr($settings['primary_dark_color']); ?>" style="width:38px;height:36px;padding:1px;border-radius:6px;cursor:pointer;border:1px solid #d1d5db;">
                                     <input type="text" id="field_primary_dark_color" name="whitelabel[primary_dark_color]" value="<?php echo esc_attr($settings['primary_dark_color']); ?>" class="code" style="width:100%;height:36px;border-radius:6px;">
                                 </div>
-                                <span style="font-size:11px;color:#6b7280;">Top header background</span>
+                                <span style="font-size:11px;color:#6b7280;"><?php esc_html_e('Top header background', 'clockwork-renegade'); ?></span>
                             </div>
 
                             <div>
-                                <label for="field_primary_soft_color" style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;">Soft Highlight Color</label>
+                                <label for="field_primary_soft_color" style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Soft Highlight Color', 'clockwork-renegade'); ?></label>
                                 <div style="display:flex;align-items:center;gap:8px;">
                                     <input type="color" id="picker_primary_soft_color" value="<?php echo esc_attr($settings['primary_soft_color']); ?>" style="width:38px;height:36px;padding:1px;border-radius:6px;cursor:pointer;border:1px solid #d1d5db;">
                                     <input type="text" id="field_primary_soft_color" name="whitelabel[primary_soft_color]" value="<?php echo esc_attr($settings['primary_soft_color']); ?>" class="code" style="width:100%;height:36px;border-radius:6px;">
                                 </div>
-                                <span style="font-size:11px;color:#6b7280;">Card highlights and borders</span>
+                                <span style="font-size:11px;color:#6b7280;"><?php esc_html_e('Card highlights and borders', 'clockwork-renegade'); ?></span>
                             </div>
 
                             <div>
-                                <label for="field_accent_color" style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;">Accent / Button Color</label>
+                                <label for="field_accent_color" style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Accent / Button Color', 'clockwork-renegade'); ?></label>
                                 <div style="display:flex;align-items:center;gap:8px;">
                                     <input type="color" id="picker_accent_color" value="<?php echo esc_attr($settings['accent_color']); ?>" style="width:38px;height:36px;padding:1px;border-radius:6px;cursor:pointer;border:1px solid #d1d5db;">
                                     <input type="text" id="field_accent_color" name="whitelabel[accent_color]" value="<?php echo esc_attr($settings['accent_color']); ?>" class="code" style="width:100%;height:36px;border-radius:6px;">
                                 </div>
-                                <span style="font-size:11px;color:#6b7280;">Support button & highlights</span>
+                                <span style="font-size:11px;color:#6b7280;"><?php esc_html_e('Support button & highlights', 'clockwork-renegade'); ?></span>
                             </div>
                         </div>
                     </div>
@@ -263,62 +277,71 @@ class WhiteLabelPage
                 <!-- Card 4: Logos & Admin Navigation -->
                 <div class="clockwork-card" style="margin-bottom:24px;border-radius:10px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);background:#ffffff;">
                     <div class="clockwork-card__head" style="padding:16px 20px;border-bottom:1px solid #f3f4f6;">
-                        <h2 style="font-size:16px;font-weight:700;margin:0;color:#111827;">Logos & Admin Header</h2>
-                        <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Upload your agency logo and configure the admin header branding.</p>
+                        <h2 style="font-size:16px;font-weight:700;margin:0;color:#111827;"><?php esc_html_e('Logos & Admin Header', 'clockwork-renegade'); ?></h2>
+                        <p style="margin:2px 0 0;font-size:12px;color:#6b7280;"><?php esc_html_e('Upload your agency logo and configure the admin header branding.', 'clockwork-renegade'); ?></p>
                     </div>
                     <div class="clockwork-card__body" style="padding:20px;">
                         <!-- Logo Upload -->
                         <div style="margin-bottom:18px;">
-                            <label for="field_logo_url" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;">Header Logo Image URL</label>
+                            <label for="field_logo_url" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Header Logo Image URL', 'clockwork-renegade'); ?></label>
                             <div style="display:flex;gap:8px;align-items:center;">
                                 <input type="url" id="field_logo_url" name="whitelabel[logo_url]" value="<?php echo esc_attr($settings['logo_url']); ?>" placeholder="https://.../logo.png" class="regular-text" style="flex:1;height:36px;border-radius:6px;">
                                 <button type="button" id="cwk-upload-logo-btn" class="button" style="height:36px;font-weight:600;">
-                                    Upload / Select Logo
+                                    <?php esc_html_e('Upload / Select Logo', 'clockwork-renegade'); ?>
                                 </button>
                                 <button type="button" id="cwk-clear-logo-btn" class="button" style="height:36px;">
-                                    Clear
+                                    <?php esc_html_e('Clear', 'clockwork-renegade'); ?>
                                 </button>
                             </div>
-                            <span style="font-size:11px;color:#6b7280;">Recommended format: Transparent PNG or SVG (~160px &times; 36px). Defaults to Clockwork logo if blank.</span>
+                            <span style="font-size:11px;color:#6b7280;"><?php echo wp_kses(__('Recommended format: Transparent PNG or SVG (~160px &times; 36px). Defaults to Clockwork logo if blank.', 'clockwork-renegade'), []); ?></span>
                         </div>
 
                         <!-- Sidebar Menu Title & Brand Subtitle -->
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;">
                             <div>
-                                <label for="field_menu_title" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;">Admin Sidebar Menu Label</label>
+                                <label for="field_menu_title" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Admin Sidebar Menu Label', 'clockwork-renegade'); ?></label>
                                 <input type="text" id="field_menu_title" name="whitelabel[menu_title]" value="<?php echo esc_attr($settings['menu_title']); ?>" class="regular-text" style="width:100%;height:36px;border-radius:6px;">
-                                <span style="font-size:11px;color:#6b7280;">Title in the left WordPress sidebar (Default: Clockwork)</span>
+                                <span style="font-size:11px;color:#6b7280;"><?php esc_html_e('Title in the left WordPress sidebar (Default: Clockwork)', 'clockwork-renegade'); ?></span>
                             </div>
                             <div>
-                                <label for="field_brand_text" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;">Header Sub-Title</label>
+                                <label for="field_brand_text" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Header Sub-Title', 'clockwork-renegade'); ?></label>
                                 <input type="text" id="field_brand_text" name="whitelabel[brand_text]" value="<?php echo esc_attr($settings['brand_text']); ?>" class="regular-text" style="width:100%;height:36px;border-radius:6px;">
-                                <span style="font-size:11px;color:#6b7280;">Text next to logo in header (Default: Companion)</span>
+                                <span style="font-size:11px;color:#6b7280;"><?php esc_html_e('Text next to logo in header (Default: Clockwork Renegade)', 'clockwork-renegade'); ?></span>
                             </div>
                         </div>
 
                         <!-- Support CTA & Version Tag -->
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;">
                             <div>
-                                <label for="field_support_button_label" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;">Support Button Label</label>
+                                <label for="field_support_button_label" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Support Button Label', 'clockwork-renegade'); ?></label>
                                 <input type="text" id="field_support_button_label" name="whitelabel[support_button_label]" value="<?php echo esc_attr($settings['support_button_label']); ?>" class="regular-text" style="width:100%;height:36px;border-radius:6px;">
                             </div>
                             <div>
-                                <label for="field_support_url" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;">Custom Support URL (Optional)</label>
-                                <input type="url" id="field_support_url" name="whitelabel[support_url]" value="<?php echo esc_attr($settings['support_url']); ?>" placeholder="https://agency.com/help or mailto:support@..." class="regular-text" style="width:100%;height:36px;border-radius:6px;">
-                                <span style="font-size:11px;color:#6b7280;">Leave blank to use built-in support modal</span>
+                                <label for="field_support_url" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Custom Support URL (Optional)', 'clockwork-renegade'); ?></label>
+                                <input type="url" id="field_support_url" name="whitelabel[support_url]" value="<?php echo esc_attr($settings['support_url']); ?>" placeholder="<?php esc_attr_e('https://agency.com/help or mailto:support@...', 'clockwork-renegade'); ?>" class="regular-text" style="width:100%;height:36px;border-radius:6px;">
+                                <span style="font-size:11px;color:#6b7280;"><?php esc_html_e('Leave blank to use built-in support modal', 'clockwork-renegade'); ?></span>
                             </div>
                         </div>
 
                         <div style="padding-top:8px;">
-                            <label for="field_agency_email_domains" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;">Agency Email Domains (Optional)</label>
+                            <label for="field_agency_email_domains" style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:5px;"><?php esc_html_e('Agency Email Domains (Optional)', 'clockwork-renegade'); ?></label>
                             <input type="text" id="field_agency_email_domains" name="whitelabel[agency_email_domains]" value="<?php echo esc_attr($settings['agency_email_domains'] ?? ''); ?>" placeholder="agency.com, ops.agency.com" class="regular-text" style="width:100%;height:36px;border-radius:6px;">
-                            <span style="font-size:11px;color:#6b7280;">Restrict who sees the admin menu to users with these email domains — useful when client administrators share the site. Comma-separated; the leading <code>@</code> is optional. Leave blank so every administrator sees it. Pages stay reachable by direct URL either way.</span>
+                            <span style="font-size:11px;color:#6b7280;"><?php echo wp_kses(__('Restrict who sees the admin menu to users with these email domains — useful when client administrators share the site. Comma-separated; the leading <code>@</code> is optional. Leave blank so every administrator sees it. Pages stay reachable by direct URL either way.', 'clockwork-renegade'), ['code' => []]); ?></span>
                         </div>
 
                         <div style="padding-top:8px;">
                             <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;cursor:pointer;">
                                 <input type="checkbox" id="field_hide_version" name="whitelabel[hide_version]" value="1" <?php checked(!empty($settings['hide_version'])); ?>>
-                                <span>Hide version indicator (<code>v<?php echo esc_html(CLOCKWORK_RENEGADE_VERSION); ?></code>) from the admin header</span>
+                                <span><?php
+                                echo wp_kses(
+                                    sprintf(
+                                        /* translators: %s: plugin version number */
+                                        __('Hide version indicator (<code>v%s</code>) from the admin header', 'clockwork-renegade'),
+                                        esc_html(CLOCKWORK_RENEGADE_VERSION)
+                                    ),
+                                    ['code' => []]
+                                );
+                                ?></span>
                             </label>
                         </div>
                     </div>
@@ -342,22 +365,22 @@ class WhiteLabelPage
                     <div style="padding:12px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;display:flex;align-items:center;gap:6px;">
                             <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;"></span>
-                            Real-Time Live Preview
+                            <?php esc_html_e('Real-Time Live Preview', 'clockwork-renegade'); ?>
                         </span>
-                        <span id="preview-status-indicator" style="font-size:11px;color:#10b981;font-weight:600;">Active</span>
+                        <span id="preview-status-indicator" style="font-size:11px;color:#10b981;font-weight:600;"><?php esc_html_e('Active', 'clockwork-renegade'); ?></span>
                     </div>
 
                     <!-- 1. Live Header Preview -->
                     <div id="preview-header" style="background:<?php echo esc_attr($settings['primary_dark_color']); ?>;padding:16px;color:#ffffff;display:flex;align-items:center;justify-content:space-between;transition:background 0.2s ease;">
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <img id="preview-logo-img" src="<?php echo esc_url(WhiteLabel::getLogoUrl()); ?>" alt="Logo" style="max-height:28px;max-width:130px;object-fit:contain;">
+                            <img id="preview-logo-img" src="<?php echo esc_url(WhiteLabel::getLogoUrl()); ?>" alt="<?php esc_attr_e('Logo', 'clockwork-renegade'); ?>" style="max-height:28px;max-width:130px;object-fit:contain;">
                             <span id="preview-brand-text" style="font-size:12px;color:#D1C9F4;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">
-                                <?php echo esc_html($settings['brand_text'] ?: 'Companion'); ?>
+                                <?php echo esc_html($settings['brand_text'] ?: __('Clockwork Renegade', 'clockwork-renegade')); ?>
                             </span>
                         </div>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <button type="button" id="preview-support-btn" style="background:<?php echo esc_attr($settings['accent_color']); ?>;color:#18181b;font-weight:700;font-size:11px;padding:4px 10px;border-radius:6px;border:none;cursor:pointer;">
-                                <?php echo esc_html($settings['support_button_label'] ?: 'Get Support'); ?>
+                                <?php echo esc_html($settings['support_button_label'] ?: __('Get Support', 'clockwork-renegade')); ?>
                             </button>
                             <span id="preview-version-tag" style="font-size:10px;color:rgba(255,255,255,0.7);font-family:monospace;<?php echo !empty($settings['hide_version']) ? 'display:none;' : ''; ?>">
                                 v<?php echo esc_html(CLOCKWORK_RENEGADE_VERSION); ?>
@@ -368,23 +391,23 @@ class WhiteLabelPage
                     <!-- 2. Live Tabs Preview -->
                     <div id="preview-tabs" style="background:#ffffff;border-bottom:1px solid #e5e7eb;display:flex;padding:0 12px;gap:6px;">
                         <span id="preview-tab-active" style="padding:10px 12px;font-size:12px;font-weight:700;color:<?php echo esc_attr($settings['primary_color']); ?>;border-bottom:2px solid <?php echo esc_attr($settings['primary_color']); ?>;cursor:default;">
-                            Activity
+                            <?php esc_html_e('Activity', 'clockwork-renegade'); ?>
                         </span>
-                        <span style="padding:10px 12px;font-size:12px;color:#6b7280;cursor:default;">Uptime</span>
-                        <span style="padding:10px 12px;font-size:12px;color:#6b7280;cursor:default;">Security</span>
+                        <span style="padding:10px 12px;font-size:12px;color:#6b7280;cursor:default;"><?php esc_html_e('Uptime', 'clockwork-renegade'); ?></span>
+                        <span style="padding:10px 12px;font-size:12px;color:#6b7280;cursor:default;"><?php esc_html_e('Security', 'clockwork-renegade'); ?></span>
                     </div>
 
                     <!-- 3. Mini Dashboard Card Preview -->
                     <div style="padding:16px;background:#f9fafb;">
                         <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04);">
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-                                <span style="font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;">Fleet Health</span>
+                                <span style="font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;"><?php esc_html_e('Fleet Health', 'clockwork-renegade'); ?></span>
                                 <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:9999px;background:#dcfce7;color:#15803d;font-weight:600;">
-                                    <span style="width:6px;height:6px;border-radius:50%;background:#16a34a;"></span> Active
+                                    <span style="width:6px;height:6px;border-radius:50%;background:#16a34a;"></span> <?php esc_html_e('Active', 'clockwork-renegade'); ?>
                                 </span>
                             </div>
                             <div style="font-size:12px;color:#6b7280;line-height:1.4;">
-                                Companion is synchronized and communicating with your fleet hub.
+                                <?php esc_html_e('Clockwork Renegade is synchronized and communicating with your fleet hub.', 'clockwork-renegade'); ?>
                             </div>
                         </div>
                     </div>
@@ -392,17 +415,23 @@ class WhiteLabelPage
                     <!-- 4. Simulated plugins.php Table Row -->
                     <div style="padding:16px;border-top:1px solid #e5e7eb;background:#ffffff;">
                         <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;letter-spacing:0.5px;">
-                            Simulated Plugins List Row (plugins.php)
+                            <?php esc_html_e('Simulated Plugins List Row (plugins.php)', 'clockwork-renegade'); ?>
                         </div>
                         <div style="border-left:4px solid #3b82f6;background:#f0f9ff;padding:12px;border-radius:0 6px 6px 0;font-size:12px;">
                             <div style="font-weight:700;color:#1e3a8a;margin-bottom:2px;">
-                                <span id="preview-plugin-title"><?php echo esc_html($settings['plugin_name'] ?: 'Clockwork Renegade'); ?></span>
+                                <span id="preview-plugin-title"><?php echo esc_html($settings['plugin_name'] ?: __('Clockwork Renegade', 'clockwork-renegade')); ?></span>
                             </div>
                             <div style="color:#4b5563;font-size:11px;margin-bottom:4px;" id="preview-plugin-desc">
-                                <?php echo esc_html($settings['plugin_description'] ?: 'Companion plugin...'); ?>
+                                <?php echo esc_html($settings['plugin_description'] ?: __('Clockwork Renegade plugin...', 'clockwork-renegade')); ?>
                             </div>
                             <div style="font-size:11px;color:#6b7280;">
-                                Version <?php echo esc_html(CLOCKWORK_RENEGADE_VERSION); ?> | By <a href="#" id="preview-plugin-author" style="color:#2563eb;text-decoration:none;font-weight:600;"><?php echo esc_html($settings['author_name'] ?: 'Clockwork Web Dev, LLC'); ?></a>
+                                <?php
+                                printf(
+                                    /* translators: %s: plugin version number */
+                                    esc_html__('Version %s', 'clockwork-renegade'),
+                                    esc_html(CLOCKWORK_RENEGADE_VERSION)
+                                );
+                                ?> | <?php esc_html_e('By', 'clockwork-renegade'); ?> <a href="#" id="preview-plugin-author" style="color:#2563eb;text-decoration:none;font-weight:600;"><?php echo esc_html($settings['author_name'] ?: 'Clockwork Web Dev, LLC'); ?></a>
                             </div>
                         </div>
                     </div>
@@ -410,7 +439,7 @@ class WhiteLabelPage
                     <!-- 5. Simulated Admin Sidebar Item -->
                     <div style="padding:16px;border-top:1px solid #e5e7eb;background:#1d2327;">
                         <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#8c8f94;margin-bottom:8px;letter-spacing:0.5px;">
-                            Simulated WP Admin Sidebar
+                            <?php esc_html_e('Simulated WP Admin Sidebar', 'clockwork-renegade'); ?>
                         </div>
                         <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#2271b1;color:#ffffff;border-radius:4px;font-size:13px;font-weight:600;">
                             <span style="font-size:14px;">⚙️</span>
@@ -560,12 +589,12 @@ class WhiteLabelPage
             // Live Text Updates
             function updatePreview() {
                 // Metadata
-                const name = fieldPluginName.value.trim() || 'Clockwork Renegade';
-                const author = fieldAuthorName.value.trim() || 'Clockwork Web Dev, LLC';
-                const desc = fieldPluginDesc.value.trim() || 'Companion plugin...';
-                const brand = fieldBrandText.value.trim() || 'Companion';
-                const menu = fieldMenuTitle.value.trim() || 'Clockwork';
-                const support = fieldSupportLabel.value.trim() || 'Get Support';
+                const name = fieldPluginName.value.trim() || <?php echo wp_json_encode(__('Clockwork Renegade', 'clockwork-renegade')); ?>;
+                const author = fieldAuthorName.value.trim() || <?php echo wp_json_encode(__('Clockwork Web Dev, LLC', 'clockwork-renegade')); ?>;
+                const desc = fieldPluginDesc.value.trim() || <?php echo wp_json_encode(__('Clockwork Renegade plugin...', 'clockwork-renegade')); ?>;
+                const brand = fieldBrandText.value.trim() || <?php echo wp_json_encode(__('Clockwork Renegade', 'clockwork-renegade')); ?>;
+                const menu = fieldMenuTitle.value.trim() || <?php echo wp_json_encode(__('Clockwork', 'clockwork-renegade')); ?>;
+                const support = fieldSupportLabel.value.trim() || <?php echo wp_json_encode(__('Get Support', 'clockwork-renegade')); ?>;
                 const logo = fieldLogoUrl.value.trim() || defaultLogo;
 
                 previewPluginTitle.textContent = name;
@@ -623,8 +652,8 @@ class WhiteLabelPage
                         return;
                     }
                     mediaFrame = wp.media({
-                        title: 'Select or Upload White Label Logo',
-                        button: { text: 'Use this Logo' },
+                        title: <?php echo wp_json_encode(__('Select or Upload White Label Logo', 'clockwork-renegade')); ?>,
+                        button: { text: <?php echo wp_json_encode(__('Use this Logo', 'clockwork-renegade')); ?> },
                         multiple: false
                     });
                     mediaFrame.on('select', function() {

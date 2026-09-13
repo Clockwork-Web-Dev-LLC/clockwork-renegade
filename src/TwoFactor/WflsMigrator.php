@@ -184,10 +184,10 @@ class WflsMigrator
     public static function removeWfls(): array
     {
         if (! self::pluginInstalled()) {
-            return ['ok' => false, 'message' => 'Wordfence Login Security is not installed.'];
+            return ['ok' => false, 'message' => __('Wordfence Login Security is not installed.', 'clockwork-renegade')];
         }
         if (self::remainingUnmigratedCount() > 0) {
-            return ['ok' => false, 'message' => 'Refusing to remove — users still depend on Wordfence Login Security for two-factor.'];
+            return ['ok' => false, 'message' => __('Refusing to remove — users still depend on Wordfence Login Security for two-factor.', 'clockwork-renegade')];
         }
 
         if (! function_exists('deactivate_plugins')) {
@@ -208,8 +208,8 @@ class WflsMigrator
         }
 
         $message = $deleted
-            ? 'Wordfence Login Security deactivated and removed.'
-            : 'Wordfence Login Security deactivated. The plugin files could not be deleted automatically — remove them from the Plugins screen.';
+            ? __('Wordfence Login Security deactivated and removed.', 'clockwork-renegade')
+            : __('Wordfence Login Security deactivated. The plugin files could not be deleted automatically — remove them from the Plugins screen.', 'clockwork-renegade');
 
         ActionLogRepository::insert([
             'action_type' => '2fa_wfls_removed',

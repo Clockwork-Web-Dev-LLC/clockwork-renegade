@@ -125,26 +125,32 @@ class BackupsPage
         <div class="clockwork-card" style="margin-bottom: 16px;">
             <div class="clockwork-card__body">
                 <div class="clockwork-notice clockwork-notice--ok">
-                    <strong>Also archived off-host for 90 days.</strong>
+                    <strong><?php esc_html_e('Also archived off-host for 90 days.', 'clockwork-renegade'); ?></strong>
                     <?php if ($directArchive): ?>
-                        A full backup of this site (files and database) is taken on a regular schedule and stored in secure, encrypted cold storage (Amazon S3 Glacier), kept for 90 days — an independent off-site copy in case anything ever happened to the site or its hosting.
+                        <?php esc_html_e('A full backup of this site (files and database) is taken on a regular schedule and stored in secure, encrypted cold storage (Amazon S3 Glacier), kept for 90 days — an independent off-site copy in case anything ever happened to the site or its hosting.', 'clockwork-renegade'); ?>
                     <?php else: ?>
-                        Independent of the backups above, your host's backups are additionally copied to secure, encrypted cold storage (Amazon S3 Glacier) twice a week, kept for 90 days — a second copy in case anything ever happened to your host account itself.
+                        <?php esc_html_e('Independent of the backups above, your host\'s backups are additionally copied to secure, encrypted cold storage (Amazon S3 Glacier) twice a week, kept for 90 days — a second copy in case anything ever happened to your host account itself.', 'clockwork-renegade'); ?>
                     <?php endif; ?>
                     <?php if ($lastArchivedAt): ?>
-                        <div style="margin-top: 6px; font-size: 12px; opacity: 0.8;">Last archived: <?php echo esc_html(self::formatTimestamp($lastArchivedAt)); ?></div>
+                        <div style="margin-top: 6px; font-size: 12px; opacity: 0.8;"><?php
+                        echo esc_html(sprintf(
+                            /* translators: %s: formatted date/time of the most recent off-site archive */
+                            __('Last archived: %s', 'clockwork-renegade'),
+                            self::formatTimestamp($lastArchivedAt)
+                        ));
+                        ?></div>
                     <?php endif; ?>
                 </div>
                 <?php if ($linksValid && ($fsUrl || $dbUrl)): ?>
                     <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
                         <?php if ($fsUrl && $dbUrl): ?>
-                            <a href="<?php echo esc_url($fsUrl); ?>" class="button" download>Download latest filesystem backup</a>
-                            <a href="<?php echo esc_url($dbUrl); ?>" class="button" download>Download latest database backup</a>
+                            <a href="<?php echo esc_url($fsUrl); ?>" class="button" download><?php esc_html_e('Download latest filesystem backup', 'clockwork-renegade'); ?></a>
+                            <a href="<?php echo esc_url($dbUrl); ?>" class="button" download><?php esc_html_e('Download latest database backup', 'clockwork-renegade'); ?></a>
                         <?php else: ?>
-                            <a href="<?php echo esc_url($fsUrl ?: $dbUrl); ?>" class="button" download>Download latest backup</a>
+                            <a href="<?php echo esc_url($fsUrl ?: $dbUrl); ?>" class="button" download><?php esc_html_e('Download latest backup', 'clockwork-renegade'); ?></a>
                         <?php endif; ?>
                     </div>
-                    <div style="margin-top: 6px; font-size: 11px; opacity: 0.65;">These download links are temporary and refresh automatically — if one doesn't work, check back after the next daily refresh.</div>
+                    <div style="margin-top: 6px; font-size: 11px; opacity: 0.65;"><?php esc_html_e('These download links are temporary and refresh automatically — if one doesn\'t work, check back after the next daily refresh.', 'clockwork-renegade'); ?></div>
                 <?php endif; ?>
             </div>
         </div>
@@ -157,10 +163,14 @@ class BackupsPage
         <div class="clockwork-card">
             <div class="clockwork-card__body">
                 <div class="clockwork-notice">
-                    <strong>No backup report yet.</strong>
-                    <?php echo esc_html(WhiteLabel::getAuthorName()); ?> hasn't pushed backup configuration to this site yet.
-                    This usually means the next scheduled push hasn't run — please check back in a few hours,
-                    or contact <?php echo esc_html(WhiteLabel::getAuthorName()); ?> if this persists.
+                    <strong><?php esc_html_e('No backup report yet.', 'clockwork-renegade'); ?></strong>
+                    <?php
+                    echo esc_html(sprintf(
+                        /* translators: %1$s: agency/author name */
+                        __('%1$s hasn\'t pushed backup configuration to this site yet. This usually means the next scheduled push hasn\'t run — please check back in a few hours, or contact %1$s if this persists.', 'clockwork-renegade'),
+                        WhiteLabel::getAuthorName()
+                    ));
+                    ?>
                 </div>
             </div>
         </div>
@@ -190,43 +200,43 @@ class BackupsPage
         ?>
         <div class="clockwork-card">
             <div class="clockwork-card__head">
-                <h2>Backup Configuration</h2>
+                <h2><?php esc_html_e('Backup Configuration', 'clockwork-renegade'); ?></h2>
                 <?php if ($files || $database) : ?>
-                    <span class="clockwork-pill clockwork-pill--ok"><span class="clockwork-pill__dot"></span> Active</span>
+                    <span class="clockwork-pill clockwork-pill--ok"><span class="clockwork-pill__dot"></span> <?php esc_html_e('Active', 'clockwork-renegade'); ?></span>
                 <?php else : ?>
-                    <span class="clockwork-pill clockwork-pill--off"><span class="clockwork-pill__dot"></span> Disabled</span>
+                    <span class="clockwork-pill clockwork-pill--off"><span class="clockwork-pill__dot"></span> <?php esc_html_e('Disabled', 'clockwork-renegade'); ?></span>
                 <?php endif; ?>
             </div>
             <div class="clockwork-card__body">
                 <dl class="clockwork-defs">
-                    <dt>Files backup</dt>
-                    <dd><?php echo $files ? '<span class="clockwork-pill clockwork-pill--ok">Enabled</span>' : '<span class="clockwork-pill clockwork-pill--off">Disabled</span>'; ?></dd>
+                    <dt><?php esc_html_e('Files backup', 'clockwork-renegade'); ?></dt>
+                    <dd><?php echo $files ? '<span class="clockwork-pill clockwork-pill--ok">'.esc_html__('Enabled', 'clockwork-renegade').'</span>' : '<span class="clockwork-pill clockwork-pill--off">'.esc_html__('Disabled', 'clockwork-renegade').'</span>'; ?></dd>
 
-                    <dt>Database backup</dt>
-                    <dd><?php echo $database ? '<span class="clockwork-pill clockwork-pill--ok">Enabled</span>' : '<span class="clockwork-pill clockwork-pill--off">Disabled</span>'; ?></dd>
+                    <dt><?php esc_html_e('Database backup', 'clockwork-renegade'); ?></dt>
+                    <dd><?php echo $database ? '<span class="clockwork-pill clockwork-pill--ok">'.esc_html__('Enabled', 'clockwork-renegade').'</span>' : '<span class="clockwork-pill clockwork-pill--off">'.esc_html__('Disabled', 'clockwork-renegade').'</span>'; ?></dd>
 
                     <?php if ($availableScope) : ?>
-                        <dt>Last backup</dt>
+                        <dt><?php esc_html_e('Last backup', 'clockwork-renegade'); ?></dt>
                         <dd>
                             <?php if ($lastBackupAt) : ?>
                                 <?php echo esc_html(self::formatTimestamp($lastBackupAt)); ?>
                             <?php else : ?>
-                                <span class="clockwork-pill clockwork-pill--warn">None recorded yet</span>
+                                <span class="clockwork-pill clockwork-pill--warn"><?php esc_html_e('None recorded yet', 'clockwork-renegade'); ?></span>
                             <?php endif; ?>
                         </dd>
                     <?php else : ?>
-                        <dt>Next scheduled run</dt>
+                        <dt><?php esc_html_e('Next scheduled run', 'clockwork-renegade'); ?></dt>
                         <dd>
                             <?php if ($nextRun) : ?>
                                 <?php echo esc_html(self::formatTimestamp($nextRun)); ?>
                             <?php else : ?>
-                                <span class="clockwork-pill clockwork-pill--warn">Not scheduled</span>
+                                <span class="clockwork-pill clockwork-pill--warn"><?php esc_html_e('Not scheduled', 'clockwork-renegade'); ?></span>
                             <?php endif; ?>
                         </dd>
                     <?php endif; ?>
 
                     <?php if (is_array($storage) && (! empty($storage['region']) || ! empty($storage['bucket']))) : ?>
-                        <dt>Storage destination</dt>
+                        <dt><?php esc_html_e('Storage destination', 'clockwork-renegade'); ?></dt>
                         <dd>
                             <?php
                             $bits = [];
@@ -242,7 +252,7 @@ class BackupsPage
                     <?php endif; ?>
 
                     <?php if (! empty($excludePaths)) : ?>
-                        <dt>Excluded paths</dt>
+                        <dt><?php esc_html_e('Excluded paths', 'clockwork-renegade'); ?></dt>
                         <dd><?php echo esc_html(is_array($excludePaths) ? implode(', ', $excludePaths) : (string) $excludePaths); ?></dd>
                     <?php endif; ?>
                 </dl>
@@ -266,8 +276,8 @@ class BackupsPage
             $historyFiles = is_array($report['history_files'] ?? null) ? $report['history_files'] : [];
             $historyDatabase = is_array($report['history_database'] ?? null) ? $report['history_database'] : [];
 
-            self::renderAvailableScopeHistoryTable('Filesystem backups', $historyFiles);
-            self::renderAvailableScopeHistoryTable('Database backups', $historyDatabase);
+            self::renderAvailableScopeHistoryTable(__('Filesystem backups', 'clockwork-renegade'), $historyFiles);
+            self::renderAvailableScopeHistoryTable(__('Database backups', 'clockwork-renegade'), $historyDatabase);
             self::renderRefreshCaption($report);
 
             return;
@@ -294,18 +304,28 @@ class BackupsPage
         $pageRows = array_slice($history, $offset, self::PAGE_SIZE);
 
         $retentionPillVariant = $onCarePlan ? 'ok' : 'warn';
-        $retentionPillLabel = "Last {$retentionDays} days";
+        $retentionPillLabel = sprintf(
+            /* translators: %d: number of days of backup history retained */
+            __('Last %d days', 'clockwork-renegade'),
+            $retentionDays
+        );
         ?>
         <div class="clockwork-card">
             <div class="clockwork-card__head">
-                <h2>Backup History</h2>
+                <h2><?php esc_html_e('Backup History', 'clockwork-renegade'); ?></h2>
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                     <span class="clockwork-pill clockwork-pill--<?php echo esc_attr($retentionPillVariant); ?>">
                         <?php echo esc_html($retentionPillLabel); ?>
                     </span>
                     <?php if ($totalRuns > 0) : ?>
                         <span class="clockwork-pill clockwork-pill--info">
-                            <?php echo (int) $totalRuns; ?> run<?php echo $totalRuns === 1 ? '' : 's'; ?>
+                            <?php
+                            echo esc_html(sprintf(
+                                /* translators: %d: number of backup runs on record */
+                                _n('%d run', '%d runs', $totalRuns, 'clockwork-renegade'),
+                                $totalRuns
+                            ));
+                            ?>
                         </span>
                     <?php endif; ?>
                 </div>
@@ -313,12 +333,18 @@ class BackupsPage
             <div class="clockwork-card__body" style="padding-bottom: 0;">
                 <?php if ($onCarePlan) : ?>
                     <div class="clockwork-notice clockwork-notice--ok">
-                        Your care plan includes 90 days of backup history.
+                        <?php esc_html_e('Your care plan includes 90 days of backup history.', 'clockwork-renegade'); ?>
                     </div>
                 <?php else : ?>
                     <div class="clockwork-notice">
-                        Your hosting plan includes 30 days of backup history.
-                        <button type="button" class="cwk-support-trigger cwk-link-btn">Talk to <?php echo esc_html(WhiteLabel::getAuthorName()); ?></button> about a care plan to extend retention to 90 days.
+                        <?php esc_html_e('Your hosting plan includes 30 days of backup history.', 'clockwork-renegade'); ?>
+                        <button type="button" class="cwk-support-trigger cwk-link-btn"><?php
+                        echo esc_html(sprintf(
+                            /* translators: %s: agency/author name */
+                            __('Talk to %s', 'clockwork-renegade'),
+                            WhiteLabel::getAuthorName()
+                        ));
+                        ?></button> <?php esc_html_e('about a care plan to extend retention to 90 days.', 'clockwork-renegade'); ?>
                     </div>
                 <?php endif; ?>
             </div>
@@ -326,22 +352,27 @@ class BackupsPage
                 <?php if ($totalRuns === 0) : ?>
                     <div style="padding: 20px;">
                         <div class="clockwork-notice clockwork-notice--muted">
-                            Backup history hasn't been indexed yet. Your backups are still running on <?php echo esc_html(WhiteLabel::getAuthorName()); ?>'s schedule —
-                            this view will populate within 24 hours of <?php echo esc_html(WhiteLabel::getAuthorName()); ?>'s next sync. If you don't see runs after that, contact <?php echo esc_html(WhiteLabel::getAuthorName()); ?>.
+                            <?php
+                            echo esc_html(sprintf(
+                                /* translators: %1$s: agency/author name */
+                                __('Backup history hasn\'t been indexed yet. Your backups are still running on %1$s\'s schedule — this view will populate within 24 hours of %1$s\'s next sync. If you don\'t see runs after that, contact %1$s.', 'clockwork-renegade'),
+                                WhiteLabel::getAuthorName()
+                            ));
+                            ?>
                         </div>
                     </div>
                 <?php else : ?>
                     <table class="clockwork-table">
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Type</th>
+                                <th><?php esc_html_e('Date', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Type', 'clockwork-renegade'); ?></th>
                                 <?php if ($combined) : ?>
-                                    <th>Size</th>
+                                    <th><?php esc_html_e('Size', 'clockwork-renegade'); ?></th>
                                 <?php else : ?>
-                                    <th>Database</th>
-                                    <th>Files</th>
-                                    <th>Notes</th>
+                                    <th><?php esc_html_e('Database', 'clockwork-renegade'); ?></th>
+                                    <th><?php esc_html_e('Files', 'clockwork-renegade'); ?></th>
+                                    <th><?php esc_html_e('Notes', 'clockwork-renegade'); ?></th>
                                 <?php endif; ?>
                             </tr>
                         </thead>
@@ -395,22 +426,28 @@ class BackupsPage
                 <h2><?php echo esc_html($title); ?></h2>
                 <?php if ($total > 0) : ?>
                     <span class="clockwork-pill clockwork-pill--info">
-                        <?php echo (int) $total; ?> backup<?php echo $total === 1 ? '' : 's'; ?> on record
+                        <?php
+                        echo esc_html(sprintf(
+                            /* translators: %d: number of backups on record */
+                            _n('%d backup on record', '%d backups on record', $total, 'clockwork-renegade'),
+                            $total
+                        ));
+                        ?>
                     </span>
                 <?php endif; ?>
             </div>
             <div class="clockwork-card__body clockwork-card__body--tight">
                 <?php if ($total === 0) : ?>
                     <div style="padding: 20px;">
-                        <div class="clockwork-notice clockwork-notice--muted">No backups on record yet.</div>
+                        <div class="clockwork-notice clockwork-notice--muted"><?php esc_html_e('No backups on record yet.', 'clockwork-renegade'); ?></div>
                     </div>
                 <?php else : ?>
                     <table class="clockwork-table">
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Type</th>
-                                <th>Size</th>
+                                <th><?php esc_html_e('Date', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Type', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Size', 'clockwork-renegade'); ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -430,7 +467,14 @@ class BackupsPage
                     </table>
                     <?php if ($total > self::PAGE_SIZE) : ?>
                         <div style="padding: 8px 20px 12px; font-size: 12px; color: #6b7280;">
-                            Showing the most recent <?php echo esc_html((string) self::PAGE_SIZE); ?> of <?php echo esc_html((string) (int) $total); ?>.
+                            <?php
+                            echo esc_html(sprintf(
+                                /* translators: %1$d: number of rows shown, %2$d: total backups on record */
+                                __('Showing the most recent %1$d of %2$d.', 'clockwork-renegade'),
+                                self::PAGE_SIZE,
+                                (int) $total
+                            ));
+                            ?>
                         </div>
                     <?php endif; ?>
                 <?php endif; ?>
@@ -446,9 +490,20 @@ class BackupsPage
     {
         ?>
         <p class="clockwork-meta-line" style="padding: 0 4px;">
-            Report last refreshed:
-            <?php echo esc_html(self::formatTimestamp($report['fetched_at'] ?? null) ?: 'unknown'); ?>
-            &middot; source: <?php echo esc_html((string) ($report['source'] ?? 'agency')); ?>
+            <?php
+            echo esc_html(sprintf(
+                /* translators: %s: formatted date/time the report was last refreshed */
+                __('Report last refreshed: %s', 'clockwork-renegade'),
+                self::formatTimestamp($report['fetched_at'] ?? null) ?: __('unknown', 'clockwork-renegade')
+            ));
+            ?>
+            &middot; <?php
+            echo esc_html(sprintf(
+                /* translators: %s: name of the system that produced the report */
+                __('source: %s', 'clockwork-renegade'),
+                (string) ($report['source'] ?? 'agency')
+            ));
+            ?>
         </p>
         <?php
     }
@@ -463,18 +518,33 @@ class BackupsPage
         $last = min($totalRuns, $page * self::PAGE_SIZE);
         ?>
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-top: 1px solid var(--cwk-border, #e5e7eb); font-size: 12px; color: #6b7280;">
-            <span>Showing <?php echo (int) $first; ?>–<?php echo (int) $last; ?> of <?php echo (int) $totalRuns; ?></span>
+            <span><?php
+            echo esc_html(sprintf(
+                /* translators: %1$d: first row shown, %2$d: last row shown, %3$d: total backup runs */
+                __('Showing %1$d–%2$d of %3$d', 'clockwork-renegade'),
+                $first,
+                $last,
+                $totalRuns
+            ));
+            ?></span>
             <span style="display: flex; gap: 6px;">
                 <?php if ($page > 1) : ?>
-                    <a class="button button-small" href="<?php echo esc_url($base.'&hp='.($page - 1)); ?>">‹ Prev</a>
+                    <a class="button button-small" href="<?php echo esc_url($base.'&hp='.($page - 1)); ?>"><?php esc_html_e('‹ Prev', 'clockwork-renegade'); ?></a>
                 <?php else : ?>
-                    <span class="button button-small" style="opacity: 0.5; pointer-events: none;">‹ Prev</span>
+                    <span class="button button-small" style="opacity: 0.5; pointer-events: none;"><?php esc_html_e('‹ Prev', 'clockwork-renegade'); ?></span>
                 <?php endif; ?>
-                <span style="padding: 4px 10px;">Page <?php echo (int) $page; ?> of <?php echo (int) $totalPages; ?></span>
+                <span style="padding: 4px 10px;"><?php
+                echo esc_html(sprintf(
+                    /* translators: %1$d: current page number, %2$d: total pages */
+                    __('Page %1$d of %2$d', 'clockwork-renegade'),
+                    $page,
+                    $totalPages
+                ));
+                ?></span>
                 <?php if ($page < $totalPages) : ?>
-                    <a class="button button-small" href="<?php echo esc_url($base.'&hp='.($page + 1)); ?>">Next ›</a>
+                    <a class="button button-small" href="<?php echo esc_url($base.'&hp='.($page + 1)); ?>"><?php esc_html_e('Next ›', 'clockwork-renegade'); ?></a>
                 <?php else : ?>
-                    <span class="button button-small" style="opacity: 0.5; pointer-events: none;">Next ›</span>
+                    <span class="button button-small" style="opacity: 0.5; pointer-events: none;"><?php esc_html_e('Next ›', 'clockwork-renegade'); ?></span>
                 <?php endif; ?>
             </span>
         </div>

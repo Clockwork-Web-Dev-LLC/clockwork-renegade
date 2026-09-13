@@ -91,9 +91,14 @@ class PerformancePage
             ?>
             <div class="clockwork-card" style="border-left: 4px solid #65a30d;">
                 <div class="clockwork-card__body">
-                    <strong>Weekly speed checks are part of your care plan.</strong>
-                    <?php echo esc_html(WhiteLabel::getAuthorName()); ?> runs a Lighthouse scan against your homepage every week and
-                    flags regressions in your performance score.
+                    <strong><?php esc_html_e('Weekly speed checks are part of your care plan.', 'clockwork-renegade'); ?></strong>
+                    <?php
+                    echo esc_html(sprintf(
+                        /* translators: %s: agency/author name */
+                        __('%s runs a Lighthouse scan against your homepage every week and flags regressions in your performance score.', 'clockwork-renegade'),
+                        WhiteLabel::getAuthorName()
+                    ));
+                    ?>
                 </div>
             </div>
             <?php
@@ -101,13 +106,21 @@ class PerformancePage
             ?>
             <div class="clockwork-card" style="border-left: 4px solid #f59e0b;">
                 <div class="clockwork-card__body">
-                    <strong>Add a care plan to unlock weekly speed checks.</strong>
-                    With a care plan, <?php echo esc_html(WhiteLabel::getAuthorName()); ?> runs a weekly Lighthouse scan via GTmetrix — the
-                    same engine Google uses to evaluate site performance, from a pinned test location with
-                    consistent hardware. You'd see your <strong>Performance score</strong>,
-                    <strong>Largest Contentful Paint</strong>, <strong>Cumulative Layout Shift</strong>, and
-                    <strong>page weight</strong> trended over time, so a slow regression doesn't sneak past you.
-                    <button type="button" class="cwk-support-trigger cwk-link-btn">Talk to <?php echo esc_html(WhiteLabel::getAuthorName()); ?></button> about adding a care plan.
+                    <strong><?php esc_html_e('Add a care plan to unlock weekly speed checks.', 'clockwork-renegade'); ?></strong>
+                    <?php
+                    echo wp_kses(sprintf(
+                        /* translators: %s: agency/author name */
+                        __('With a care plan, %s runs a weekly Lighthouse scan via GTmetrix — the same engine Google uses to evaluate site performance, from a pinned test location with consistent hardware. You\'d see your <strong>Performance score</strong>, <strong>Largest Contentful Paint</strong>, <strong>Cumulative Layout Shift</strong>, and <strong>page weight</strong> trended over time, so a slow regression doesn\'t sneak past you.', 'clockwork-renegade'),
+                        esc_html(WhiteLabel::getAuthorName())
+                    ), ['strong' => []]);
+                    ?>
+                    <button type="button" class="cwk-support-trigger cwk-link-btn"><?php
+                    echo esc_html(sprintf(
+                        /* translators: %s: agency/author name */
+                        __('Talk to %s', 'clockwork-renegade'),
+                        WhiteLabel::getAuthorName()
+                    ));
+                    ?></button> <?php esc_html_e('about adding a care plan.', 'clockwork-renegade'); ?>
                 </div>
             </div>
             <?php
@@ -134,8 +147,8 @@ class PerformancePage
             ?>
             <div class="clockwork-card" style="margin-top: 16px;">
                 <div class="clockwork-card__body">
-                    <strong>No scans recorded yet.</strong>
-                    Scans run weekly. Results will populate here within the next few days.
+                    <strong><?php esc_html_e('No scans recorded yet.', 'clockwork-renegade'); ?></strong>
+                    <?php esc_html_e('Scans run weekly. Results will populate here within the next few days.', 'clockwork-renegade'); ?>
                 </div>
             </div>
             <?php
@@ -153,7 +166,7 @@ class PerformancePage
         <div class="clockwork-perf-hero" style="margin-top: 16px;">
             <div class="clockwork-perf-hero__head">
                 <div>
-                    <h2 class="clockwork-perf-hero__title">Latest Scan</h2>
+                    <h2 class="clockwork-perf-hero__title"><?php esc_html_e('Latest Scan', 'clockwork-renegade'); ?></h2>
                     <p class="clockwork-perf-hero__sub">
                         <?php echo esc_html(self::humanTimeAgo($ranAt)); ?>
                         · <?php echo esc_html(self::engineConditionsLabel($details)); ?>
@@ -162,34 +175,43 @@ class PerformancePage
                 <?php if ($ok && $score !== null) : ?>
                     <div class="clockwork-perf-score clockwork-perf-score--<?php echo esc_attr($scoreClass); ?>">
                         <span class="clockwork-perf-score__grade"><?php echo esc_html($grade); ?></span>
-                        <span class="clockwork-perf-score__pct"><?php echo (int) $score; ?>/100</span>
+                        <span class="clockwork-perf-score__pct"><?php
+                        echo esc_html(sprintf(
+                            /* translators: %d: performance score out of 100 */
+                            __('%d/100', 'clockwork-renegade'),
+                            $score
+                        ));
+                        ?></span>
                     </div>
                 <?php else : ?>
-                    <span class="clockwork-pill clockwork-pill--warn">Failed</span>
+                    <span class="clockwork-pill clockwork-pill--warn"><?php esc_html_e('Failed', 'clockwork-renegade'); ?></span>
                 <?php endif; ?>
             </div>
 
             <?php if ($ok) : ?>
                 <dl class="clockwork-perf-vitals">
                     <?php
-                    self::renderVital('LCP', self::formatMs($details['lcp_ms'] ?? null), 'Largest Contentful Paint');
-                    self::renderVital('CLS', self::formatCls($details['cls_x1000'] ?? null), 'Cumulative Layout Shift');
-                    self::renderVital('TBT', self::formatMs($details['tbt_ms'] ?? null), 'Total Blocking Time');
-                    self::renderVital('FCP', self::formatMs($details['fcp_ms'] ?? null), 'First Contentful Paint');
-                    self::renderVital('Speed Index', self::formatMs($details['si_ms'] ?? null), '');
-                    self::renderVital('Page weight', self::formatBytes($details['page_weight_bytes'] ?? null), '');
+                    self::renderVital(__('LCP', 'clockwork-renegade'), self::formatMs($details['lcp_ms'] ?? null), __('Largest Contentful Paint', 'clockwork-renegade'));
+                    self::renderVital(__('CLS', 'clockwork-renegade'), self::formatCls($details['cls_x1000'] ?? null), __('Cumulative Layout Shift', 'clockwork-renegade'));
+                    self::renderVital(__('TBT', 'clockwork-renegade'), self::formatMs($details['tbt_ms'] ?? null), __('Total Blocking Time', 'clockwork-renegade'));
+                    self::renderVital(__('FCP', 'clockwork-renegade'), self::formatMs($details['fcp_ms'] ?? null), __('First Contentful Paint', 'clockwork-renegade'));
+                    self::renderVital(__('Speed Index', 'clockwork-renegade'), self::formatMs($details['si_ms'] ?? null), '');
+                    self::renderVital(__('Page weight', 'clockwork-renegade'), self::formatBytes($details['page_weight_bytes'] ?? null), '');
                     ?>
                 </dl>
                 <?php if ($scoreClass === 'orange' || $scoreClass === 'red') : ?>
                     <p class="clockwork-perf-hero__improve-note">
-                        There may be opportunities to improve this score.
-                        <?php echo WhiteLabel::supportLink('Talk to ' . WhiteLabel::getAuthorName()); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside supportLink() ?>
-                        about performance optimization for this site.
+                        <?php esc_html_e('There may be opportunities to improve this score.', 'clockwork-renegade'); ?>
+                        <?php
+                        /* translators: %s: agency/author name */
+                        echo WhiteLabel::supportLink(sprintf(__('Talk to %s', 'clockwork-renegade'), WhiteLabel::getAuthorName())); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside supportLink()
+                        ?>
+                        <?php esc_html_e('about performance optimization for this site.', 'clockwork-renegade'); ?>
                     </p>
                 <?php endif; ?>
             <?php elseif (! empty($latest['error'])) : ?>
                 <p class="clockwork-perf-hero__error">
-                    <strong>Scan failed:</strong> <?php echo esc_html((string) $latest['error']); ?>
+                    <strong><?php esc_html_e('Scan failed:', 'clockwork-renegade'); ?></strong> <?php echo esc_html((string) $latest['error']); ?>
                 </p>
             <?php endif; ?>
         </div>
@@ -205,10 +227,16 @@ class PerformancePage
         ?>
         <div class="clockwork-card" style="margin-top: 16px;">
             <div class="clockwork-card__head">
-                <h2>Scan History</h2>
+                <h2><?php esc_html_e('Scan History', 'clockwork-renegade'); ?></h2>
                 <?php if ($total > 0) : ?>
                     <span class="clockwork-pill clockwork-pill--info">
-                        <?php echo (int) $total; ?> scan<?php echo $total === 1 ? '' : 's'; ?>
+                        <?php
+                        echo esc_html(sprintf(
+                            /* translators: %d: number of performance scans on record */
+                            _n('%d scan', '%d scans', $total, 'clockwork-renegade'),
+                            $total
+                        ));
+                        ?>
                     </span>
                 <?php endif; ?>
             </div>
@@ -216,25 +244,30 @@ class PerformancePage
                 <?php if (! $onCarePlan) : ?>
                     <div style="padding: 20px;">
                         <div class="clockwork-notice clockwork-notice--muted">
-                            Performance history is part of the care plan. <?php echo WhiteLabel::supportLink('Talk to ' . WhiteLabel::getAuthorName()); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside supportLink() ?> about adding one.
+                            <?php esc_html_e('Performance history is part of the care plan.', 'clockwork-renegade'); ?>
+                            <?php
+                            /* translators: %s: agency/author name */
+                            echo WhiteLabel::supportLink(sprintf(__('Talk to %s', 'clockwork-renegade'), WhiteLabel::getAuthorName())); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside supportLink()
+                            ?>
+                            <?php esc_html_e('about adding one.', 'clockwork-renegade'); ?>
                         </div>
                     </div>
                 <?php elseif ($total === 0) : ?>
                     <div style="padding: 20px;">
                         <div class="clockwork-notice clockwork-notice--muted">
-                            No scans recorded yet. Once the next weekly scan completes, history will populate here.
+                            <?php esc_html_e('No scans recorded yet. Once the next weekly scan completes, history will populate here.', 'clockwork-renegade'); ?>
                         </div>
                     </div>
                 <?php else : ?>
                     <table class="clockwork-table">
                         <thead>
                             <tr>
-                                <th>When</th>
-                                <th>Engine</th>
-                                <th>Score</th>
-                                <th>LCP</th>
-                                <th>CLS</th>
-                                <th>Page weight</th>
+                                <th><?php esc_html_e('When', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Engine', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Score', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('LCP', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('CLS', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Page weight', 'clockwork-renegade'); ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -262,7 +295,7 @@ class PerformancePage
                                                 <?php echo (int) $score; ?>
                                             </span>
                                         <?php else : ?>
-                                            <span class="clockwork-pill clockwork-pill--warn">Failed</span>
+                                            <span class="clockwork-pill clockwork-pill--warn"><?php esc_html_e('Failed', 'clockwork-renegade'); ?></span>
                                         <?php endif; ?>
                                     </td>
                                     <td class="mono"><?php echo esc_html(self::formatMs($details['lcp_ms'] ?? null)); ?></td>
@@ -302,12 +335,14 @@ class PerformancePage
     private static function engineConditionsLabel(array $details): string
     {
         if (($details['engine'] ?? '') === 'gtmetrix') {
-            return 'GTmetrix (desktop Chrome, pinned location)';
+            return __('GTmetrix (desktop Chrome, pinned location)', 'clockwork-renegade');
         }
 
         $strategy = (string) ($details['strategy'] ?? 'mobile');
 
-        return 'Google PageSpeed ('.($strategy === 'desktop' ? 'desktop' : 'simulated mobile phone').')';
+        return $strategy === 'desktop'
+            ? __('Google PageSpeed (desktop)', 'clockwork-renegade')
+            : __('Google PageSpeed (simulated mobile phone)', 'clockwork-renegade');
     }
 
     /**
@@ -318,12 +353,18 @@ class PerformancePage
     private static function engineShortLabel(array $details): string
     {
         if (($details['engine'] ?? '') === 'gtmetrix') {
-            return 'GTmetrix';
+            return __('GTmetrix', 'clockwork-renegade');
         }
 
         $strategy = (string) ($details['strategy'] ?? '');
 
-        return 'PageSpeed'.($strategy !== '' ? ' · '.$strategy : '');
+        return $strategy !== ''
+            ? sprintf(
+                /* translators: %s: scan strategy, e.g. mobile or desktop */
+                __('PageSpeed · %s', 'clockwork-renegade'),
+                $strategy
+            )
+            : __('PageSpeed', 'clockwork-renegade');
     }
 
     private static function letterGradeFor(?int $score): string
@@ -389,21 +430,33 @@ class PerformancePage
         }
         $diff = time() - $ts;
         if ($diff < 60) {
-            return 'just now';
+            return __('just now', 'clockwork-renegade');
         }
         if ($diff < 3600) {
             $mins = (int) round($diff / 60);
 
-            return $mins.' minute'.($mins === 1 ? '' : 's').' ago';
+            return sprintf(
+                /* translators: %d: number of minutes */
+                _n('%d minute ago', '%d minutes ago', $mins, 'clockwork-renegade'),
+                $mins
+            );
         }
         if ($diff < 86400) {
             $hours = (int) round($diff / 3600);
 
-            return $hours.' hour'.($hours === 1 ? '' : 's').' ago';
+            return sprintf(
+                /* translators: %d: number of hours */
+                _n('%d hour ago', '%d hours ago', $hours, 'clockwork-renegade'),
+                $hours
+            );
         }
         $days = (int) round($diff / 86400);
 
-        return $days.' day'.($days === 1 ? '' : 's').' ago';
+        return sprintf(
+            /* translators: %d: number of days */
+            _n('%d day ago', '%d days ago', $days, 'clockwork-renegade'),
+            $days
+        );
     }
 
     private static function formatTimestampUtc(string $ranAtUtc): string

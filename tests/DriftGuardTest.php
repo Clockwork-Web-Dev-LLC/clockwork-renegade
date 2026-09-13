@@ -40,6 +40,37 @@ class DriftGuardTest extends TestCase
         }
     }
 
+    public function testAllGettextCallsUseRenegadeTextDomain(): void
+    {
+        $srcDir = dirname(__DIR__) . '/src';
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($srcDir));
+
+        // Every gettext call must pass the plugin's own text domain as its
+        // final string argument. A wrong or missing domain silently breaks
+        // translation loading — invisible in English testing, so guard it.
+        $pattern = '/\b(?:__|_e|_x|_n|esc_html__|esc_html_e|esc_attr__|esc_attr_e)\s*\(\s*(?:(?:[^()]|\([^()]*\))*?)[\'"]([a-z0-9-]+)[\'"]\s*\)/s';
+
+        foreach ($iterator as $file) {
+            if (! $file->isFile() || $file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $content = (string) file_get_contents($file->getPathname());
+
+            if (! preg_match_all($pattern, $content, $matches)) {
+                continue;
+            }
+
+            foreach ($matches[1] as $domain) {
+                $this->assertSame(
+                    'clockwork-renegade',
+                    $domain,
+                    "File {$file->getFilename()} has a gettext call with text domain '{$domain}' instead of 'clockwork-renegade'."
+                );
+            }
+        }
+    }
+
     public function testNoRawEvalExecutionInSrc(): void
     {
         $srcDir = dirname(__DIR__) . '/src';

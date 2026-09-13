@@ -85,10 +85,14 @@ class FormsPage
             ?>
             <div class="clockwork-card" style="border-left: 4px solid #65a30d; margin-bottom: 16px;">
                 <div class="clockwork-card__body">
-                    <strong>Scheduled form testing is part of your care plan.</strong>
-                    <?php echo esc_html(WhiteLabel::getAuthorName()); ?> runs each form you've subscribed below on a weekly cadence, verifies the
-                    submission email actually leaves your server, and alerts their team immediately if a form
-                    breaks — so you don't hear about it from a frustrated lead first.
+                    <strong><?php esc_html_e('Scheduled form testing is part of your care plan.', 'clockwork-renegade'); ?></strong>
+                    <?php
+                    echo esc_html(sprintf(
+                        /* translators: %s: agency / author display name */
+                        __("%s runs each form you've subscribed below on a weekly cadence, verifies the submission email actually leaves your server, and alerts their team immediately if a form breaks — so you don't hear about it from a frustrated lead first.", 'clockwork-renegade'),
+                        WhiteLabel::getAuthorName()
+                    ));
+                    ?>
                 </div>
             </div>
             <?php
@@ -96,12 +100,15 @@ class FormsPage
             ?>
             <div class="clockwork-card" style="border-left: 4px solid #f59e0b; margin-bottom: 16px;">
                 <div class="clockwork-card__body">
-                    <strong>Add a care plan to unlock scheduled form testing.</strong>
-                    With a care plan, every form you flag below gets <strong>tested weekly</strong> by
-                    <?php echo esc_html(WhiteLabel::getAuthorName()); ?> — we submit it like a real visitor would, verify the resulting <strong>email actually
-                    leaves your server</strong>, and ping our team the moment a form starts silently failing.
-                    No more "did anyone fill out the contact form this month?" guesswork; no more leads lost to
-                    a misconfigured SMTP plugin. Talk to <?php echo esc_html(WhiteLabel::getAuthorName()); ?> about adding a care plan.
+                    <strong><?php esc_html_e('Add a care plan to unlock scheduled form testing.', 'clockwork-renegade'); ?></strong>
+                    <?php
+                    echo wp_kses(sprintf(
+                        /* translators: %1$s: agency / author display name, %2$s: agency / author display name */
+                        __('With a care plan, every form you flag below gets <strong>tested weekly</strong> by %1$s — we submit it like a real visitor would, verify the resulting <strong>email actually leaves your server</strong>, and ping our team the moment a form starts silently failing. No more "did anyone fill out the contact form this month?" guesswork; no more leads lost to a misconfigured SMTP plugin. Talk to %2$s about adding a care plan.', 'clockwork-renegade'),
+                        esc_html(WhiteLabel::getAuthorName()),
+                        esc_html(WhiteLabel::getAuthorName())
+                    ), ['strong' => []]);
+                    ?>
                 </div>
             </div>
             <?php
@@ -166,11 +173,11 @@ class FormsPage
         $plugin = $detected['plugin'];
         ?>
         <div class="clockwork-notice clockwork-notice--muted" style="margin-bottom: 16px;">
-            <strong>Form plugin detected:</strong>
-            <?php echo $plugin ? esc_html($plugin) : '<em>none active</em>'; ?>
-            · <strong>Last scan:</strong>
-            <?php echo $detectedAt ? esc_html($detectedAt) : 'never'; ?>.
-            <button type="button" class="button button-small" id="clockwork-redetect">Re-detect now</button>
+            <strong><?php esc_html_e('Form plugin detected:', 'clockwork-renegade'); ?></strong>
+            <?php echo $plugin ? esc_html($plugin) : '<em>' . esc_html__('none active', 'clockwork-renegade') . '</em>'; ?>
+            · <strong><?php esc_html_e('Last scan:', 'clockwork-renegade'); ?></strong>
+            <?php echo $detectedAt ? esc_html($detectedAt) : esc_html__('never', 'clockwork-renegade'); ?>.
+            <button type="button" class="button button-small" id="clockwork-redetect"><?php esc_html_e('Re-detect now', 'clockwork-renegade'); ?></button>
         </div>
         <?php
     }
@@ -187,24 +194,37 @@ class FormsPage
         ?>
         <div class="clockwork-card">
             <div class="clockwork-card__head">
-                <h2>Forms detected on this site</h2>
-                <span class="clockwork-card__meta"><?php echo count($forms); ?> form<?php echo count($forms) === 1 ? '' : 's'; ?></span>
+                <h2><?php esc_html_e('Forms detected on this site', 'clockwork-renegade'); ?></h2>
+                <span class="clockwork-card__meta"><?php
+                    echo esc_html(sprintf(
+                        /* translators: %d: number of forms */
+                        _n('%d form', '%d forms', count($forms), 'clockwork-renegade'),
+                        count($forms)
+                    ));
+                ?></span>
             </div>
             <div class="clockwork-card__body">
                 <?php if ($forms === []) : ?>
-                    <p class="clockwork-empty">No form plugins active, or no forms configured. Install Contact Form 7, WPForms, or Gravity Forms and create a form, then click <em>Re-detect now</em>.</p>
+                    <p class="clockwork-empty"><?php echo wp_kses(__('No form plugins active, or no forms configured. Install Contact Form 7, WPForms, or Gravity Forms and create a form, then click <em>Re-detect now</em>.', 'clockwork-renegade'), ['em' => []]); ?></p>
                 <?php else : ?>
                     <?php if ($onCarePlan) : ?>
-                        <p class="clockwork-help">Toggle a form on to have <?php echo esc_html(WhiteLabel::getAuthorName()); ?> test it on a schedule (weekly). Up to <?php echo esc_html((string) SubscriptionsService::MAX); ?> forms can be monitored at once.</p>
+                        <p class="clockwork-help"><?php
+                            echo esc_html(sprintf(
+                                /* translators: %1$s: agency / author display name, %2$s: maximum number of monitored forms */
+                                __('Toggle a form on to have %1$s test it on a schedule (weekly). Up to %2$s forms can be monitored at once.', 'clockwork-renegade'),
+                                WhiteLabel::getAuthorName(),
+                                (string) SubscriptionsService::MAX
+                            ));
+                        ?></p>
                     <?php else : ?>
-                        <p class="clockwork-help">Below is every form we'd test for you on a weekly schedule once your care plan is active. The toggles are locked until then — see the banner above.</p>
+                        <p class="clockwork-help"><?php esc_html_e("Below is every form we'd test for you on a weekly schedule once your care plan is active. The toggles are locked until then — see the banner above.", 'clockwork-renegade'); ?></p>
                     <?php endif; ?>
                     <table class="widefat striped clockwork-forms-table">
                         <thead>
                             <tr>
-                                <th>Form</th>
-                                <th>Plugin ID</th>
-                                <th style="width: 170px;">Monitor</th>
+                                <th><?php esc_html_e('Form', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Plugin ID', 'clockwork-renegade'); ?></th>
+                                <th style="width: 170px;"><?php esc_html_e('Monitor', 'clockwork-renegade'); ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -221,7 +241,7 @@ class FormsPage
                                 <tr data-form-id="<?php echo esc_attr($f['id']); ?>"
                                     data-plugin="<?php echo esc_attr($plugin); ?>">
                                     <td>
-                                        <strong><?php echo esc_html($f['title'] ?: '(untitled)'); ?></strong>
+                                        <strong><?php echo esc_html($f['title'] ?: __('(untitled)', 'clockwork-renegade')); ?></strong>
                                         <?php if (! empty($f['page_url'])) : ?>
                                             <div style="font-size: 11px; color: #6b7280;">
                                                 <a href="<?php echo esc_url($f['page_url']); ?>" target="_blank" rel="noopener"><?php echo esc_html($f['page_url']); ?></a>
@@ -231,7 +251,7 @@ class FormsPage
                                     <td><code>#<?php echo esc_html($f['id']); ?></code></td>
                                     <td>
                                         <label class="clockwork-switch <?php echo $disabled ? 'is-disabled' : ''; ?>"
-                                               <?php if ($careLocked) : ?>title="Add a care plan to enable form monitoring."<?php endif; ?>>
+                                               <?php if ($careLocked) : ?>title="<?php esc_attr_e('Add a care plan to enable form monitoring.', 'clockwork-renegade'); ?>"<?php endif; ?>>
                                             <input type="checkbox"
                                                    class="clockwork-subscribe-toggle"
                                                    <?php checked($isSubscribed); ?>
@@ -239,8 +259,8 @@ class FormsPage
                                             <span class="clockwork-switch__track"></span>
                                         </label>
                                         <?php if ($careLocked) : ?>
-                                            <span class="clockwork-row-lock" title="Add a care plan to enable form monitoring." aria-label="Care plan required">
-                                                <span class="dashicons dashicons-lock"></span> Care plan
+                                            <span class="clockwork-row-lock" title="<?php esc_attr_e('Add a care plan to enable form monitoring.', 'clockwork-renegade'); ?>" aria-label="<?php esc_attr_e('Care plan required', 'clockwork-renegade'); ?>">
+                                                <span class="dashicons dashicons-lock"></span> <?php esc_html_e('Care plan', 'clockwork-renegade'); ?>
                                             </span>
                                         <?php endif; ?>
                                         <span class="clockwork-row-status" aria-live="polite"></span>
@@ -251,8 +271,20 @@ class FormsPage
                     </table>
                     <?php if ($atCap) : ?>
                         <p class="clockwork-help" style="margin-top: 12px;">
-                            <strong>You're at the maximum of <?php echo esc_html((string) SubscriptionsService::MAX); ?> monitored forms.</strong>
-                            Unsubscribe one below to free up a slot, or contact <?php echo esc_html(WhiteLabel::getAuthorName()); ?> to raise the limit.
+                            <strong><?php
+                                echo esc_html(sprintf(
+                                    /* translators: %s: maximum number of monitored forms */
+                                    __("You're at the maximum of %s monitored forms.", 'clockwork-renegade'),
+                                    (string) SubscriptionsService::MAX
+                                ));
+                            ?></strong>
+                            <?php
+                            echo esc_html(sprintf(
+                                /* translators: %s: agency / author display name */
+                                __('Unsubscribe one below to free up a slot, or contact %s to raise the limit.', 'clockwork-renegade'),
+                                WhiteLabel::getAuthorName()
+                            ));
+                            ?>
                         </p>
                     <?php endif; ?>
                 <?php endif; ?>
@@ -274,11 +306,11 @@ class FormsPage
         ?>
         <div class="clockwork-card" style="margin-top: 18px;">
             <div class="clockwork-card__head">
-                <h2><?php echo $onCarePlan ? "Forms you're monitoring" : "Forms you were monitoring"; ?></h2>
+                <h2><?php echo $onCarePlan ? esc_html__("Forms you're monitoring", 'clockwork-renegade') : esc_html__('Forms you were monitoring', 'clockwork-renegade'); ?></h2>
                 <span class="clockwork-card__meta">
                     <?php if (! $onCarePlan) : ?>
-                        <span class="clockwork-care-paused-pill" title="Tests are paused until a care plan is added.">
-                            <span class="dashicons dashicons-pause"></span> Care plan paused
+                        <span class="clockwork-care-paused-pill" title="<?php esc_attr_e('Tests are paused until a care plan is added.', 'clockwork-renegade'); ?>">
+                            <span class="dashicons dashicons-pause"></span> <?php esc_html_e('Care plan paused', 'clockwork-renegade'); ?>
                         </span> ·
                     <?php endif; ?>
                     <?php echo esc_html((string) count($subs)); ?> / <?php echo esc_html((string) SubscriptionsService::MAX); ?>
@@ -287,9 +319,7 @@ class FormsPage
             <div class="clockwork-card__body">
                 <?php if (! $onCarePlan) : ?>
                     <p class="clockwork-help">
-                        These forms were configured to be monitored, but the schedule is paused because the
-                        care plan is inactive. They'll resume the moment a care plan is added — your selections
-                        are preserved. You can still stop monitoring any form to clean up the list.
+                        <?php esc_html_e("These forms were configured to be monitored, but the schedule is paused because the care plan is inactive. They'll resume the moment a care plan is added — your selections are preserved. You can still stop monitoring any form to clean up the list.", 'clockwork-renegade'); ?>
                     </p>
                 <?php endif; ?>
                 <div class="clockwork-forms-grid">
@@ -297,10 +327,10 @@ class FormsPage
                         $result = $resultMap[$formId] ?? null;
                         $state = $result ? (string) ($result['last_result'] ?? '') : '';
                         $statusClass = $state === 'fail' ? 'is-fail' : ($state === 'pass' ? 'is-pass' : 'is-unknown');
-                        $statusLabel = $state === 'fail' ? 'Failing' : ($state === 'pass' ? 'Passing' : 'Not tested yet');
+                        $statusLabel = $state === 'fail' ? __('Failing', 'clockwork-renegade') : ($state === 'pass' ? __('Passing', 'clockwork-renegade') : __('Not tested yet', 'clockwork-renegade'));
                         if (! $onCarePlan) {
                             $statusClass .= ' is-care-paused';
-                            $statusLabel = 'Paused';
+                            $statusLabel = __('Paused', 'clockwork-renegade');
                         }
                         $ranAt = $result ? self::formatTimestamp($result['last_run_at'] ?? null) : null;
                     ?>
@@ -311,34 +341,52 @@ class FormsPage
                                 <div class="clockwork-form-card__head">
                                     <span class="clockwork-form-card__pill"><?php echo esc_html($statusLabel); ?></span>
                                     <div>
-                                        <div class="clockwork-form-card__title">Form #<?php echo esc_html((string) $formId); ?></div>
+                                        <div class="clockwork-form-card__title"><?php
+                                            echo esc_html(sprintf(
+                                                /* translators: %s: form id */
+                                                __('Form #%s', 'clockwork-renegade'),
+                                                (string) $formId
+                                            ));
+                                        ?></div>
                                         <div class="clockwork-form-card__sub">
-                                            Frequency: <?php echo esc_html((string) ($sub['frequency'] ?? 'weekly')); ?>
-                                            · Plugin: <?php echo esc_html((string) ($sub['plugin'] ?? '—')); ?>
+                                            <?php
+                                            echo esc_html(sprintf(
+                                                /* translators: %s: test cadence, e.g. "weekly" */
+                                                __('Frequency: %s', 'clockwork-renegade'),
+                                                (string) ($sub['frequency'] ?? 'weekly')
+                                            ));
+                                            ?>
+                                            · <?php
+                                            echo esc_html(sprintf(
+                                                /* translators: %s: form plugin name */
+                                                __('Plugin: %s', 'clockwork-renegade'),
+                                                (string) ($sub['plugin'] ?? '—')
+                                            ));
+                                            ?>
                                         </div>
                                     </div>
                                 </div>
                                 <dl class="clockwork-form-card__kv">
-                                    <dt>Last run</dt>
+                                    <dt><?php esc_html_e('Last run', 'clockwork-renegade'); ?></dt>
                                     <dd><?php echo $ranAt ? esc_html($ranAt) : '—'; ?></dd>
-                                    <dt>Mail outcome</dt>
+                                    <dt><?php esc_html_e('Mail outcome', 'clockwork-renegade'); ?></dt>
                                     <dd><?php echo esc_html($result['last_mail_outcome'] ?? '—'); ?></dd>
                                     <?php if ($state === 'fail' && ! empty($result['last_error'])) : ?>
-                                        <dt>Error</dt>
+                                        <dt><?php esc_html_e('Error', 'clockwork-renegade'); ?></dt>
                                         <dd class="clockwork-form-card__err"><?php echo esc_html((string) $result['last_error']); ?></dd>
                                     <?php endif; ?>
                                 </dl>
                                 <div class="clockwork-form-card__actions">
                                     <?php if ($onCarePlan) : ?>
-                                        <button type="button" class="button clockwork-test-now-btn">Test now</button>
+                                        <button type="button" class="button clockwork-test-now-btn"><?php esc_html_e('Test now', 'clockwork-renegade'); ?></button>
                                     <?php else : ?>
                                         <button type="button" class="button" disabled
-                                                title="Add a care plan to run on-demand tests.">
+                                                title="<?php esc_attr_e('Add a care plan to run on-demand tests.', 'clockwork-renegade'); ?>">
                                             <span class="dashicons dashicons-lock" style="font-size: 14px; line-height: 24px; vertical-align: text-bottom;"></span>
-                                            Test now
+                                            <?php esc_html_e('Test now', 'clockwork-renegade'); ?>
                                         </button>
                                     <?php endif; ?>
-                                    <button type="button" class="button-link clockwork-unsubscribe-btn">Stop monitoring</button>
+                                    <button type="button" class="button-link clockwork-unsubscribe-btn"><?php esc_html_e('Stop monitoring', 'clockwork-renegade'); ?></button>
                                 </div>
                             </div>
                         </div>
@@ -524,17 +572,21 @@ class FormsPage
                     const formId = row.getAttribute('data-form-id');
                     const plugin = row.getAttribute('data-plugin');
                     const wantOn = ev.target.checked;
-                    setRowStatus(row, wantOn ? 'subscribing…' : 'unsubscribing…', 'saving');
+                    setRowStatus(row, wantOn ? <?php echo wp_json_encode(__('subscribing…', 'clockwork-renegade')); ?> : <?php echo wp_json_encode(__('unsubscribing…', 'clockwork-renegade')); ?>, 'saving');
                     const action = wantOn ? 'clockwork_renegade_subscribe_form' : 'clockwork_renegade_unsubscribe_form';
                     const {status, json} = await postForm(action, {form_id: formId, plugin});
                     if (status === 200 && json && json.success) {
-                        setRowStatus(row, wantOn ? <?php echo wp_json_encode('Monitoring — ' . WhiteLabel::getAuthorName() . ' will pick this up tonight.'); ?> : 'Stopped monitoring.', 'ok');
+                        setRowStatus(row, wantOn ? <?php echo wp_json_encode(sprintf(
+                            /* translators: %s: agency / author display name */
+                            __('Monitoring — %s will pick this up tonight.', 'clockwork-renegade'),
+                            WhiteLabel::getAuthorName()
+                        )); ?> : <?php echo wp_json_encode(__('Stopped monitoring.', 'clockwork-renegade')); ?>, 'ok');
                         // Reload the page so the Subscribed section + cap state refresh
                         // cleanly. Keeps the DOM dead-simple — no per-row reconciliation.
                         setTimeout(() => window.location.reload(), 800);
                     } else {
                         ev.target.checked = ! wantOn;
-                        setRowStatus(row, (json && json.data && json.data.message) || 'Failed.', 'err');
+                        setRowStatus(row, (json && json.data && json.data.message) || <?php echo wp_json_encode(__('Failed.', 'clockwork-renegade')); ?>, 'err');
                     }
                 });
             });
@@ -547,16 +599,22 @@ class FormsPage
                     const plugin = card.getAttribute('data-plugin');
                     btn.disabled = true;
                     const original = btn.textContent;
-                    btn.textContent = 'Testing…';
+                    btn.textContent = <?php echo wp_json_encode(__('Testing…', 'clockwork-renegade')); ?>;
                     const {status, json} = await postForm('clockwork_renegade_test_form_now', {form_id: formId, plugin});
                     btn.disabled = false;
                     btn.textContent = original;
                     if (status === 200 && json && json.success && json.data && json.data.ok) {
-                        alert('Form #' + formId + ' passed. Reloading.');
+                        alert(<?php echo wp_json_encode(
+                            /* translators: %s: form ID */
+                            __('Form #%s passed. Reloading.', 'clockwork-renegade')
+                        ); ?>.replace('%s', formId));
                         window.location.reload();
                     } else {
-                        const err = (json && json.data && json.data.error) || (json && json.data && json.data.message) || 'Test failed.';
-                        alert('Form #' + formId + ' failed: ' + err);
+                        const err = (json && json.data && json.data.error) || (json && json.data && json.data.message) || <?php echo wp_json_encode(__('Test failed.', 'clockwork-renegade')); ?>;
+                        alert(<?php echo wp_json_encode(
+                            /* translators: 1: form ID, 2: error message */
+                            __('Form #%1$s failed: %2$s', 'clockwork-renegade')
+                        ); ?>.replace('%1$s', formId).replace('%2$s', err));
                         window.location.reload();
                     }
                 });
@@ -567,14 +625,17 @@ class FormsPage
                 btn.addEventListener('click', async (ev) => {
                     const card = ev.target.closest('.clockwork-form-card');
                     const formId = card.getAttribute('data-form-id');
-                    if (! confirm('Stop monitoring form #' + formId + '?')) return;
+                    if (! confirm(<?php echo wp_json_encode(
+                        /* translators: %s: form ID */
+                        __('Stop monitoring form #%s?', 'clockwork-renegade')
+                    ); ?>.replace('%s', formId))) return;
                     btn.disabled = true;
                     const {status, json} = await postForm('clockwork_renegade_unsubscribe_form', {form_id: formId});
                     if (status === 200 && json && json.success) {
                         window.location.reload();
                     } else {
                         btn.disabled = false;
-                        alert('Could not unsubscribe.');
+                        alert(<?php echo wp_json_encode(__('Could not unsubscribe.', 'clockwork-renegade')); ?>);
                     }
                 });
             });
@@ -585,14 +646,14 @@ class FormsPage
                 reBtn.addEventListener('click', async () => {
                     reBtn.disabled = true;
                     const original = reBtn.textContent;
-                    reBtn.textContent = 'Scanning…';
+                    reBtn.textContent = <?php echo wp_json_encode(__('Scanning…', 'clockwork-renegade')); ?>;
                     const {status, json} = await postForm('clockwork_renegade_redetect_forms', {});
                     if (status === 200 && json && json.success) {
                         window.location.reload();
                     } else {
                         reBtn.disabled = false;
                         reBtn.textContent = original;
-                        alert('Re-detect failed.');
+                        alert(<?php echo wp_json_encode(__('Re-detect failed.', 'clockwork-renegade')); ?>);
                     }
                 });
             }

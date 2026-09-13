@@ -108,8 +108,8 @@ class UptimePage
     private static function renderSubTabs(string $active): void
     {
         $tabs = [
-            'activity' => 'Uptime Activity',
-            'settings' => 'About',
+            'activity' => __('Uptime Activity', 'clockwork-renegade'),
+            'settings' => __('About', 'clockwork-renegade'),
         ];
         ?>
         <div class="clockwork-uptime-subtabs">
@@ -137,27 +137,53 @@ class UptimePage
         ?>
         <div class="clockwork-card" style="margin-top: 16px;">
             <div class="clockwork-card__head">
-                <h2>How monitoring works</h2>
+                <h2><?php esc_html_e('How monitoring works', 'clockwork-renegade'); ?></h2>
             </div>
             <div class="clockwork-card__body">
                 <dl class="clockwork-uptime-defs">
-                    <dt>What we check</dt>
-                    <dd>Every few minutes, <?php echo esc_html(WhiteLabel::getAuthorName()); ?> sends a request to <strong>https://<?php echo esc_html(self::currentHost()); ?>/</strong> and verifies it answers with a normal page.</dd>
+                    <dt><?php esc_html_e('What we check', 'clockwork-renegade'); ?></dt>
+                    <dd><?php echo wp_kses(
+                        sprintf(
+                            /* translators: 1: agency / author display name, 2: site hostname */
+                            __('Every few minutes, %1$s sends a request to <strong>https://%2$s/</strong> and verifies it answers with a normal page.', 'clockwork-renegade'),
+                            esc_html(WhiteLabel::getAuthorName()),
+                            esc_html(self::currentHost())
+                        ),
+                        ['strong' => []]
+                    ); ?></dd>
 
-                    <dt>What counts as "down"</dt>
-                    <dd>A page that doesn't load — server errors, timeouts, DNS failures, or anything other than a successful response. Cloudflare or WAF challenges that block our checker are flagged separately so they don't count as real outages.</dd>
+                    <dt><?php esc_html_e('What counts as "down"', 'clockwork-renegade'); ?></dt>
+                    <dd><?php esc_html_e('A page that doesn\'t load — server errors, timeouts, DNS failures, or anything other than a successful response. Cloudflare or WAF challenges that block our checker are flagged separately so they don\'t count as real outages.', 'clockwork-renegade'); ?></dd>
 
-                    <dt>Probe frequency</dt>
-                    <dd>Every 5 minutes by default. <?php echo esc_html(WhiteLabel::getAuthorName()); ?> can dial this up to once a minute or down to every 15 minutes globally — <button type="button" class="cwk-support-trigger cwk-link-btn">contact us</button> if you want a specific cadence on this site.</dd>
+                    <dt><?php esc_html_e('Probe frequency', 'clockwork-renegade'); ?></dt>
+                    <dd><?php
+                    printf(
+                        /* translators: %s: agency / author display name */
+                        esc_html__('Every 5 minutes by default. %s can dial this up to once a minute or down to every 15 minutes globally —', 'clockwork-renegade'),
+                        esc_html(WhiteLabel::getAuthorName())
+                    );
+                    ?> <button type="button" class="cwk-support-trigger cwk-link-btn"><?php esc_html_e('contact us', 'clockwork-renegade'); ?></button> <?php esc_html_e('if you want a specific cadence on this site.', 'clockwork-renegade'); ?></dd>
 
-                    <dt>Alert threshold</dt>
-                    <dd>Two consecutive failures (about 10 minutes of real downtime) before an alert is fired. Recovery is instant — the moment your site comes back, the alert clears.</dd>
+                    <dt><?php esc_html_e('Alert threshold', 'clockwork-renegade'); ?></dt>
+                    <dd><?php esc_html_e('Two consecutive failures (about 10 minutes of real downtime) before an alert is fired. Recovery is instant — the moment your site comes back, the alert clears.', 'clockwork-renegade'); ?></dd>
 
-                    <dt>Where alerts go</dt>
-                    <dd><?php echo esc_html(WhiteLabel::getAuthorName()); ?>'s internal team chat. They get a notification with the failure reason and a link straight to your site, so they can investigate before you ever notice.</dd>
+                    <dt><?php esc_html_e('Where alerts go', 'clockwork-renegade'); ?></dt>
+                    <dd><?php
+                    printf(
+                        /* translators: %s: agency / author display name */
+                        esc_html__('%s\'s internal team chat. They get a notification with the failure reason and a link straight to your site, so they can investigate before you ever notice.', 'clockwork-renegade'),
+                        esc_html(WhiteLabel::getAuthorName())
+                    );
+                    ?></dd>
 
-                    <dt>Want this changed?</dt>
-                    <dd>The schedule, threshold, and notification routing are all controlled by <?php echo esc_html(WhiteLabel::getAuthorName()); ?>. <button type="button" class="cwk-support-trigger cwk-link-btn">Reach out to us</button> and we can adjust things on our end.</dd>
+                    <dt><?php esc_html_e('Want this changed?', 'clockwork-renegade'); ?></dt>
+                    <dd><?php
+                    printf(
+                        /* translators: %s: agency / author display name */
+                        esc_html__('The schedule, threshold, and notification routing are all controlled by %s.', 'clockwork-renegade'),
+                        esc_html(WhiteLabel::getAuthorName())
+                    );
+                    ?> <button type="button" class="cwk-support-trigger cwk-link-btn"><?php esc_html_e('Reach out to us', 'clockwork-renegade'); ?></button> <?php esc_html_e('and we can adjust things on our end.', 'clockwork-renegade'); ?></dd>
                 </dl>
             </div>
         </div>
@@ -167,7 +193,7 @@ class UptimePage
     private static function currentHost(): string
     {
         $host = wp_parse_url(home_url(), PHP_URL_HOST);
-        return is_string($host) ? $host : 'your site';
+        return is_string($host) ? $host : __('your site', 'clockwork-renegade');
     }
 
     /**
@@ -183,8 +209,8 @@ class UptimePage
             default => 'clockwork-up-circle--muted',
         };
         $circleLabel = match ($state) {
-            'up' => 'UP',
-            'down' => 'DOWN',
+            'up' => __('UP', 'clockwork-renegade'),
+            'down' => __('DOWN', 'clockwork-renegade'),
             default => '—',
         };
 
@@ -199,11 +225,17 @@ class UptimePage
                 <div class="clockwork-up-summary__row">
                     <strong>
                         <?php if ($allPct !== null) : ?>
-                            Overall uptime is <span class="clockwork-up-summary__pct"><?php echo esc_html(number_format($allPct, 2)); ?>%</span>
+                            <?php esc_html_e('Overall uptime is', 'clockwork-renegade'); ?> <span class="clockwork-up-summary__pct"><?php echo esc_html(number_format($allPct, 2)); ?>%</span>
                         <?php elseif ($hasAnyHistory) : ?>
-                            <span class="clockwork-up-summary__pct">100%</span> uptime — no downtime recorded yet.
+                            <span class="clockwork-up-summary__pct">100%</span> <?php esc_html_e('uptime — no downtime recorded yet.', 'clockwork-renegade'); ?>
                         <?php else : ?>
-                            Monitoring is active. <?php echo esc_html(WhiteLabel::getAuthorName()); ?> has been probing this site and hasn't seen any issues.
+                            <?php
+                            printf(
+                                /* translators: %s: agency / author display name */
+                                esc_html__('Monitoring is active. %s has been probing this site and hasn\'t seen any issues.', 'clockwork-renegade'),
+                                esc_html(WhiteLabel::getAuthorName())
+                            );
+                            ?>
                         <?php endif; ?>
                     </strong>
                 </div>
@@ -214,19 +246,19 @@ class UptimePage
                 <?php /* No history at all — give a clear explanation rather than a blank line. */ ?>
                 <?php elseif (! $hasAnyHistory) : ?>
                     <div class="clockwork-up-summary__row clockwork-up-summary__sub">
-                        Activity will appear here as soon as your site has any state changes (downtime, recovery).
+                        <?php esc_html_e('Activity will appear here as soon as your site has any state changes (downtime, recovery).', 'clockwork-renegade'); ?>
                     </div>
                 <?php endif; ?>
                 <?php if ($latestDowntime !== null) : ?>
                     <div class="clockwork-up-summary__row clockwork-up-summary__divider">
-                        <strong>Latest downtime:</strong>
+                        <strong><?php esc_html_e('Latest downtime:', 'clockwork-renegade'); ?></strong>
                         <?php echo esc_html(self::formatTimestampUtc($latestDowntime['at']) ?: '—'); ?>,
-                        lasted for <?php echo esc_html(self::formatDuration($latestDowntime['duration_sec'])); ?>
+                        <?php esc_html_e('lasted for', 'clockwork-renegade'); ?> <?php echo esc_html(self::formatDuration($latestDowntime['duration_sec'])); ?>
                     </div>
                 <?php elseif ($hasAnyHistory) : ?>
                     <div class="clockwork-up-summary__row clockwork-up-summary__divider clockwork-up-summary__sub">
                         <i class="dashicons dashicons-yes-alt" style="color: #16a34a; font-size: 14px; vertical-align: text-bottom;"></i>
-                        No downtime recorded — your site has been running smoothly.
+                        <?php esc_html_e('No downtime recorded — your site has been running smoothly.', 'clockwork-renegade'); ?>
                     </div>
                 <?php endif; ?>
             </div>
@@ -256,19 +288,19 @@ class UptimePage
         $fmt = fn (?float $pct) => $pct === null ? '—' : number_format($pct, 2).'%';
 
         ?>
-        <h2 class="clockwork-up-section-title">Uptime overview</h2>
+        <h2 class="clockwork-up-section-title"><?php esc_html_e('Uptime overview', 'clockwork-renegade'); ?></h2>
         <div class="clockwork-up-overview">
             <div class="clockwork-up-stat <?php echo esc_attr($colorClass($u24)); ?>">
                 <span class="clockwork-up-stat__pct"><?php echo esc_html($fmt($u24)); ?></span>
-                <span class="clockwork-up-stat__label">(last 24 hours)</span>
+                <span class="clockwork-up-stat__label"><?php esc_html_e('(last 24 hours)', 'clockwork-renegade'); ?></span>
             </div>
             <div class="clockwork-up-stat <?php echo esc_attr($colorClass($u7d)); ?>">
                 <span class="clockwork-up-stat__pct"><?php echo esc_html($fmt($u7d)); ?></span>
-                <span class="clockwork-up-stat__label">(last 7 days)</span>
+                <span class="clockwork-up-stat__label"><?php esc_html_e('(last 7 days)', 'clockwork-renegade'); ?></span>
             </div>
             <div class="clockwork-up-stat <?php echo esc_attr($colorClass($u30)); ?>">
                 <span class="clockwork-up-stat__pct"><?php echo esc_html($fmt($u30)); ?></span>
-                <span class="clockwork-up-stat__label">(last 30 days)</span>
+                <span class="clockwork-up-stat__label"><?php esc_html_e('(last 30 days)', 'clockwork-renegade'); ?></span>
             </div>
         </div>
         <?php
@@ -280,15 +312,19 @@ class UptimePage
     private static function renderEvents(array $events, int $now): void
     {
         ?>
-        <h2 class="clockwork-up-section-title">Latest events</h2>
+        <h2 class="clockwork-up-section-title"><?php esc_html_e('Latest events', 'clockwork-renegade'); ?></h2>
         <div class="clockwork-card">
             <div class="clockwork-card__body clockwork-card__body--tight">
                 <?php if ($events === []) : ?>
                     <div style="padding: 20px;">
                         <div class="clockwork-notice clockwork-notice--muted">
-                            No transition events recorded yet. <?php echo esc_html(WhiteLabel::getAuthorName()); ?>'s monitor probes
-                            every few minutes; the first up-confirmation usually arrives within 24 hours
-                            of installation.
+                            <?php
+                            printf(
+                                /* translators: %s: agency / author display name */
+                                esc_html__('No transition events recorded yet. %s\'s monitor probes every few minutes; the first up-confirmation usually arrives within 24 hours of installation.', 'clockwork-renegade'),
+                                esc_html(WhiteLabel::getAuthorName())
+                            );
+                            ?>
                         </div>
                     </div>
                 <?php else : ?>
@@ -300,9 +336,9 @@ class UptimePage
                     <table class="clockwork-table" id="clockwork-uptime-events">
                         <thead>
                             <tr>
-                                <th>Type</th>
-                                <th>Detail</th>
-                                <th>When &amp; duration</th>
+                                <th><?php esc_html_e('Type', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Detail', 'clockwork-renegade'); ?></th>
+                                <th><?php echo wp_kses(__('When &amp; duration', 'clockwork-renegade'), []); ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -314,7 +350,7 @@ class UptimePage
                                 $isUp = ($row['target'] ?? '') === 'up';
                                 $arrow = $isUp ? '↑' : '↓';
                                 $arrowClass = $isUp ? 'clockwork-up-arrow--up' : 'clockwork-up-arrow--down';
-                                $label = $isUp ? 'Up' : 'Down';
+                                $label = $isUp ? __('Up', 'clockwork-renegade') : __('Down', 'clockwork-renegade');
                                 $details = self::decodeDetails($row['details'] ?? null);
                                 $detailText = self::formatEventDetail($isUp, $details, (string) ($row['error'] ?? ''));
 
@@ -330,7 +366,13 @@ class UptimePage
                                         <span class="clockwork-up-arrow <?php echo esc_attr($arrowClass); ?>"><?php echo esc_html($arrow); ?> <?php echo esc_html($label); ?></span>
                                     </td>
                                     <td><?php echo esc_html($detailText); ?></td>
-                                    <td><?php echo esc_html($whenAbs); ?> <?php echo $durationSec !== null ? 'for '.esc_html(self::formatDuration($durationSec)) : ''; ?></td>
+                                    <td><?php echo esc_html($whenAbs); ?> <?php echo $durationSec !== null
+                                        ? sprintf(
+                                            /* translators: %s: duration, e.g. "3h 20m" */
+                                            esc_html__('for %s', 'clockwork-renegade'),
+                                            esc_html(self::formatDuration($durationSec))
+                                        )
+                                        : ''; ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -341,7 +383,13 @@ class UptimePage
                                     class="button-link clockwork-uptime-show-more"
                                     data-shown="<?php echo (int) $initialCap; ?>"
                                     data-total="<?php echo (int) $totalEvents; ?>">
-                                Show <?php echo (int) ($totalEvents - $initialCap); ?> more events…
+                                <?php
+                                printf(
+                                    /* translators: %d: number of additional events */
+                                    esc_html__('Show %d more events…', 'clockwork-renegade'),
+                                    (int) ($totalEvents - $initialCap)
+                                );
+                                ?>
                             </button>
                         </div>
                         <script>
@@ -396,9 +444,14 @@ class UptimePage
             return null;
         }
         $diff = max(0, $now - $ts);
-        $word = $state === 'up' ? 'Up' : 'Down';
+        $word = $state === 'up' ? __('Up', 'clockwork-renegade') : __('Down', 'clockwork-renegade');
 
-        return "{$word} for ".self::formatDuration($diff);
+        return sprintf(
+            /* translators: 1: Up/Down state, 2: duration, e.g. "3h 20m" */
+            __('%1$s for %2$s', 'clockwork-renegade'),
+            $word,
+            self::formatDuration($diff)
+        );
     }
 
     /**
@@ -546,7 +599,7 @@ class UptimePage
     private static function formatEventDetail(bool $isUp, array $details, string $error): string
     {
         if ($isUp) {
-            return 'Everything is ok';
+            return __('Everything is ok', 'clockwork-renegade');
         }
         if ($error !== '') {
             return $error;
@@ -556,7 +609,7 @@ class UptimePage
             return 'HTTP '.((int) $code);
         }
 
-        return 'Unreachable';
+        return __('Unreachable', 'clockwork-renegade');
     }
 
     private static function formatDuration(int $sec): string

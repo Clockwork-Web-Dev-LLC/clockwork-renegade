@@ -133,9 +133,15 @@ class TrafficPage
         <div class="clockwork-card">
             <div class="clockwork-card__body">
                 <div class="clockwork-notice">
-                    <strong>No traffic report yet.</strong>
-                    <?php echo esc_html(WhiteLabel::getAuthorName()); ?> hasn't pushed a traffic report to this site yet.
-                    Reports refresh nightly — please check back tomorrow, or contact <?php echo esc_html(WhiteLabel::getAuthorName()); ?> if this persists.
+                    <strong><?php esc_html_e('No traffic report yet.', 'clockwork-renegade'); ?></strong>
+                    <?php
+                    echo esc_html(sprintf(
+                        /* translators: %1$s: agency / author display name, %2$s: agency / author display name */
+                        __("%1\$s hasn't pushed a traffic report to this site yet. Reports refresh nightly — please check back tomorrow, or contact %2\$s if this persists.", 'clockwork-renegade'),
+                        WhiteLabel::getAuthorName(),
+                        WhiteLabel::getAuthorName()
+                    ));
+                    ?>
                 </div>
             </div>
         </div>
@@ -150,10 +156,22 @@ class TrafficPage
         $fetchedAt = self::formatTimestamp($report['fetched_at'] ?? null);
         ?>
         <div class="clockwork-notice clockwork-notice--muted" style="margin-bottom: 16px;">
-            <strong>Refreshed nightly.</strong>
-            These are not live stats — <?php echo esc_html(WhiteLabel::getAuthorName()); ?>'s monitoring app rolls up your access logs once a day and pushes the result here.
+            <strong><?php esc_html_e('Refreshed nightly.', 'clockwork-renegade'); ?></strong>
+            <?php
+            echo esc_html(sprintf(
+                /* translators: %s: agency / author display name */
+                __("These are not live stats — %s's monitoring app rolls up your access logs once a day and pushes the result here.", 'clockwork-renegade'),
+                WhiteLabel::getAuthorName()
+            ));
+            ?>
             <?php if ($fetchedAt) : ?>
-                Last refreshed <?php echo esc_html($fetchedAt); ?>.
+                <?php
+                echo esc_html(sprintf(
+                    /* translators: %s: formatted date/time of the last refresh */
+                    __('Last refreshed %s.', 'clockwork-renegade'),
+                    $fetchedAt
+                ));
+                ?>
             <?php endif; ?>
         </div>
         <?php
@@ -167,11 +185,16 @@ class TrafficPage
         $fetchedAt = self::formatTimestamp($report['fetched_at'] ?? null);
         ?>
         <div class="clockwork-notice clockwork-notice--muted" style="margin-bottom: 16px;">
-            <strong>Refreshed nightly.</strong>
-            Your hosting plan provides traffic in monthly-level totals rather than a daily breakdown, so there's no
-            day-by-day chart here — just the running counts your host tracks.
+            <strong><?php esc_html_e('Refreshed nightly.', 'clockwork-renegade'); ?></strong>
+            <?php esc_html_e("Your hosting plan provides traffic in monthly-level totals rather than a daily breakdown, so there's no day-by-day chart here — just the running counts your host tracks.", 'clockwork-renegade'); ?>
             <?php if ($fetchedAt) : ?>
-                Last refreshed <?php echo esc_html($fetchedAt); ?>.
+                <?php
+                echo esc_html(sprintf(
+                    /* translators: %s: formatted date/time of the last refresh */
+                    __('Last refreshed %s.', 'clockwork-renegade'),
+                    $fetchedAt
+                ));
+                ?>
             <?php endif; ?>
         </div>
         <?php
@@ -187,18 +210,18 @@ class TrafficPage
     private static function renderPeriodSummary(array $periodSummary): void
     {
         $boxes = [
-            'today' => 'Today',
-            'yesterday' => 'Yesterday',
-            'current_month' => 'This month',
-            'last_month' => 'Last month',
-            'last_12_months' => 'Last 12 months',
+            'today' => __('Today', 'clockwork-renegade'),
+            'yesterday' => __('Yesterday', 'clockwork-renegade'),
+            'current_month' => __('This month', 'clockwork-renegade'),
+            'last_month' => __('Last month', 'clockwork-renegade'),
+            'last_12_months' => __('Last 12 months', 'clockwork-renegade'),
         ];
         ?>
         <div class="clockwork-card">
             <div class="clockwork-card__body">
-                <div style="font-size: 13px; font-weight: 600; color: #111; margin-bottom: 2px;">Page Views</div>
+                <div style="font-size: 13px; font-weight: 600; color: #111; margin-bottom: 2px;"><?php esc_html_e('Page Views', 'clockwork-renegade'); ?></div>
                 <div style="font-size: 12px; color: #6b7280; margin-bottom: 16px;">
-                    Counted by your host — views and unique visitors, by period.
+                    <?php esc_html_e('Counted by your host — views and unique visitors, by period.', 'clockwork-renegade'); ?>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 24px;">
                     <?php foreach ($boxes as $key => $label) :
@@ -209,7 +232,13 @@ class TrafficPage
                         <div>
                             <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 6px;"><?php echo esc_html($label); ?></div>
                             <div style="font-size: 28px; font-weight: 600; color: #111;"><?php echo number_format($views); ?></div>
-                            <div style="font-size: 11px; color: #6b7280; margin-top: 4px;"><?php echo number_format($visitors); ?> visitor<?php echo $visitors === 1 ? '' : 's'; ?></div>
+                            <div style="font-size: 11px; color: #6b7280; margin-top: 4px;"><?php
+                                echo esc_html(sprintf(
+                                    /* translators: %s: formatted visitor count */
+                                    _n('%s visitor', '%s visitors', $visitors, 'clockwork-renegade'),
+                                    number_format($visitors)
+                                ));
+                            ?></div>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -231,26 +260,25 @@ class TrafficPage
         ?>
         <div class="clockwork-card">
             <div class="clockwork-card__body">
-                <div style="font-size: 13px; font-weight: 600; color: #111; margin-bottom: 2px;">Visitors</div>
+                <div style="font-size: 13px; font-weight: 600; color: #111; margin-bottom: 2px;"><?php esc_html_e('Visitors', 'clockwork-renegade'); ?></div>
                 <div style="font-size: 12px; color: #6b7280; margin-bottom: 16px;">
-                    Estimated unique visitors — de-duplicated by IP, with bots and static files (images, CSS, JS) excluded.
-                    This is a smaller, more human number than the request counts in the chart below.
+                    <?php esc_html_e('Estimated unique visitors — de-duplicated by IP, with bots and static files (images, CSS, JS) excluded. This is a smaller, more human number than the request counts in the chart below.', 'clockwork-renegade'); ?>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
                     <div>
-                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 6px;">Today</div>
+                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 6px;"><?php esc_html_e('Today', 'clockwork-renegade'); ?></div>
                         <div style="font-size: 28px; font-weight: 600; color: #111;"><?php echo number_format($today); ?></div>
-                        <div style="font-size: 11px; color: #6b7280; margin-top: 4px;"><?php echo $todayPartial ? 'visits so far — updates again overnight' : 'visits'; ?></div>
+                        <div style="font-size: 11px; color: #6b7280; margin-top: 4px;"><?php echo $todayPartial ? esc_html__('visits so far — updates again overnight', 'clockwork-renegade') : esc_html__('visits', 'clockwork-renegade'); ?></div>
                     </div>
                     <div>
-                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 6px;">Last 7 days</div>
+                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 6px;"><?php esc_html_e('Last 7 days', 'clockwork-renegade'); ?></div>
                         <div style="font-size: 28px; font-weight: 600; color: #111;"><?php echo number_format($week); ?></div>
-                        <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">visits</div>
+                        <div style="font-size: 11px; color: #6b7280; margin-top: 4px;"><?php esc_html_e('visits', 'clockwork-renegade'); ?></div>
                     </div>
                     <div>
-                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 6px;">Last 30 days</div>
+                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 6px;"><?php esc_html_e('Last 30 days', 'clockwork-renegade'); ?></div>
                         <div style="font-size: 28px; font-weight: 600; color: #111;"><?php echo number_format($month); ?></div>
-                        <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">visits</div>
+                        <div style="font-size: 11px; color: #6b7280; margin-top: 4px;"><?php esc_html_e('visits', 'clockwork-renegade'); ?></div>
                     </div>
                 </div>
             </div>
@@ -362,24 +390,28 @@ class TrafficPage
         ?>
         <div class="clockwork-card">
             <div class="clockwork-card__head">
-                <h2>Last 30 days
+                <h2><?php esc_html_e('Last 30 days', 'clockwork-renegade'); ?>
                     <?php if ($cropped) : ?>
-                        <span style="font-weight: 400; color: #6b7280; font-size: 12px;">· tracking started <?php echo esc_html($firstDate); ?></span>
+                        <span style="font-weight: 400; color: #6b7280; font-size: 12px;">· <?php
+                            echo esc_html(sprintf(
+                                /* translators: %s: date tracking began */
+                                __('tracking started %s', 'clockwork-renegade'),
+                                $firstDate
+                            ));
+                        ?></span>
                     <?php endif; ?>
                 </h2>
-                <span style="font-size: 12px; color: #6b7280;">requests/day, stacked by status</span>
+                <span style="font-size: 12px; color: #6b7280;"><?php esc_html_e('requests/day, stacked by status', 'clockwork-renegade'); ?></span>
             </div>
             <div class="clockwork-card__body">
                 <div style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">
-                    Every HTTP request the server answered — page views, images, scripts, API calls, and bot/crawler
-                    traffic all included. That's why these totals run far higher than the visitor counts above; they
-                    measure server workload, not people.
+                    <?php esc_html_e("Every HTTP request the server answered — page views, images, scripts, API calls, and bot/crawler traffic all included. That's why these totals run far higher than the visitor counts above; they measure server workload, not people.", 'clockwork-renegade'); ?>
                 </div>
                 <div style="overflow-x: auto;">
                     <svg viewBox="0 0 <?php echo (int) $width; ?> <?php echo (int) $height; ?>"
                          preserveAspectRatio="xMidYMid meet"
                          style="width: 100%; height: auto; display: block;"
-                         role="img" aria-label="30-day traffic chart">
+                         role="img" aria-label="<?php esc_attr_e('30-day traffic chart', 'clockwork-renegade'); ?>">
                         <?php
                         // Y-axis baseline
                         $baselineY = $padTop + $plotH;
@@ -412,7 +444,8 @@ class TrafficPage
                             ];
 
                             $tooltip = sprintf(
-                                "%s — %s requests (2xx %s · 3xx %s · 4xx %s · 5xx %s)",
+                                /* translators: %1$s: date, %2$s: total request count, %3$s-%6$s: request counts by status class */
+                                __('%1$s — %2$s requests (2xx %3$s · 3xx %4$s · 4xx %5$s · 5xx %6$s)', 'clockwork-renegade'),
                                 $date,
                                 number_format($totalReq),
                                 number_format($s2),
@@ -472,10 +505,10 @@ class TrafficPage
                 <div style="display: flex; gap: 18px; flex-wrap: wrap; padding: 8px 0 0; font-size: 12px; color: #4b5563;">
                     <?php
                     $legend = [
-                        '2xx' => ['color' => $colors['2xx'], 'label' => '2xx', 'desc' => 'Successful requests'],
-                        '3xx' => ['color' => $colors['3xx'], 'label' => '3xx', 'desc' => 'Redirects (e.g. HTTP → HTTPS)'],
-                        '4xx' => ['color' => $colors['4xx'], 'label' => '4xx', 'desc' => 'Not found / access errors'],
-                        '5xx' => ['color' => $colors['5xx'], 'label' => '5xx', 'desc' => 'Server errors'],
+                        '2xx' => ['color' => $colors['2xx'], 'label' => '2xx', 'desc' => __('Successful requests', 'clockwork-renegade')],
+                        '3xx' => ['color' => $colors['3xx'], 'label' => '3xx', 'desc' => __('Redirects (e.g. HTTP → HTTPS)', 'clockwork-renegade')],
+                        '4xx' => ['color' => $colors['4xx'], 'label' => '4xx', 'desc' => __('Not found / access errors', 'clockwork-renegade')],
+                        '5xx' => ['color' => $colors['5xx'], 'label' => '5xx', 'desc' => __('Server errors', 'clockwork-renegade')],
                     ];
                     foreach ($legend as $entry) :
                     ?>
@@ -486,7 +519,12 @@ class TrafficPage
                     <?php endforeach; ?>
                 </div>
                 <p style="margin: 10px 0 0; font-size: 12px; color: #6b7280;">
-                    Seeing a spike in 4xx or 5xx errors? <?php echo WhiteLabel::supportLink('Reach out to ' . WhiteLabel::getAuthorName()); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside supportLink() ?> and we can help investigate.
+                    <?php esc_html_e('Seeing a spike in 4xx or 5xx errors?', 'clockwork-renegade'); ?>
+                    <?php
+                    /* translators: %s: agency / author display name */
+                    echo WhiteLabel::supportLink(sprintf(__('Reach out to %s', 'clockwork-renegade'), WhiteLabel::getAuthorName())); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside supportLink()
+                    ?>
+                    <?php esc_html_e('and we can help investigate.', 'clockwork-renegade'); ?>
                 </p>
             </div>
         </div>
@@ -522,9 +560,9 @@ class TrafficPage
         }
 
         $sections = [
-            ['key' => 'pages',   'title' => 'Pages/Posts',     'sub' => 'Pages and posts your visitors actually viewed.'],
-            ['key' => 'api',     'title' => 'API/Bots',        'sub' => 'WordPress internals — admin-ajax, REST, sitemap, robots, theme/plugin assets. Mostly bot traffic.'],
-            ['key' => 'uploads', 'title' => 'Media Library',   'sub' => 'Files served from /wp-content/uploads/.'],
+            ['key' => 'pages',   'title' => __('Pages/Posts', 'clockwork-renegade'),   'sub' => __('Pages and posts your visitors actually viewed.', 'clockwork-renegade')],
+            ['key' => 'api',     'title' => __('API/Bots', 'clockwork-renegade'),      'sub' => __('WordPress internals — admin-ajax, REST, sitemap, robots, theme/plugin assets. Mostly bot traffic.', 'clockwork-renegade')],
+            ['key' => 'uploads', 'title' => __('Media Library', 'clockwork-renegade'), 'sub' => __('Files served from /wp-content/uploads/.', 'clockwork-renegade')],
         ];
 
         foreach ($sections as $section) {
@@ -555,8 +593,8 @@ class TrafficPage
                 <table class="clockwork-table">
                     <thead>
                         <tr>
-                            <th>Path</th>
-                            <th style="text-align: right;">Hits</th>
+                            <th><?php esc_html_e('Path', 'clockwork-renegade'); ?></th>
+                            <th style="text-align: right;"><?php esc_html_e('Hits', 'clockwork-renegade'); ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -583,12 +621,18 @@ class TrafficPage
         ?>
         <p class="clockwork-meta-line" style="padding: 0 4px;">
             <?php if ($periodSummary) : ?>
-                From your host's own traffic stats &middot;
+                <?php esc_html_e("From your host's own traffic stats", 'clockwork-renegade'); ?> &middot;
             <?php else : ?>
-                From your server's access logs &middot;
-                Visits = unique IPs/day, excluding 403s and static assets &middot;
+                <?php esc_html_e("From your server's access logs", 'clockwork-renegade'); ?> &middot;
+                <?php esc_html_e('Visits = unique IPs/day, excluding 403s and static assets', 'clockwork-renegade'); ?> &middot;
             <?php endif; ?>
-            Refreshed nightly<?php if ($fetched) : ?> &middot; Last refresh <?php echo esc_html($fetched); ?><?php endif; ?>
+            <?php esc_html_e('Refreshed nightly', 'clockwork-renegade'); ?><?php if ($fetched) : ?> &middot; <?php
+                echo esc_html(sprintf(
+                    /* translators: %s: formatted date/time of the last refresh */
+                    __('Last refresh %s', 'clockwork-renegade'),
+                    $fetched
+                ));
+            ?><?php endif; ?>
         </p>
         <?php
     }

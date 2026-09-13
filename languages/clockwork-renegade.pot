@@ -4,9 +4,2797 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Clockwork Renegade 1.0.0\n"
 "Report-Msgid-Bugs-To: https://clockworkcontrol.com\n"
-"POT-Creation-Date: 2026-09-13 00:00+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-09-13T05:06:00+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: clockwork-renegade\n"
-"Language: \n"
+
+#. Plugin Name of the plugin
+#: clockwork-renegade.php
+#: src/Support/PrivacyPolicy.php:23
+msgid "Clockwork Renegade"
+msgstr ""
+
+#. Plugin URI of the plugin
+#. Author URI of the plugin
+#: clockwork-renegade.php
+msgid "https://clockworkcontrol.com"
+msgstr ""
+
+#. Description of the plugin
+#: clockwork-renegade.php
+msgid "Connects your WordPress site to Clockwork Control for centralized monitoring, uptime verification, updates, and security telemetry."
+msgstr ""
+
+#. Author of the plugin
+#: clockwork-renegade.php
+msgid "Clockwork Web Dev, LLC"
+msgstr ""
+
+#: src/Admin/Actions/RunSecurityScanAction.php:37
+msgid "You do not have permission to run security scans on this site."
+msgstr ""
+
+#: src/Admin/Actions/RunSecurityScanAction.php:42
+msgid "Invalid request — please return to the Security page and try again."
+msgstr ""
+
+#: src/Admin/Actions/RunSecurityScanAction.php:54
+msgid "Core checksum verification is not available on this host."
+msgstr ""
+
+#: src/Admin/Actions/RunSecurityScanAction.php:61
+msgid "Unknown scan type."
+msgstr ""
+
+#: src/Admin/Actions/TwoFactorActions.php:39
+msgid "You do not have permission to manage login security on this site."
+msgstr ""
+
+#: src/Admin/Actions/TwoFactorActions.php:44
+msgid "Invalid request — please return to the Login Security page and try again."
+msgstr ""
+
+#: src/Admin/Actions/TwoFactorActions.php:57
+msgid "Setup cancelled — nothing was changed."
+msgstr ""
+
+#: src/Admin/Actions/TwoFactorActions.php:62
+msgid "That code didn't match — check your authenticator app and try again."
+msgstr ""
+
+#: src/Admin/Actions/TwoFactorActions.php:65
+msgid "Two-factor authentication is on. Your next sign-in will ask for a code."
+msgstr ""
+
+#: src/Admin/Actions/TwoFactorActions.php:71
+msgid "Two-factor authentication is off for your account."
+msgstr ""
+
+#: src/Admin/Actions/TwoFactorActions.php:75
+msgid "Two-factor isn't enabled — nothing to regenerate."
+msgstr ""
+
+#: src/Admin/Actions/TwoFactorActions.php:79
+msgid "Fresh backup codes generated — the old set no longer works."
+msgstr ""
+
+#: src/Admin/Actions/TwoFactorActions.php:86
+msgid "Nothing to migrate for your account."
+msgstr ""
+
+#: src/Admin/Actions/TwoFactorActions.php:89
+msgid "Migrated from Wordfence Login Security — the same authenticator app entry now protects your Clockwork sign-ins."
+msgstr ""
+
+#: src/Admin/Actions/TwoFactorActions.php:100
+msgid "Unknown operation."
+msgstr ""
+
+#: src/Admin/FormsAjaxHandlers.php:43
+#: src/Admin/FormsAjaxHandlers.php:80
+msgid "form_id and plugin are required."
+msgstr ""
+
+#. translators: 1: maximum number of monitored forms, 2: agency author name
+#: src/Admin/FormsAjaxHandlers.php:49
+#, php-format
+msgid "You're at the maximum of %1$s monitored forms. Unsubscribe one to add another, or contact %2$s to raise the limit."
+msgstr ""
+
+#: src/Admin/FormsAjaxHandlers.php:57
+msgid "Could not subscribe."
+msgstr ""
+
+#: src/Admin/FormsAjaxHandlers.php:67
+msgid "form_id is required."
+msgstr ""
+
+#: src/Admin/FormsAjaxHandlers.php:111
+msgid "Forbidden."
+msgstr ""
+
+#: src/Admin/FormsAjaxHandlers.php:115
+msgid "Bad nonce."
+msgstr ""
+
+#. translators: %s: agency author name
+#: src/Admin/FormsAjaxHandlers.php:136
+#, php-format
+msgid "Form monitoring requires an active care plan. Talk to %s about adding one."
+msgstr ""
+
+#: src/Admin/Layout.php:22
+#: src/Admin/Menu.php:182
+#: src/Admin/Menu.php:183
+#: src/Admin/Pages/ActivityPage.php:78
+#: src/Admin/Pages/WhiteLabelPage.php:394
+msgid "Activity"
+msgstr ""
+
+#: src/Admin/Layout.php:23
+#: src/Admin/Menu.php:194
+#: src/Admin/Menu.php:195
+#: src/Admin/Pages/UptimePage.php:60
+#: src/Admin/Pages/WhiteLabelPage.php:396
+#: src/Admin/Support/SupportForm.php:175
+msgid "Uptime"
+msgstr ""
+
+#: src/Admin/Layout.php:24
+#: src/Admin/Menu.php:203
+#: src/Admin/Menu.php:204
+#: src/Admin/Pages/SecurityPage.php:113
+#: src/Admin/Pages/WhiteLabelPage.php:397
+#: src/Admin/Support/SupportForm.php:176
+msgid "Security"
+msgstr ""
+
+#: src/Admin/Layout.php:25
+msgid "2FA"
+msgstr ""
+
+#: src/Admin/Layout.php:26
+#: src/Admin/Menu.php:222
+#: src/Admin/Menu.php:223
+#: src/Admin/Pages/PerformancePage.php:80
+#: src/Admin/Support/SupportForm.php:178
+msgid "Performance"
+msgstr ""
+
+#: src/Admin/Layout.php:30
+#: src/Admin/Menu.php:233
+#: src/Admin/Menu.php:234
+#: src/Admin/Pages/TrafficPage.php:101
+#: src/Admin/Support/SupportForm.php:180
+msgid "Traffic"
+msgstr ""
+
+#: src/Admin/Layout.php:33
+#: src/Admin/Menu.php:245
+#: src/Admin/Menu.php:246
+#: src/Admin/Pages/FormsPage.php:49
+msgid "Forms"
+msgstr ""
+
+#: src/Admin/Layout.php:34
+#: src/Admin/Menu.php:254
+#: src/Admin/Menu.php:255
+#: src/Admin/Pages/ActivityPage.php:327
+#: src/Admin/Pages/BackupsPage.php:74
+#: src/Admin/Support/SupportForm.php:177
+msgid "Backups"
+msgstr ""
+
+#: src/Admin/Layout.php:35
+#: src/Admin/Menu.php:263
+#: src/Admin/Menu.php:264
+#: src/Admin/Pages/NotificationsPage.php:32
+msgid "Notifications"
+msgstr ""
+
+#: src/Admin/Layout.php:38
+#: src/Admin/Menu.php:272
+#: src/Admin/Menu.php:273
+msgid "Branding"
+msgstr ""
+
+#: src/Admin/Layout.php:41
+#: src/Admin/Menu.php:281
+#: src/Admin/Menu.php:282
+#: src/Admin/Pages/ConnectionPage.php:43
+msgid "Connection"
+msgstr ""
+
+#. translators: 1: start row, 2: end row, 3: total row count
+#: src/Admin/Layout.php:145
+#, php-format
+msgid "%1$s – %2$s of %3$s"
+msgstr ""
+
+#: src/Admin/Layout.php:153
+msgid "First page"
+msgstr ""
+
+#: src/Admin/Layout.php:154
+msgid "Previous page"
+msgstr ""
+
+#: src/Admin/Layout.php:154
+#: src/Admin/Layout.php:157
+#: src/Admin/Pages/BackupsPage.php:532
+#: src/Admin/Pages/BackupsPage.php:534
+msgid "‹ Prev"
+msgstr ""
+
+#. translators: 1: current page number, 2: total pages
+#: src/Admin/Layout.php:164
+#, php-format
+msgid "Page %1$s of %2$s"
+msgstr ""
+
+#: src/Admin/Layout.php:172
+msgid "Next page"
+msgstr ""
+
+#: src/Admin/Layout.php:172
+#: src/Admin/Layout.php:175
+#: src/Admin/Pages/BackupsPage.php:545
+#: src/Admin/Pages/BackupsPage.php:547
+msgid "Next ›"
+msgstr ""
+
+#: src/Admin/Layout.php:173
+msgid "Last page"
+msgstr ""
+
+#: src/Admin/Menu.php:213
+#: src/Admin/Menu.php:214
+#: src/Admin/Pages/TwoFactorPage.php:47
+msgid "Login Security"
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/ActivityPage.php:81
+#, php-format
+msgid "A log of the maintenance work %s has performed on this site."
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:115
+msgid "Pair with Clockwork Control:"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:116
+msgid "This site is ready to connect. Copy your Connection Key to start monitoring and backups."
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:119
+msgid "View Connection Key"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:133
+msgid "You're on a care plan"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:134
+msgid "Sit back and relax — everything below is handled for you and fully covered by your plan."
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:145
+msgid "You're not on a care plan"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:147
+msgid "Work shown here may be billed separately. A care plan covers updates, scans, and monitoring automatically —"
+msgstr ""
+
+#. translators: %s: agency name
+#: src/Admin/Pages/ActivityPage.php:151
+#, php-format
+msgid "talk to %s"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:154
+#: src/Admin/Pages/PerformancePage.php:252
+msgid "about adding one."
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:184
+msgid "Month"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:218
+msgid "actions this month"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:224
+msgid "Run automatically — all part of your care plan"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:228
+msgid "Some work shown here may be billed separately."
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:260
+msgid "All activity"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:262
+msgid "No activity recorded for this month yet."
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:267
+#: src/Admin/Pages/PerformancePage.php:265
+#: src/Admin/Pages/SecurityPage.php:347
+#: src/Admin/Pages/SecurityPage.php:422
+msgid "When"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:268
+msgid "Action"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:269
+msgid "Summary"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:290
+msgid "failed"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:311
+msgid "Security scans"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:312
+msgid "Performance scans"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:313
+msgid "Plugin updates"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:314
+#: src/Admin/Pages/ActivityPage.php:315
+msgid "Uptime checks"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:316
+msgid "Companion installs"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:317
+#: src/Admin/Pages/ActivityPage.php:347
+msgid "Auto-updates configured"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:318
+msgid "Companion updates"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:319
+msgid "Theme updates"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:320
+msgid "Core updates"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:321
+msgid "SSO logins"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:322
+msgid "Lockouts"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:323
+msgid "Unlocks"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:324
+msgid "Reviews approved"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:325
+msgid "Reviews dismissed"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:326
+msgid "Care plan changes"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:334
+msgid "Plugin update"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:335
+msgid "SSO login"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:336
+msgid "Companion install"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:337
+msgid "Companion update"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:338
+msgid "Lockout"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:339
+msgid "Unlock"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:340
+msgid "Review approved"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:341
+msgid "Review dismissed"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:342
+msgid "Care plan change"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:343
+msgid "Security scan"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:344
+msgid "Performance scan"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:345
+#: src/Admin/Pages/ActivityPage.php:346
+msgid "Uptime check"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:348
+msgid "Theme update"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:349
+msgid "Core update"
+msgstr ""
+
+#: src/Admin/Pages/ActivityPage.php:350
+msgid "Backup"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:76
+msgid "Your host already keeps recent backups of your site — this page shows what's currently on record."
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:77
+msgid "Your site is backed up to off-site storage on a schedule. This page shows the current backup configuration."
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:128
+msgid "Also archived off-host for 90 days."
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:130
+msgid "A full backup of this site (files and database) is taken on a regular schedule and stored in secure, encrypted cold storage (Amazon S3 Glacier), kept for 90 days — an independent off-site copy in case anything ever happened to the site or its hosting."
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:132
+msgid "Independent of the backups above, your host's backups are additionally copied to secure, encrypted cold storage (Amazon S3 Glacier) twice a week, kept for 90 days — a second copy in case anything ever happened to your host account itself."
+msgstr ""
+
+#. translators: %s: formatted date/time of the most recent off-site archive
+#: src/Admin/Pages/BackupsPage.php:138
+#, php-format
+msgid "Last archived: %s"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:147
+msgid "Download latest filesystem backup"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:148
+msgid "Download latest database backup"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:150
+msgid "Download latest backup"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:153
+msgid "These download links are temporary and refresh automatically — if one doesn't work, check back after the next daily refresh."
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:166
+msgid "No backup report yet."
+msgstr ""
+
+#. translators: %1$s: agency/author name
+#: src/Admin/Pages/BackupsPage.php:170
+#, php-format
+msgid "%1$s hasn't pushed backup configuration to this site yet. This usually means the next scheduled push hasn't run — please check back in a few hours, or contact %1$s if this persists."
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:203
+msgid "Backup Configuration"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:205
+#: src/Admin/Pages/WhiteLabelPage.php:370
+#: src/Admin/Pages/WhiteLabelPage.php:406
+msgid "Active"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:207
+#: src/Admin/Pages/BackupsPage.php:213
+#: src/Admin/Pages/BackupsPage.php:216
+#: src/Admin/Pages/SecurityPage.php:860
+#: src/Admin/Support/SupportForm.php:147
+msgid "Disabled"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:212
+msgid "Files backup"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:213
+#: src/Admin/Pages/BackupsPage.php:216
+#: src/Admin/Pages/TwoFactorPage.php:135
+msgid "Enabled"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:215
+msgid "Database backup"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:219
+msgid "Last backup"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:224
+msgid "None recorded yet"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:228
+msgid "Next scheduled run"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:233
+msgid "Not scheduled"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:239
+msgid "Storage destination"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:255
+msgid "Excluded paths"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:279
+msgid "Filesystem backups"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:280
+msgid "Database backups"
+msgstr ""
+
+#. translators: %d: number of days of backup history retained
+#: src/Admin/Pages/BackupsPage.php:309
+#, php-format
+msgid "Last %d days"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:315
+msgid "Backup History"
+msgstr ""
+
+#. translators: %d: number of backup runs on record
+#: src/Admin/Pages/BackupsPage.php:325
+#, php-format
+msgid "%d run"
+msgid_plural "%d runs"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Pages/BackupsPage.php:336
+msgid "Your care plan includes 90 days of backup history."
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:340
+msgid "Your hosting plan includes 30 days of backup history."
+msgstr ""
+
+#. translators: %s: agency/author name
+#: src/Admin/Pages/BackupsPage.php:344
+#: src/Admin/Pages/PerformancePage.php:120
+#: src/Admin/Pages/PerformancePage.php:207
+#: src/Admin/Pages/PerformancePage.php:250
+#, php-format
+msgid "Talk to %s"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:347
+msgid "about a care plan to extend retention to 90 days."
+msgstr ""
+
+#. translators: %1$s: agency/author name
+#: src/Admin/Pages/BackupsPage.php:358
+#, php-format
+msgid "Backup history hasn't been indexed yet. Your backups are still running on %1$s's schedule — this view will populate within 24 hours of %1$s's next sync. If you don't see runs after that, contact %1$s."
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:368
+#: src/Admin/Pages/BackupsPage.php:448
+msgid "Date"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:369
+#: src/Admin/Pages/BackupsPage.php:449
+#: src/Admin/Pages/UptimePage.php:339
+msgid "Type"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:371
+#: src/Admin/Pages/BackupsPage.php:450
+msgid "Size"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:373
+msgid "Database"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:374
+msgid "Files"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:375
+msgid "Notes"
+msgstr ""
+
+#. translators: %d: number of backups on record
+#: src/Admin/Pages/BackupsPage.php:432
+#, php-format
+msgid "%d backup on record"
+msgid_plural "%d backups on record"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Pages/BackupsPage.php:442
+msgid "No backups on record yet."
+msgstr ""
+
+#. translators: %1$d: number of rows shown, %2$d: total backups on record
+#: src/Admin/Pages/BackupsPage.php:473
+#, php-format
+msgid "Showing the most recent %1$d of %2$d."
+msgstr ""
+
+#. translators: %s: formatted date/time the report was last refreshed
+#: src/Admin/Pages/BackupsPage.php:496
+#, php-format
+msgid "Report last refreshed: %s"
+msgstr ""
+
+#: src/Admin/Pages/BackupsPage.php:497
+#: src/Admin/Pages/SecurityPage.php:228
+#: src/Admin/Pages/SecurityPage.php:500
+msgid "unknown"
+msgstr ""
+
+#. translators: %s: name of the system that produced the report
+#: src/Admin/Pages/BackupsPage.php:503
+#, php-format
+msgid "source: %s"
+msgstr ""
+
+#. translators: %1$d: first row shown, %2$d: last row shown, %3$d: total backup runs
+#: src/Admin/Pages/BackupsPage.php:524
+#, php-format
+msgid "Showing %1$d–%2$d of %3$d"
+msgstr ""
+
+#. translators: %1$d: current page number, %2$d: total pages
+#: src/Admin/Pages/BackupsPage.php:539
+#, php-format
+msgid "Page %1$d of %2$d"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:44
+msgid "Pair this WordPress site with your Clockwork Control dashboard."
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:69
+msgid "Connected to Clockwork Control"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:70
+msgid "Awaiting Connection"
+msgstr ""
+
+#. translators: %s: human-readable elapsed time
+#: src/Admin/Pages/ConnectionPage.php:82
+#, php-format
+msgid "Last verified contact: %s ago"
+msgstr ""
+
+#. translators: %s: timestamp
+#: src/Admin/Pages/ConnectionPage.php:87
+#, php-format
+msgid "Last verified contact: %s"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:93
+msgid "This site is ready to pair. Copy the Connection Key below and paste it into Clockwork Control."
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:100
+msgid "Active & Monitored"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:101
+msgid "Unlinked"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:108
+msgid "Connection Key"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:109
+msgid "ManageWP Compatible"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:114
+msgid "Copy this key and paste it into the <strong>+ Add Site</strong> modal in your Clockwork Control dashboard. It securely encodes this site's URL and authentication secret."
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:133
+#: src/Admin/Pages/ConnectionPage.php:182
+msgid "Copy Connection Key"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:136
+msgid "Copied to clipboard!"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:143
+msgid "Manual Connection Credentials"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:145
+msgid "Site URL"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:148
+msgid "Shared secret"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:151
+#: src/Admin/Pages/ConnectionPage.php:198
+msgid "Show"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:154
+msgid "Plugin Version"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:161
+msgid "How to Pair with Clockwork Control"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:163
+msgid "Click <strong>Copy Connection Key</strong> above."
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:164
+msgid "Open your Clockwork Control dashboard, go to <strong>Sites</strong>, and click <strong>+ Add Site</strong>."
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:165
+msgid "Paste the Connection Key and click <strong>Verify &amp; Connect</strong>. Clockwork will verify HMAC communication and immediately enroll your site for monitoring and direct S3 Glacier backups."
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:179
+msgid "Copied!"
+msgstr ""
+
+#: src/Admin/Pages/ConnectionPage.php:194
+msgid "Hide"
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/FormsPage.php:52
+#, php-format
+msgid "Keep your contact forms working. %s periodically submits each monitored form like a real visitor would, verifies the submission email actually leaves your server, and alerts their team immediately if a form starts silently failing."
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:88
+msgid "Scheduled form testing is part of your care plan."
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/FormsPage.php:92
+#, php-format
+msgid "%s runs each form you've subscribed below on a weekly cadence, verifies the submission email actually leaves your server, and alerts their team immediately if a form breaks — so you don't hear about it from a frustrated lead first."
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:103
+msgid "Add a care plan to unlock scheduled form testing."
+msgstr ""
+
+#. translators: %1$s: agency / author display name, %2$s: agency / author display name
+#: src/Admin/Pages/FormsPage.php:107
+#, php-format
+msgid "With a care plan, every form you flag below gets <strong>tested weekly</strong> by %1$s — we submit it like a real visitor would, verify the resulting <strong>email actually leaves your server</strong>, and ping our team the moment a form starts silently failing. No more \"did anyone fill out the contact form this month?\" guesswork; no more leads lost to a misconfigured SMTP plugin. Talk to %2$s about adding a care plan."
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:176
+msgid "Form plugin detected:"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:177
+msgid "none active"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:178
+msgid "Last scan:"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:179
+msgid "never"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:180
+msgid "Re-detect now"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:197
+msgid "Forms detected on this site"
+msgstr ""
+
+#. translators: %d: number of forms
+#: src/Admin/Pages/FormsPage.php:201
+#, php-format
+msgid "%d form"
+msgid_plural "%d forms"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Pages/FormsPage.php:208
+msgid "No form plugins active, or no forms configured. Install Contact Form 7, WPForms, or Gravity Forms and create a form, then click <em>Re-detect now</em>."
+msgstr ""
+
+#. translators: %1$s: agency / author display name, %2$s: maximum number of monitored forms
+#: src/Admin/Pages/FormsPage.php:214
+#, php-format
+msgid "Toggle a form on to have %1$s test it on a schedule (weekly). Up to %2$s forms can be monitored at once."
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:220
+msgid "Below is every form we'd test for you on a weekly schedule once your care plan is active. The toggles are locked until then — see the banner above."
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:225
+msgid "Form"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:226
+msgid "Plugin ID"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:227
+msgid "Monitor"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:244
+msgid "(untitled)"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:254
+#: src/Admin/Pages/FormsPage.php:262
+msgid "Add a care plan to enable form monitoring."
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:262
+msgid "Care plan required"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:263
+msgid "Care plan"
+msgstr ""
+
+#. translators: %s: maximum number of monitored forms
+#: src/Admin/Pages/FormsPage.php:277
+#, php-format
+msgid "You're at the maximum of %s monitored forms."
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/FormsPage.php:284
+#, php-format
+msgid "Unsubscribe one below to free up a slot, or contact %s to raise the limit."
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:309
+msgid "Forms you're monitoring"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:309
+msgid "Forms you were monitoring"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:312
+msgid "Tests are paused until a care plan is added."
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:313
+msgid "Care plan paused"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:322
+msgid "These forms were configured to be monitored, but the schedule is paused because the care plan is inactive. They'll resume the moment a care plan is added — your selections are preserved. You can still stop monitoring any form to clean up the list."
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:330
+msgid "Failing"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:330
+msgid "Passing"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:330
+msgid "Not tested yet"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:333
+msgid "Paused"
+msgstr ""
+
+#. translators: %s: form id
+#: src/Admin/Pages/FormsPage.php:347
+#, php-format
+msgid "Form #%s"
+msgstr ""
+
+#. translators: %s: test cadence, e.g. "weekly"
+#: src/Admin/Pages/FormsPage.php:355
+#, php-format
+msgid "Frequency: %s"
+msgstr ""
+
+#. translators: %s: form plugin name
+#: src/Admin/Pages/FormsPage.php:362
+#, php-format
+msgid "Plugin: %s"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:370
+msgid "Last run"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:372
+msgid "Mail outcome"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:375
+msgid "Error"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:381
+#: src/Admin/Pages/FormsPage.php:386
+msgid "Test now"
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:384
+msgid "Add a care plan to run on-demand tests."
+msgstr ""
+
+#: src/Admin/Pages/FormsPage.php:389
+msgid "Stop monitoring"
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/FormsPage.php:581
+#, php-format
+msgid "Monitoring — %s will pick this up tonight."
+msgstr ""
+
+#: src/Admin/Pages/NotificationsPage.php:32
+msgid "Configure where alerts are delivered when something breaks on this site."
+msgstr ""
+
+#: src/Admin/Pages/NotificationsPage.php:36
+msgid "Notification settings saved."
+msgstr ""
+
+#: src/Admin/Pages/NotificationsPage.php:46
+msgid "Slack"
+msgstr ""
+
+#. translators: %s: Slack incoming webhooks documentation URL
+#: src/Admin/Pages/NotificationsPage.php:53
+#, php-format
+msgid "Enter a Slack <a href=\"%s\" target=\"_blank\" rel=\"noopener\">incoming webhook URL</a> to receive alerts in your Slack workspace when a contact form stops working or this site goes down. Leave blank to disable."
+msgstr ""
+
+#: src/Admin/Pages/NotificationsPage.php:62
+msgid "Webhook URL"
+msgstr ""
+
+#: src/Admin/Pages/NotificationsPage.php:73
+msgid "Must be an <code>https://</code> URL. Generate one at <strong>Your Slack App → Incoming Webhooks → Add New Webhook to Workspace</strong>."
+msgstr ""
+
+#: src/Admin/Pages/NotificationsPage.php:81
+msgid "✓ A webhook URL is configured. The monitoring app will send alerts to this workspace."
+msgstr ""
+
+#. translators: %s: agency author name
+#: src/Admin/Pages/NotificationsPage.php:88
+#, php-format
+msgid "No webhook URL configured. Alerts will only go to %s's internal channel."
+msgstr ""
+
+#: src/Admin/Pages/NotificationsPage.php:98
+msgid "Save notification settings"
+msgstr ""
+
+#: src/Admin/Pages/NotificationsPage.php:107
+msgid "Unauthorized"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:94
+msgid "Weekly speed checks are part of your care plan."
+msgstr ""
+
+#. translators: %s: agency/author name
+#: src/Admin/Pages/PerformancePage.php:98
+#, php-format
+msgid "%s runs a Lighthouse scan against your homepage every week and flags regressions in your performance score."
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:109
+msgid "Add a care plan to unlock weekly speed checks."
+msgstr ""
+
+#. translators: %s: agency/author name
+#: src/Admin/Pages/PerformancePage.php:113
+#, php-format
+msgid "With a care plan, %s runs a weekly Lighthouse scan via GTmetrix — the same engine Google uses to evaluate site performance, from a pinned test location with consistent hardware. You'd see your <strong>Performance score</strong>, <strong>Largest Contentful Paint</strong>, <strong>Cumulative Layout Shift</strong>, and <strong>page weight</strong> trended over time, so a slow regression doesn't sneak past you."
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:123
+msgid "about adding a care plan."
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:150
+msgid "No scans recorded yet."
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:151
+msgid "Scans run weekly. Results will populate here within the next few days."
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:169
+msgid "Latest Scan"
+msgstr ""
+
+#. translators: %d: performance score out of 100
+#: src/Admin/Pages/PerformancePage.php:181
+#, php-format
+msgid "%d/100"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:187
+#: src/Admin/Pages/PerformancePage.php:298
+#: src/Admin/Pages/SecurityPage.php:561
+#: src/Admin/Pages/SecurityPage.php:873
+msgid "Failed"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:194
+#: src/Admin/Pages/PerformancePage.php:268
+msgid "LCP"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:194
+msgid "Largest Contentful Paint"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:195
+#: src/Admin/Pages/PerformancePage.php:269
+msgid "CLS"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:195
+msgid "Cumulative Layout Shift"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:196
+msgid "TBT"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:196
+msgid "Total Blocking Time"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:197
+msgid "FCP"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:197
+msgid "First Contentful Paint"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:198
+msgid "Speed Index"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:199
+#: src/Admin/Pages/PerformancePage.php:270
+msgid "Page weight"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:204
+msgid "There may be opportunities to improve this score."
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:209
+msgid "about performance optimization for this site."
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:214
+msgid "Scan failed:"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:230
+#: src/Admin/Pages/SecurityPage.php:392
+msgid "Scan History"
+msgstr ""
+
+#. translators: %d: number of performance scans on record
+#. translators: %d: number of recorded scans
+#: src/Admin/Pages/PerformancePage.php:236
+#: src/Admin/Pages/SecurityPage.php:398
+#, php-format
+msgid "%d scan"
+msgid_plural "%d scans"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Pages/PerformancePage.php:247
+msgid "Performance history is part of the care plan."
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:258
+msgid "No scans recorded yet. Once the next weekly scan completes, history will populate here."
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:266
+msgid "Engine"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:267
+msgid "Score"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:338
+msgid "GTmetrix (desktop Chrome, pinned location)"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:344
+msgid "Google PageSpeed (desktop)"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:345
+msgid "Google PageSpeed (simulated mobile phone)"
+msgstr ""
+
+#: src/Admin/Pages/PerformancePage.php:427
+#: src/Admin/Pages/SecurityPage.php:1066
+msgid "just now"
+msgstr ""
+
+#. translators: %d: number of minutes
+#: src/Admin/Pages/PerformancePage.php:434
+#: src/Admin/Pages/SecurityPage.php:1073
+#, php-format
+msgid "%d minute ago"
+msgid_plural "%d minutes ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of hours
+#: src/Admin/Pages/PerformancePage.php:443
+#: src/Admin/Pages/SecurityPage.php:1082
+#, php-format
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of days
+#: src/Admin/Pages/PerformancePage.php:451
+#: src/Admin/Pages/SecurityPage.php:1090
+#, php-format
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Pages/SecurityPage.php:94
+msgid "Scanning soon"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:98
+#: src/Admin/Pages/SecurityPage.php:575
+#: src/Admin/Pages/SecurityPage.php:884
+msgid "Issues found"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:99
+msgid "Needs review"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:100
+msgid "All clear"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:114
+msgid "Checks Clockwork runs against this site to flag domain blacklist hits, malware, and tampering with WordPress core files."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:130
+#: src/Admin/Pages/SecurityPage.php:543
+msgid "Domain blacklists"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:131
+msgid "Checks Spamhaus DBL, URLHaus, and Google Safe Browsing for any sign your domain has been flagged."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:132
+msgid "Daily — 02:15 UTC"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:146
+#: src/Admin/Pages/SecurityPage.php:541
+msgid "Sucuri SiteCheck"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:147
+msgid "Remote malware and page-content scan that flags suspicious changes to your homepage."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:148
+msgid "Weekly — Mondays 02:00 UTC"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:159
+msgid "Core file integrity"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:160
+msgid "Verifies every WordPress core file against WordPress.org's published checksums. Catches tampering Sucuri can't see."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:161
+msgid "Daily — 02:30 UTC"
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/SecurityPage.php:171
+#, php-format
+msgid "This host can't run core checksum verification — wp-cli isn't reachable and the WordPress HTTP API is blocked. Talk to %s."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:204
+msgid "Vulnerability scan"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:206
+#: src/Admin/Pages/SecurityPage.php:578
+#: src/Admin/Pages/SecurityPage.php:887
+msgid "Clean"
+msgstr ""
+
+#. translators: %d: number of vulnerable plugins/themes
+#: src/Admin/Pages/SecurityPage.php:211
+#, php-format
+msgid "%d flagged"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:219
+msgid "Checked against your host's own vulnerability feed for every installed plugin and theme."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:222
+msgid "No known vulnerabilities in your installed plugins or themes."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:224
+msgid "Plugin"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:224
+msgid "Theme"
+msgstr ""
+
+#. translators: %s: plugin/theme version the vulnerability is fixed in
+#: src/Admin/Pages/SecurityPage.php:238
+#, php-format
+msgid "— fixed in %s"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:274
+msgid "Authentication audit"
+msgstr ""
+
+#. translators: %d: number of failed authentication attempts
+#: src/Admin/Pages/SecurityPage.php:280
+#, php-format
+msgid "%d in last 24h"
+msgstr ""
+
+#. translators: %d: number of failed authentication attempts
+#: src/Admin/Pages/SecurityPage.php:290
+#, php-format
+msgid "%d in last 7d"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:297
+msgid "No failures"
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/SecurityPage.php:306
+#, php-format
+msgid "Failed authentication attempts on the Clockwork REST endpoints. Cryptographic protocol is uncrackable; this catalogues probing, misconfiguration, and stale-secret deployments so %s can investigate when the count spikes."
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/SecurityPage.php:318
+#, php-format
+msgid "No failed attempts have been recorded. %s is the only signed caller of these endpoints."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:325
+msgid "Top offenders (last 7 days)"
+msgstr ""
+
+#. translators: 1: number of attempts, 2: timestamp of the last attempt
+#: src/Admin/Pages/SecurityPage.php:333
+#, php-format
+msgid "— %1$d attempts, last seen %2$s UTC"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:343
+msgid "Recent attempts"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:348
+msgid "IP"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:349
+msgid "Reason"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:350
+msgid "Endpoint"
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/SecurityPage.php:412
+#, php-format
+msgid "No scans recorded yet. Once %s's daily and weekly checks run, their history will populate here."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:423
+msgid "Check"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:424
+msgid "Status"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:425
+#: src/Admin/Pages/SecurityPage.php:790
+msgid "Result"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:440
+msgid "Blocked by site firewall (likely Cloudflare)."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:472
+msgid "Transport:"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:475
+msgid "Files scanned:"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:479
+msgid "Scan aborted"
+msgstr ""
+
+#. translators: %d: number of scan findings
+#: src/Admin/Pages/SecurityPage.php:489
+#, php-format
+msgid "%d finding"
+msgid_plural "%d findings"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Pages/SecurityPage.php:501
+msgid "(no path)"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:542
+msgid "Core integrity"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:557
+#: src/Admin/Pages/SecurityPage.php:869
+msgid "Blocked by firewall"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:568
+#: src/Admin/Pages/SecurityPage.php:877
+msgid "Review"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:637
+msgid "Hosting + care-plan security checks are running."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:638
+msgid "Daily domain blacklist checks come with your hosting. Weekly malware scans (Sucuri) and daily WordPress core file integrity verification come with your care plan. Use the buttons below to run one now."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:646
+msgid "Hosting includes daily blacklist checks. A care plan adds the deeper scans."
+msgstr ""
+
+#. translators: %1$s: agency / author display name (used twice)
+#: src/Admin/Pages/SecurityPage.php:651
+#, php-format
+msgid "The <strong>domain blacklist check</strong> is already running — %1$s checks every day to make sure your domain isn't flagged on Spamhaus, URLHaus, or Google Safe Browsing. With a care plan, they also run <strong>weekly Sucuri malware/JavaScript-injection scans</strong> and <strong>daily WordPress core file integrity verification</strong> over SSH. Talk to %1$s about adding a care plan."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:711
+msgid "Run scan now"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:725
+msgid "Included with a care plan."
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/SecurityPage.php:730
+#, php-format
+msgid "Sucuri SiteCheck runs every Monday — scans your homepage for malware, JavaScript injections, and defacement. If anything trips, %s gets alerted within minutes."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:735
+msgid "Every WordPress core file is verified against WordPress.org's published checksums daily. Catches PHP backdoors, modified core files, and shells dropped into wp-includes — the kind of malware Sucuri's public scan can't see."
+msgstr ""
+
+#. translators: %s: scan cadence, e.g. "Daily — 02:15 UTC"
+#: src/Admin/Pages/SecurityPage.php:744
+#, php-format
+msgid "No scan recorded yet. The next scheduled run is <strong>%s</strong>."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:755
+msgid "<strong>Your site's firewall (likely Cloudflare) is blocking Sucuri's external scanner.</strong> This is normal for sites behind a WAF — Sucuri tries to fetch the homepage from their servers and your firewall rejects them as bots. The <strong>Domain blacklists</strong> card catches the same blacklist signal directly, and the <strong>Core file integrity</strong> check runs server-side — that's the deeper malware check anyway."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:762
+msgid "Last attempt"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:763
+msgid "Response"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:773
+msgid "Scanned"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:775
+msgid "Took"
+msgstr ""
+
+#. translators: %s: formatted number of milliseconds
+#: src/Admin/Pages/SecurityPage.php:779
+#, php-format
+msgid "%s ms"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:786
+msgid "Malware"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:786
+#: src/Admin/Pages/SecurityPage.php:787
+#: src/Admin/Pages/SecurityPage.php:789
+msgid "YES"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:786
+#: src/Admin/Pages/SecurityPage.php:787
+#: src/Admin/Pages/SecurityPage.php:789
+msgid "no"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:787
+msgid "Blacklist"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:789
+msgid "Blacklisted"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:794
+msgid "Files flagged"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:795
+msgid "WP version"
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/SecurityPage.php:805
+#, php-format
+msgid "%s has been alerted to these findings and is investigating."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:809
+msgid "Reach out"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:809
+msgid "if you have questions or haven't heard back."
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:863
+msgid "Not available"
+msgstr ""
+
+#: src/Admin/Pages/SecurityPage.php:866
+msgid "Not yet scanned"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:103
+msgid "How much traffic your site is serving — sourced from your host's own traffic stats and refreshed nightly."
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:104
+msgid "A 30-day view of how much traffic your site is serving — sourced from your server's access logs and refreshed nightly."
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:136
+msgid "No traffic report yet."
+msgstr ""
+
+#. translators: %1$s: agency / author display name, %2$s: agency / author display name
+#: src/Admin/Pages/TrafficPage.php:140
+#, php-format
+msgid "%1$s hasn't pushed a traffic report to this site yet. Reports refresh nightly — please check back tomorrow, or contact %2$s if this persists."
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:159
+#: src/Admin/Pages/TrafficPage.php:188
+msgid "Refreshed nightly."
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/TrafficPage.php:163
+#, php-format
+msgid "These are not live stats — %s's monitoring app rolls up your access logs once a day and pushes the result here."
+msgstr ""
+
+#. translators: %s: formatted date/time of the last refresh
+#: src/Admin/Pages/TrafficPage.php:171
+#: src/Admin/Pages/TrafficPage.php:194
+#, php-format
+msgid "Last refreshed %s."
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:189
+msgid "Your hosting plan provides traffic in monthly-level totals rather than a daily breakdown, so there's no day-by-day chart here — just the running counts your host tracks."
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:213
+#: src/Admin/Pages/TrafficPage.php:269
+msgid "Today"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:214
+msgid "Yesterday"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:215
+msgid "This month"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:216
+msgid "Last month"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:217
+msgid "Last 12 months"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:222
+msgid "Page Views"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:224
+msgid "Counted by your host — views and unique visitors, by period."
+msgstr ""
+
+#. translators: %s: formatted visitor count
+#: src/Admin/Pages/TrafficPage.php:238
+#, php-format
+msgid "%s visitor"
+msgid_plural "%s visitors"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Pages/TrafficPage.php:263
+msgid "Visitors"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:265
+msgid "Estimated unique visitors — de-duplicated by IP, with bots and static files (images, CSS, JS) excluded. This is a smaller, more human number than the request counts in the chart below."
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:271
+msgid "visits so far — updates again overnight"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:271
+#: src/Admin/Pages/TrafficPage.php:276
+#: src/Admin/Pages/TrafficPage.php:281
+msgid "visits"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:274
+msgid "Last 7 days"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:279
+#: src/Admin/Pages/TrafficPage.php:393
+msgid "Last 30 days"
+msgstr ""
+
+#. translators: %s: date tracking began
+#: src/Admin/Pages/TrafficPage.php:398
+#, php-format
+msgid "tracking started %s"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:404
+msgid "requests/day, stacked by status"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:408
+msgid "Every HTTP request the server answered — page views, images, scripts, API calls, and bot/crawler traffic all included. That's why these totals run far higher than the visitor counts above; they measure server workload, not people."
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:414
+msgid "30-day traffic chart"
+msgstr ""
+
+#. translators: %1$s: date, %2$s: total request count, %3$s-%6$s: request counts by status class
+#: src/Admin/Pages/TrafficPage.php:448
+#, php-format
+msgid "%1$s — %2$s requests (2xx %3$s · 3xx %4$s · 4xx %5$s · 5xx %6$s)"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:508
+msgid "Successful requests"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:509
+msgid "Redirects (e.g. HTTP → HTTPS)"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:510
+msgid "Not found / access errors"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:511
+msgid "Server errors"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:522
+msgid "Seeing a spike in 4xx or 5xx errors?"
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/TrafficPage.php:524
+#, php-format
+msgid "Reach out to %s"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:526
+msgid "and we can help investigate."
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:562
+msgid "Pages/Posts"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:562
+msgid "Pages and posts your visitors actually viewed."
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:563
+msgid "API/Bots"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:563
+msgid "WordPress internals — admin-ajax, REST, sitemap, robots, theme/plugin assets. Mostly bot traffic."
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:564
+msgid "Media Library"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:564
+msgid "Files served from /wp-content/uploads/."
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:595
+msgid "Path"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:596
+msgid "Hits"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:623
+msgid "From your host's own traffic stats"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:625
+msgid "From your server's access logs"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:626
+msgid "Visits = unique IPs/day, excluding 403s and static assets"
+msgstr ""
+
+#: src/Admin/Pages/TrafficPage.php:628
+msgid "Refreshed nightly"
+msgstr ""
+
+#. translators: %s: formatted date/time of the last refresh
+#: src/Admin/Pages/TrafficPage.php:631
+#, php-format
+msgid "Last refresh %s"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:48
+msgid "Two-factor authentication for this site's sign-ins — codes from your authenticator app, with backup codes for recovery."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:91
+msgid "Your backup codes — save these now"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:93
+msgid "Each code works once, and this is the <strong>only time they will be shown</strong>. Store them somewhere safe (password manager, printed copy). If you lose your phone, a backup code is how you get back in."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:113
+msgid "Your two-factor authentication"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:136
+msgid "Sign-ins to your account require a code from your authenticator app."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:138
+msgid "Backup codes remaining:"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:140
+msgid "— running low, regenerate a fresh set."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:144
+msgid "Regenerate backup codes"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:145
+msgid "Disable two-factor"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:145
+msgid "Disable two-factor authentication for your account? Your next sign-in will only need your password."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:173
+msgid "<strong>Wordfence Login Security is protecting this account today</strong> — but Wordfence is discontinuing that plugin."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:176
+msgid "Migrate your setup to Clockwork now: the entry already in your authenticator app keeps working, nothing to re-scan. You'll get a fresh set of backup codes. Wordfence Login Security stays active until every account has migrated — until then both prompts may appear at sign-in."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:181
+msgid "<strong>Wordfence Login Security has been removed, and with it your two-factor prompt.</strong>"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:184
+msgid "Your setup is still in the database — migrate it now and the entry already in your authenticator app starts protecting your sign-ins again immediately."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:187
+msgid "Migrate my two-factor setup"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:187
+msgid "Migrating…"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:189
+msgid "Prefer a clean start?"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:189
+msgid "Set up from scratch instead"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:189
+msgid "— you'll scan a new QR code."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:201
+msgid "<strong>Step 1.</strong> Scan this QR code with your authenticator app (Google Authenticator, Authy, 1Password…)."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:205
+msgid "Can't scan? Enter this key manually:"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:209
+msgid "<strong>Step 2.</strong> Enter the 6-digit code your app shows, to prove the pairing worked. Two-factor only switches on after this step."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:218
+msgid "Verify &amp; enable"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:221
+msgid "Changed your mind?"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:221
+msgid "Cancel setup"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:238
+msgid "Not set up"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:239
+msgid "Your account signs in with a password only."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:241
+msgid "Two-factor authentication adds a 6-digit code from your phone to every sign-in, so a stolen password alone can't get in."
+msgstr ""
+
+#. translators: 1: days remaining, 2: empty or "s", 3: setup URL, 4: dismiss link HTML
+#: src/Admin/Pages/TwoFactorPage.php:242
+#: src/TwoFactor/EnrollmentNudge.php:84
+msgid "Set up two-factor authentication"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:261
+msgid "Wordfence Login Security can now be removed"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:262
+msgid "Every account that had two-factor in Wordfence Login Security has been migrated to Clockwork — nothing depends on it anymore. Wordfence is discontinuing the plugin, so this is the moment to remove it"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:262
+msgid " (it is already deactivated; only the files remain)"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:265
+msgid "Deactivate & remove Wordfence Login Security"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:267
+msgid "Remove the Wordfence Login Security plugin? All two-factor setups have been migrated to Clockwork, so no account loses protection. This also runs the plugin's uninstall cleanup."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:288
+msgid "Team status"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:289
+msgid "Administrator and editor accounts on this site, and where each one's two-factor protection stands."
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:292
+msgid "User"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:292
+msgid "Role"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:292
+msgid "Two-factor"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:292
+msgid "Grace period"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:298
+msgid "Clockwork 2FA"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:301
+msgid "Wordfence (needs migration)"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:302
+msgid "Wordfence — gate is OFF, migrate now"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:304
+msgid "None"
+msgstr ""
+
+#. translators: %d: number of accounts still on Wordfence Login Security
+#: src/Admin/Pages/TwoFactorPage.php:322
+#, php-format
+msgid "%d account still rely on Wordfence Login Security for two-factor. Once everyone has migrated, a removal button will appear here — deactivating WFLS earlier would silently remove their protection."
+msgid_plural "%d accounts still rely on Wordfence Login Security for two-factor. Once everyone has migrated, a removal button will appear here — deactivating WFLS earlier would silently remove their protection."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of days left in the grace period
+#: src/Admin/Pages/TwoFactorPage.php:360
+#, php-format
+msgid "%d day left"
+msgid_plural "%d days left"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/Pages/TwoFactorPage.php:363
+msgid "Expired — enforced now"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:370
+msgid "Days"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:371
+msgid "Set"
+msgstr ""
+
+#: src/Admin/Pages/TwoFactorPage.php:372
+msgid "Reset"
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/UptimePage.php:63
+#, php-format
+msgid "%s probes this site every few minutes and tracks how often it answers. Big drops trigger an internal alert immediately."
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:111
+msgid "Uptime Activity"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:112
+msgid "About"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:140
+msgid "How monitoring works"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:144
+msgid "What we check"
+msgstr ""
+
+#. translators: 1: agency / author display name, 2: site hostname
+#: src/Admin/Pages/UptimePage.php:148
+#, php-format
+msgid "Every few minutes, %1$s sends a request to <strong>https://%2$s/</strong> and verifies it answers with a normal page."
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:155
+msgid "What counts as \"down\""
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:156
+msgid "A page that doesn't load — server errors, timeouts, DNS failures, or anything other than a successful response. Cloudflare or WAF challenges that block our checker are flagged separately so they don't count as real outages."
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:158
+msgid "Probe frequency"
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/UptimePage.php:162
+#, php-format
+msgid "Every 5 minutes by default. %s can dial this up to once a minute or down to every 15 minutes globally —"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:165
+msgid "contact us"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:165
+msgid "if you want a specific cadence on this site."
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:167
+msgid "Alert threshold"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:168
+msgid "Two consecutive failures (about 10 minutes of real downtime) before an alert is fired. Recovery is instant — the moment your site comes back, the alert clears."
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:170
+msgid "Where alerts go"
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/UptimePage.php:174
+#, php-format
+msgid "%s's internal team chat. They get a notification with the failure reason and a link straight to your site, so they can investigate before you ever notice."
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:179
+msgid "Want this changed?"
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/UptimePage.php:183
+#, php-format
+msgid "The schedule, threshold, and notification routing are all controlled by %s."
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:186
+msgid "Reach out to us"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:186
+msgid "and we can adjust things on our end."
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:196
+msgid "your site"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:212
+msgid "UP"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:213
+msgid "DOWN"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:228
+msgid "Overall uptime is"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:230
+msgid "uptime — no downtime recorded yet."
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/UptimePage.php:235
+#, php-format
+msgid "Monitoring is active. %s has been probing this site and hasn't seen any issues."
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:249
+msgid "Activity will appear here as soon as your site has any state changes (downtime, recovery)."
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:254
+msgid "Latest downtime:"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:256
+msgid "lasted for"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:261
+msgid "No downtime recorded — your site has been running smoothly."
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:291
+msgid "Uptime overview"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:295
+msgid "(last 24 hours)"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:299
+msgid "(last 7 days)"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:303
+msgid "(last 30 days)"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:315
+msgid "Latest events"
+msgstr ""
+
+#. translators: %s: agency / author display name
+#: src/Admin/Pages/UptimePage.php:324
+#, php-format
+msgid "No transition events recorded yet. %s's monitor probes every few minutes; the first up-confirmation usually arrives within 24 hours of installation."
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:340
+msgid "Detail"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:341
+msgid "When &amp; duration"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:353
+#: src/Admin/Pages/UptimePage.php:447
+#: src/Admin/Support/SupportForm.php:143
+msgid "Up"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:353
+#: src/Admin/Pages/UptimePage.php:447
+msgid "Down"
+msgstr ""
+
+#. translators: %s: duration, e.g. "3h 20m"
+#: src/Admin/Pages/UptimePage.php:372
+#, php-format
+msgid "for %s"
+msgstr ""
+
+#. translators: %d: number of additional events
+#: src/Admin/Pages/UptimePage.php:389
+#, php-format
+msgid "Show %d more events…"
+msgstr ""
+
+#. translators: 1: Up/Down state, 2: duration, e.g. "3h 20m"
+#: src/Admin/Pages/UptimePage.php:451
+#, php-format
+msgid "%1$s for %2$s"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:602
+msgid "Everything is ok"
+msgstr ""
+
+#: src/Admin/Pages/UptimePage.php:612
+msgid "Unreachable"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:38
+msgid "These colors, names, and logos come from Clockwork Control. Edit them there — this page is a preview."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:39
+msgid "Customize the plugin name, author credits, dashboard colors, and logo to match your agency."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:41
+msgid "White Label & Agency Branding"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:45
+msgid "Branding is managed by Clockwork Control."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:47
+msgid "The last push from Control is the source of truth. Local edits are disabled so this site stays in sync with the rest of the fleet."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:54
+msgid "Local branding changes were not saved. Update White Label settings in Clockwork Control instead."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:60
+msgid "Branding settings saved. Changes are now active across wp-admin."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:66
+msgid "Thank you so much for supporting Clockwork! The donation reminder is snoozed for 1 full year."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:70
+msgid "Donation reminder snoozed for 90 days."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:84
+msgid "Support Clockwork's Open Fleet Development"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:85
+msgid "Free & Open Feature"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:90
+msgid "White-labeling is <strong>100% free and fully unlocked</strong> for your agency — nothing is held behind a paywall. If Clockwork saves you billable time and maintenance headaches, please consider buying us a coffee or donating to support ongoing updates!"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:99
+msgid "Donate via PayPal &rarr;"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:104
+msgid "Snoozes this reminder for a full year"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:105
+msgid "I Donated! ❤️"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:112
+msgid "Remind me later"
+msgstr ""
+
+#. translators: %d: number of days remaining in the donation snooze
+#: src/Admin/Pages/WhiteLabelPage.php:124
+#, php-format
+msgid "<strong>Supporting Agency:</strong> Thank you for donating! Your annual check-in is snoozed for <strong>%d more days</strong>."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:130
+msgid "Donate again"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:147
+msgid "White Label Mode"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:148
+msgid "Toggle white-label overrides on or off without losing your saved settings."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:160
+msgid "WordPress Plugins Screen Rebranding"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:161
+msgid "Replaces the metadata displayed on <code>Plugins &rarr; Installed Plugins</code> and Must-Use plugins list."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:166
+msgid "Plugin Name"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:168
+msgid "e.g. Acme Site Companion, Client Care Tools"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:171
+msgid "Author Name"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:173
+msgid "e.g. Your Agency Name, LLC"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:179
+msgid "Author Website URL"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:184
+msgid "Plugin URL"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:186
+msgid "Link for plugin row details"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:191
+msgid "Plugin Description"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:193
+msgid "Custom description displayed to site administrators."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:201
+msgid "Brand Colors & Themes"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:202
+msgid "Choose a curated 1-click theme or dial in custom hex colors."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:207
+msgid "1-Click Theme Presets"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:211
+msgid "Clockwork"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:215
+msgid "Emerald Forest"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:219
+msgid "Royal Indigo"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:223
+msgid "Ocean Midnight"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:227
+msgid "Crimson Amber"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:231
+msgid "Monochrome"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:239
+msgid "Primary Brand Color"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:244
+msgid "Tabs active state, links, badges"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:248
+msgid "Header Band Color"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:253
+msgid "Top header background"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:257
+msgid "Soft Highlight Color"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:262
+msgid "Card highlights and borders"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:266
+msgid "Accent / Button Color"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:271
+msgid "Support button & highlights"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:280
+msgid "Logos & Admin Header"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:281
+msgid "Upload your agency logo and configure the admin header branding."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:286
+msgid "Header Logo Image URL"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:290
+msgid "Upload / Select Logo"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:293
+msgid "Clear"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:296
+msgid "Recommended format: Transparent PNG or SVG (~160px &times; 36px). Defaults to Clockwork logo if blank."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:302
+msgid "Admin Sidebar Menu Label"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:304
+msgid "Title in the left WordPress sidebar (Default: Clockwork)"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:307
+msgid "Header Sub-Title"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:309
+msgid "Text next to logo in header (Default: Companion)"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:316
+msgid "Support Button Label"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:320
+msgid "Custom Support URL (Optional)"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:321
+msgid "https://agency.com/help or mailto:support@..."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:322
+msgid "Leave blank to use built-in support modal"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:327
+msgid "Agency Email Domains (Optional)"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:329
+msgid "Restrict who sees the admin menu to users with these email domains — useful when client administrators share the site. Comma-separated; the leading <code>@</code> is optional. Leave blank so every administrator sees it. Pages stay reachable by direct URL either way."
+msgstr ""
+
+#. translators: %s: plugin version number
+#: src/Admin/Pages/WhiteLabelPage.php:339
+#, php-format
+msgid "Hide version indicator (<code>v%s</code>) from the admin header"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:354
+msgid "Save Branding Changes"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:356
+msgid "Changes take effect immediately across all wp-admin screens."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:368
+msgid "Real-Time Live Preview"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:376
+msgid "Logo"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:383
+msgid "Get Support"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:404
+msgid "Fleet Health"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:410
+msgid "Companion is synchronized and communicating with your fleet hub."
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:418
+msgid "Simulated Plugins List Row (plugins.php)"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:425
+msgid "Companion plugin..."
+msgstr ""
+
+#. translators: %s: plugin version number
+#: src/Admin/Pages/WhiteLabelPage.php:431
+#, php-format
+msgid "Version %s"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:434
+msgid "By"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:442
+msgid "Simulated WP Admin Sidebar"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:655
+msgid "Select or Upload White Label Logo"
+msgstr ""
+
+#: src/Admin/Pages/WhiteLabelPage.php:656
+msgid "Use this Logo"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:108
+msgid "Need help with your website? Send us a message and we'll get back to you shortly."
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:111
+msgid "Open Support Form"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:144
+msgid "Site is down"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:144
+msgid "30-day uptime"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:147
+#: src/Admin/Support/SupportForm.php:156
+#: src/Admin/Support/SupportForm.php:165
+msgid "Pending"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:147
+msgid "Backed up"
+msgstr ""
+
+#. translators: %s: last backup timestamp
+#: src/Admin/Support/SupportForm.php:151
+#, php-format
+msgid "Last: %s"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:154
+msgid "No runs yet"
+msgstr ""
+
+#. translators: %s: letter grade
+#: src/Admin/Support/SupportForm.php:160
+#, php-format
+msgid "Grade %s · mobile"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:163
+msgid "No scan yet"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:166
+msgid "Visits (30 days)"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:166
+msgid "No report yet"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:169
+msgid "Done this month"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:172
+msgid "Here's what we're watching for you:"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:176
+msgid "Last scans"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:182
+msgid "Tasks done"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:332
+msgid "Clockwork Support"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:334
+msgid "Close support form"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:339
+msgid "Send us a message and we'll get back to you shortly."
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:346
+msgid "First name"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:350
+msgid "Last name"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:357
+msgid "Email"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:361
+msgid "Website URL"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:367
+msgid "Subject"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:368
+msgid "Brief description of your request"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:372
+msgid "Message"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:373
+msgid "Please describe your issue in detail…"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:379
+msgid "I understand that my request may be subject to a minimum charge of one billable hour at an hourly rate of $200"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:386
+msgid "Yes! I'd like to receive occasional email updates from Clockwork."
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:392
+msgid "Send My Message"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:393
+msgid "Sending…"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:404
+msgid "Message sent!"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:405
+msgid "We'll get back to you shortly."
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:513
+msgid "Insufficient permissions."
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:526
+msgid "Please fill in all required fields."
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:529
+msgid "Please enter a valid email address."
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:532
+msgid "Please accept the billing terms to continue."
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:560
+msgid "The support form isn't configured on this site. Set CLOCKWORK_SUPPORT_SITE_URL in wp-config.php, or contact your agency directly."
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:566
+msgid "Open our support page →"
+msgstr ""
+
+#. translators: %s: HTML link to the support page
+#: src/Admin/Support/SupportForm.php:588
+#, php-format
+msgid "Could not reach the support system. Please try again or%s"
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:598
+msgid "Thanks — we'll get back to you shortly."
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:602
+msgid "The support form returned a validation error. Please try again."
+msgstr ""
+
+#: src/Admin/Support/SupportForm.php:606
+msgid "The support system requires authentication. Please contact Clockwork to configure API credentials."
+msgstr ""
+
+#. translators: 1: HTTP status code, 2: HTML link to the support page
+#: src/Admin/Support/SupportForm.php:612
+#, php-format
+msgid "Something went wrong (HTTP %1$s). Please try again or%2$s"
+msgstr ""
+
+#. translators: %s: transport error message.
+#: src/SecurityScans/SitecheckScanner.php:57
+#, php-format
+msgid "Sucuri SiteCheck request failed: %s"
+msgstr ""
+
+#. translators: %d: HTTP status code.
+#: src/SecurityScans/SitecheckScanner.php:75
+#, php-format
+msgid "Sucuri SiteCheck returned HTTP %d"
+msgstr ""
+
+#: src/SecurityScans/SitecheckScanner.php:93
+msgid "Sucuri SiteCheck returned an unexpected response."
+msgstr ""
+
+#: src/Support/PrivacyPolicy.php:17
+msgid "This website connects to Clockwork Control (operated by Clockwork Web Dev, LLC) for remote site health monitoring, automated backups, and routine maintenance."
+msgstr ""
+
+#: src/Support/PrivacyPolicy.php:18
+msgid "What Data Is Collected and Transmitted:"
+msgstr ""
+
+#: src/Support/PrivacyPolicy.php:19
+msgid "When paired, Clockwork Renegade transmits environment telemetry (PHP, WordPress, and server software), plugin and theme inventories, cron health, disk metrics, administrator account names and emails, optional contact-form test results, malware-scan findings, and — when an operator starts a backup — a full database dump plus wp-content files to the AWS S3 bucket configured in Clockwork Control. Clockwork Control may also request a one-time SSO login URL for a named administrator. Nothing is sent until an administrator pastes the Connection Key into Clockwork Control. An optional Sucuri SiteCheck run (administrator-clicked) sends this site's public URL to sitecheck.sucuri.net."
+msgstr ""
+
+#. translators: 1: days remaining, 2: empty or "s", 3: setup URL, 4: dismiss link HTML
+#: src/TwoFactor/EnrollmentNudge.php:84
+msgid "left before it&rsquo;s required on this account."
+msgstr ""
+
+#. translators: 1: days remaining, 2: empty or "s", 3: setup URL, 4: dismiss link HTML
+#: src/TwoFactor/EnrollmentNudge.php:84
+msgid "Set it up now"
+msgstr ""
+
+#. translators: 1: days remaining, 2: empty or "s", 3: setup URL, 4: dismiss link HTML
+#: src/TwoFactor/EnrollmentNudge.php:84
+msgid "it only takes a minute."
+msgstr ""
+
+#: src/TwoFactor/EnrollmentNudge.php:95
+msgid "Two-factor authentication is now required"
+msgstr ""
+
+#: src/TwoFactor/EnrollmentNudge.php:95
+msgid "on this account — wp-admin is locked to the"
+msgstr ""
+
+#: src/TwoFactor/EnrollmentNudge.php:95
+msgid "Login Security page"
+msgstr ""
+
+#: src/TwoFactor/EnrollmentNudge.php:95
+msgid "until it&rsquo;s set up. It only takes a minute."
+msgstr ""
+
+#: src/TwoFactor/LoginInterceptor.php:233
+msgid "Two-factor verification"
+msgstr ""
+
+#: src/TwoFactor/LoginInterceptor.php:234
+msgid "Enter the 6-digit code from your authenticator app."
+msgstr ""
+
+#: src/TwoFactor/LoginInterceptor.php:241
+msgid "Verify"
+msgstr ""
+
+#: src/TwoFactor/LoginInterceptor.php:243
+msgid "Lost your device? Enter a backup code instead."
+msgstr ""
+
+#: src/TwoFactor/WflsMigrator.php:187
+msgid "Wordfence Login Security is not installed."
+msgstr ""
+
+#: src/TwoFactor/WflsMigrator.php:190
+msgid "Refusing to remove — users still depend on Wordfence Login Security for two-factor."
+msgstr ""
+
+#: src/TwoFactor/WflsMigrator.php:211
+msgid "Wordfence Login Security deactivated and removed."
+msgstr ""
+
+#: src/TwoFactor/WflsMigrator.php:212
+msgid "Wordfence Login Security deactivated. The plugin files could not be deleted automatically — remove them from the Plugins screen."
+msgstr ""

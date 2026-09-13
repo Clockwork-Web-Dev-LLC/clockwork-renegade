@@ -91,13 +91,13 @@ class SecurityPage
         }
 
         if (! $anyScanned) {
-            return ['variant' => 'muted', 'label' => 'Scanning soon'];
+            return ['variant' => 'muted', 'label' => __('Scanning soon', 'clockwork-renegade')];
         }
 
         return match ($worstVariant) {
-            'red' => ['variant' => 'red', 'label' => 'Issues found'],
-            'warn' => ['variant' => 'warn', 'label' => 'Needs review'],
-            default => ['variant' => 'green', 'label' => 'All clear'],
+            'red' => ['variant' => 'red', 'label' => __('Issues found', 'clockwork-renegade')],
+            'warn' => ['variant' => 'warn', 'label' => __('Needs review', 'clockwork-renegade')],
+            default => ['variant' => 'green', 'label' => __('All clear', 'clockwork-renegade')],
         };
     }
 
@@ -127,9 +127,9 @@ class SecurityPage
             // schedule, and Companion has no outbound channel back to it.
             self::renderCard([
                 'icon' => 'list',
-                'title' => 'Domain blacklists',
-                'subtitle' => 'Checks Spamhaus DBL, URLHaus, and Google Safe Browsing for any sign your domain has been flagged.',
-                'cadence' => 'Daily — 02:15 UTC',
+                'title' => __('Domain blacklists', 'clockwork-renegade'),
+                'subtitle' => __('Checks Spamhaus DBL, URLHaus, and Google Safe Browsing for any sign your domain has been flagged.', 'clockwork-renegade'),
+                'cadence' => __('Daily — 02:15 UTC', 'clockwork-renegade'),
                 'scan_type' => 'blacklist',
                 'tier' => 'hosting',
                 'state' => self::cardState('hosting', $onCarePlan, true),
@@ -143,9 +143,9 @@ class SecurityPage
             if (! $sucuriWafBlocked) {
                 self::renderCard([
                     'icon' => 'globe',
-                    'title' => 'Sucuri SiteCheck',
-                    'subtitle' => 'Remote malware and page-content scan that flags suspicious changes to your homepage.',
-                    'cadence' => 'Weekly — Mondays 02:00 UTC',
+                    'title' => __('Sucuri SiteCheck', 'clockwork-renegade'),
+                    'subtitle' => __('Remote malware and page-content scan that flags suspicious changes to your homepage.', 'clockwork-renegade'),
+                    'cadence' => __('Weekly — Mondays 02:00 UTC', 'clockwork-renegade'),
                     'scan_type' => 'sitecheck',
                     'tier' => 'care-plan',
                     'state' => self::cardState('care-plan', $onCarePlan, true),
@@ -156,9 +156,9 @@ class SecurityPage
             }
             self::renderCard([
                 'icon' => 'shield',
-                'title' => 'Core file integrity',
-                'subtitle' => "Verifies every WordPress core file against WordPress.org's published checksums. Catches tampering Sucuri can't see.",
-                'cadence' => 'Daily — 02:30 UTC',
+                'title' => __('Core file integrity', 'clockwork-renegade'),
+                'subtitle' => __("Verifies every WordPress core file against WordPress.org's published checksums. Catches tampering Sucuri can't see.", 'clockwork-renegade'),
+                'cadence' => __('Daily — 02:30 UTC', 'clockwork-renegade'),
                 'scan_type' => 'core_checksums',
                 'tier' => 'care-plan',
                 'state' => self::cardState('care-plan', $onCarePlan, $checksumsRunnable),
@@ -166,7 +166,11 @@ class SecurityPage
                 'runnable' => true,
                 'host_unavailable_note' => $checksumsRunnable
                     ? null
-                    : "This host can't run core checksum verification — wp-cli isn't reachable and the WordPress HTTP API is blocked. Talk to " . WhiteLabel::getAuthorName() . '.',
+                    : sprintf(
+                        /* translators: %s: agency / author display name */
+                        __("This host can't run core checksum verification — wp-cli isn't reachable and the WordPress HTTP API is blocked. Talk to %s.", 'clockwork-renegade'),
+                        WhiteLabel::getAuthorName()
+                    ),
             ]);
             ?>
         </div>
@@ -197,32 +201,44 @@ class SecurityPage
         ?>
         <div class="clockwork-card" style="margin-bottom: 20px;">
             <div class="clockwork-card__head">
-                <h2>Vulnerability scan</h2>
+                <h2><?php esc_html_e('Vulnerability scan', 'clockwork-renegade'); ?></h2>
                 <?php if ($totalVulnerable === 0) : ?>
-                    <span class="clockwork-pill clockwork-pill--ok"><span class="clockwork-pill__dot"></span> Clean</span>
+                    <span class="clockwork-pill clockwork-pill--ok"><span class="clockwork-pill__dot"></span> <?php esc_html_e('Clean', 'clockwork-renegade'); ?></span>
                 <?php else : ?>
-                    <span class="clockwork-pill clockwork-pill--warn"><span class="clockwork-pill__dot"></span> <?php echo (int) $totalVulnerable; ?> flagged</span>
+                    <span class="clockwork-pill clockwork-pill--warn"><span class="clockwork-pill__dot"></span> <?php
+                    echo esc_html(sprintf(
+                        /* translators: %d: number of vulnerable plugins/themes */
+                        __('%d flagged', 'clockwork-renegade'),
+                        (int) $totalVulnerable
+                    ));
+                    ?></span>
                 <?php endif; ?>
             </div>
             <div class="clockwork-card__body">
                 <p style="font-size: 12px; color: #6b7280; margin: 0 0 12px;">
-                    Checked against your host's own vulnerability feed for every installed plugin and theme.
+                    <?php esc_html_e("Checked against your host's own vulnerability feed for every installed plugin and theme.", 'clockwork-renegade'); ?>
                 </p>
                 <?php if ($totalVulnerable === 0) : ?>
-                    <div class="clockwork-notice clockwork-notice--ok">No known vulnerabilities in your installed plugins or themes.</div>
+                    <div class="clockwork-notice clockwork-notice--ok"><?php esc_html_e('No known vulnerabilities in your installed plugins or themes.', 'clockwork-renegade'); ?></div>
                 <?php else : ?>
-                    <?php foreach ([['label' => 'Plugin', 'rows' => $plugins], ['label' => 'Theme', 'rows' => $themes]] as $group) : ?>
+                    <?php foreach ([['label' => __('Plugin', 'clockwork-renegade'), 'rows' => $plugins], ['label' => __('Theme', 'clockwork-renegade'), 'rows' => $themes]] as $group) : ?>
                         <?php foreach ($group['rows'] as $row) : ?>
                             <?php if (! is_array($row)) continue; ?>
                             <div class="clockwork-notice clockwork-notice--warn" style="margin-bottom: 8px;">
-                                <strong><?php echo esc_html($group['label']); ?>: <?php echo esc_html((string) ($row['name'] ?? 'unknown')); ?></strong>
+                                <strong><?php echo esc_html($group['label']); ?>: <?php echo esc_html((string) ($row['name'] ?? __('unknown', 'clockwork-renegade'))); ?></strong>
                                 (v<?php echo esc_html((string) ($row['version'] ?? '?')); ?>)
                                 <?php foreach ((is_array($row['alerts'] ?? null) ? $row['alerts'] : []) as $alert) : ?>
                                     <?php if (! is_array($alert)) continue; ?>
                                     <div style="margin-top: 4px; font-size: 12px;">
                                         <?php echo esc_html((string) ($alert['title'] ?? '')); ?>
                                         <?php if (! empty($alert['fixed_in'])) : ?>
-                                            — fixed in <?php echo esc_html((string) $alert['fixed_in']); ?>
+                                            <?php
+                                            echo esc_html(sprintf(
+                                                /* translators: %s: plugin/theme version the vulnerability is fixed in */
+                                                __('— fixed in %s', 'clockwork-renegade'),
+                                                (string) $alert['fixed_in']
+                                            ));
+                                            ?>
                                         <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>
@@ -255,57 +271,83 @@ class SecurityPage
         ?>
         <div class="clockwork-card" style="margin-top: 16px;">
             <div class="clockwork-card__head">
-                <h2>Authentication audit</h2>
+                <h2><?php esc_html_e('Authentication audit', 'clockwork-renegade'); ?></h2>
                 <?php if ($count24h > 0) : ?>
                     <span class="clockwork-pill clockwork-pill--warn">
-                        <?php echo (int) $count24h; ?> in last 24h
+                        <?php
+                        echo esc_html(sprintf(
+                            /* translators: %d: number of failed authentication attempts */
+                            __('%d in last 24h', 'clockwork-renegade'),
+                            (int) $count24h
+                        ));
+                        ?>
                     </span>
                 <?php elseif ($count7d > 0) : ?>
                     <span class="clockwork-pill clockwork-pill--info">
-                        <?php echo (int) $count7d; ?> in last 7d
+                        <?php
+                        echo esc_html(sprintf(
+                            /* translators: %d: number of failed authentication attempts */
+                            __('%d in last 7d', 'clockwork-renegade'),
+                            (int) $count7d
+                        ));
+                        ?>
                     </span>
                 <?php else : ?>
                     <span class="clockwork-pill clockwork-pill--ok">
-                        <i class="dashicons dashicons-yes"></i> No failures
+                        <i class="dashicons dashicons-yes"></i> <?php esc_html_e('No failures', 'clockwork-renegade'); ?>
                     </span>
                 <?php endif; ?>
             </div>
             <div class="clockwork-card__body">
                 <p style="margin: 0 0 12px; color: #4b5563;">
-                    Failed authentication attempts on the Clockwork REST endpoints.
-                    Cryptographic protocol is uncrackable; this catalogues
-                    probing, misconfiguration, and stale-secret deployments so
-                    <?php echo esc_html(WhiteLabel::getAuthorName()); ?> can investigate when the count spikes.
+                    <?php
+                    echo esc_html(sprintf(
+                        /* translators: %s: agency / author display name */
+                        __('Failed authentication attempts on the Clockwork REST endpoints. Cryptographic protocol is uncrackable; this catalogues probing, misconfiguration, and stale-secret deployments so %s can investigate when the count spikes.', 'clockwork-renegade'),
+                        WhiteLabel::getAuthorName()
+                    ));
+                    ?>
                 </p>
 
                 <?php if ($totalSeen === 0) : ?>
                     <div class="clockwork-notice clockwork-notice--ok">
                         <i class="dashicons dashicons-shield-alt"></i>
-                        No failed attempts have been recorded. <?php echo esc_html(WhiteLabel::getAuthorName()); ?>
-                        is the only signed caller of these endpoints.
+                        <?php
+                        echo esc_html(sprintf(
+                            /* translators: %s: agency / author display name */
+                            __('No failed attempts have been recorded. %s is the only signed caller of these endpoints.', 'clockwork-renegade'),
+                            WhiteLabel::getAuthorName()
+                        ));
+                        ?>
                     </div>
                 <?php else : ?>
                     <?php if (! empty($top)) : ?>
-                        <h3 style="margin: 8px 0 4px; font-size: 13px; color: #111827;">Top offenders (last 7 days)</h3>
+                        <h3 style="margin: 8px 0 4px; font-size: 13px; color: #111827;"><?php esc_html_e('Top offenders (last 7 days)', 'clockwork-renegade'); ?></h3>
                         <ul style="margin: 0 0 16px; padding-left: 20px; color: #4b5563; font-size: 13px;">
                             <?php foreach ($top as $offender) : ?>
                                 <li>
                                     <strong><?php echo esc_html($offender['ip']); ?></strong>
-                                    — <?php echo (int) $offender['count']; ?> attempts,
-                                    last seen <?php echo esc_html($offender['last_failed_at']); ?> UTC
+                                    <?php
+                                    echo esc_html(sprintf(
+                                        /* translators: 1: number of attempts, 2: timestamp of the last attempt */
+                                        __('— %1$d attempts, last seen %2$s UTC', 'clockwork-renegade'),
+                                        (int) $offender['count'],
+                                        (string) $offender['last_failed_at']
+                                    ));
+                                    ?>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
                     <?php endif; ?>
 
-                    <h3 style="margin: 8px 0 4px; font-size: 13px; color: #111827;">Recent attempts</h3>
+                    <h3 style="margin: 8px 0 4px; font-size: 13px; color: #111827;"><?php esc_html_e('Recent attempts', 'clockwork-renegade'); ?></h3>
                     <table class="clockwork-table">
                         <thead>
                             <tr>
-                                <th>When</th>
-                                <th>IP</th>
-                                <th>Reason</th>
-                                <th>Endpoint</th>
+                                <th><?php esc_html_e('When', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('IP', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Reason', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Endpoint', 'clockwork-renegade'); ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -347,10 +389,16 @@ class SecurityPage
         ?>
         <div class="clockwork-card" style="margin-top: 16px;">
             <div class="clockwork-card__head">
-                <h2>Scan History</h2>
+                <h2><?php esc_html_e('Scan History', 'clockwork-renegade'); ?></h2>
                 <?php if ($total > 0) : ?>
                     <span class="clockwork-pill clockwork-pill--info">
-                        <?php echo (int) $total; ?> scan<?php echo $total === 1 ? '' : 's'; ?>
+                        <?php
+                        echo esc_html(sprintf(
+                            /* translators: %d: number of recorded scans */
+                            _n('%d scan', '%d scans', $total, 'clockwork-renegade'),
+                            (int) $total
+                        ));
+                        ?>
                     </span>
                 <?php endif; ?>
             </div>
@@ -358,18 +406,23 @@ class SecurityPage
                 <?php if ($total === 0) : ?>
                     <div style="padding: 20px;">
                         <div class="clockwork-notice clockwork-notice--muted">
-                            No scans recorded yet. Once <?php echo esc_html(WhiteLabel::getAuthorName()); ?>'s daily and weekly checks run,
-                            their history will populate here.
+                            <?php
+                            echo esc_html(sprintf(
+                                /* translators: %s: agency / author display name */
+                                __("No scans recorded yet. Once %s's daily and weekly checks run, their history will populate here.", 'clockwork-renegade'),
+                                WhiteLabel::getAuthorName()
+                            ));
+                            ?>
                         </div>
                     </div>
                 <?php else : ?>
                     <table class="clockwork-table">
                         <thead>
                             <tr>
-                                <th>When</th>
-                                <th>Check</th>
-                                <th>Status</th>
-                                <th>Result</th>
+                                <th><?php esc_html_e('When', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Check', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Status', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Result', 'clockwork-renegade'); ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -384,7 +437,7 @@ class SecurityPage
                                 $pill = self::historyPill($row, $details, $sucuriBlocked);
                                 $summary = (string) ($row['summary'] ?? '');
                                 if ($summary === '' && $sucuriBlocked) {
-                                    $summary = 'Blocked by site firewall (likely Cloudflare).';
+                                    $summary = __('Blocked by site firewall (likely Cloudflare).', 'clockwork-renegade');
                                 } elseif ($summary === '') {
                                     $summary = '—';
                                 }
@@ -416,21 +469,27 @@ class SecurityPage
                                                     <?php if ($transport !== '' || $scannedCount !== null || $scanAborted) : ?>
                                                         <div class="clockwork-finding-meta">
                                                             <?php if ($transport !== '') : ?>
-                                                                <span><strong>Transport:</strong> <span class="mono"><?php echo esc_html($transport); ?></span></span>
+                                                                <span><strong><?php esc_html_e('Transport:', 'clockwork-renegade'); ?></strong> <span class="mono"><?php echo esc_html($transport); ?></span></span>
                                                             <?php endif; ?>
                                                             <?php if ($scannedCount !== null) : ?>
-                                                                <span><strong>Files scanned:</strong> <span class="mono"><?php echo esc_html(number_format((int) $scannedCount)); ?></span></span>
+                                                                <span><strong><?php esc_html_e('Files scanned:', 'clockwork-renegade'); ?></strong> <span class="mono"><?php echo esc_html(number_format((int) $scannedCount)); ?></span></span>
                                                             <?php endif; ?>
                                                             <?php if ($scanAborted) : ?>
                                                                 <span class="clockwork-finding-meta__warn">
-                                                                    Scan aborted<?php echo $abortReason !== '' ? ': ' . esc_html($abortReason) : ''; ?>
+                                                                    <?php esc_html_e('Scan aborted', 'clockwork-renegade'); ?><?php echo $abortReason !== '' ? ': ' . esc_html($abortReason) : ''; ?>
                                                                 </span>
                                                             <?php endif; ?>
                                                         </div>
                                                     <?php endif; ?>
                                                     <?php if (! empty($findings)) : ?>
                                                         <div class="clockwork-finding-count">
-                                                            <?php echo (int) count($findings); ?> finding<?php echo count($findings) === 1 ? '' : 's'; ?>
+                                                            <?php
+                                                            echo esc_html(sprintf(
+                                                                /* translators: %d: number of scan findings */
+                                                                _n('%d finding', '%d findings', count($findings), 'clockwork-renegade'),
+                                                                (int) count($findings)
+                                                            ));
+                                                            ?>
                                                         </div>
                                                         <ul class="clockwork-finding-list">
                                                             <?php foreach ($findings as $f) : ?>
@@ -438,8 +497,8 @@ class SecurityPage
                                                                 if (! is_array($f)) {
                                                                     continue;
                                                                 }
-                                                                $kind = (string) ($f['kind'] ?? 'unknown');
-                                                                $path = (string) ($f['path'] ?? '(no path)');
+                                                                $kind = (string) ($f['kind'] ?? __('unknown', 'clockwork-renegade'));
+                                                                $path = (string) ($f['path'] ?? __('(no path)', 'clockwork-renegade'));
                                                                 $evidence = (string) ($f['evidence'] ?? '');
                                                                 ?>
                                                                 <li>
@@ -479,9 +538,9 @@ class SecurityPage
     private static function scanTargetLabel(string $target): string
     {
         return match ($target) {
-            'sitecheck' => 'Sucuri SiteCheck',
-            'core_checksums' => 'Core integrity',
-            'blacklist' => 'Domain blacklists',
+            'sitecheck' => __('Sucuri SiteCheck', 'clockwork-renegade'),
+            'core_checksums' => __('Core integrity', 'clockwork-renegade'),
+            'blacklist' => __('Domain blacklists', 'clockwork-renegade'),
             '' => '—',
             default => ucfirst(str_replace('_', ' ', $target)),
         };
@@ -495,28 +554,28 @@ class SecurityPage
     private static function historyPill(array $row, array $details, bool $sucuriBlocked): array
     {
         if ($sucuriBlocked) {
-            return ['variant' => 'muted', 'label' => 'Blocked by firewall'];
+            return ['variant' => 'muted', 'label' => __('Blocked by firewall', 'clockwork-renegade')];
         }
         $status = (string) ($details['status'] ?? '');
         if ($status === 'failed' || empty($row['ok'])) {
-            return ['variant' => 'warn', 'label' => 'Failed'];
+            return ['variant' => 'warn', 'label' => __('Failed', 'clockwork-renegade')];
         }
         // Warning-status scans (e.g. `wp_config_recently_modified` finding
         // with no actual malware) must downgrade to yellow even when
         // modified_files_count is non-zero. The agency-side scanner stamps
         // status='warning' on these; render them as Review, not Issues.
         if ($status === 'warning') {
-            return ['variant' => 'warn', 'label' => 'Review'];
+            return ['variant' => 'warn', 'label' => __('Review', 'clockwork-renegade')];
         }
         $hasIssue = ($status === 'issues_found')
             || ! empty($details['has_malware_hit'])
             || ! empty($details['blacklist_hit'])
             || (int) ($details['modified_files_count'] ?? 0) > 0;
         if ($hasIssue) {
-            return ['variant' => 'red', 'label' => 'Issues found'];
+            return ['variant' => 'red', 'label' => __('Issues found', 'clockwork-renegade')];
         }
 
-        return ['variant' => 'green', 'label' => 'Clean'];
+        return ['variant' => 'green', 'label' => __('Clean', 'clockwork-renegade')];
     }
 
     private static function formatTimestampUtc(string $ranAtUtc): string
@@ -575,10 +634,8 @@ class SecurityPage
             ?>
             <div class="clockwork-card" style="border-left: 4px solid #65a30d;">
                 <div class="clockwork-card__body">
-                    <strong>Hosting + care-plan security checks are running.</strong>
-                    Daily domain blacklist checks come with your hosting. Weekly malware scans (Sucuri) and daily
-                    WordPress core file integrity verification come with your care plan. Use the buttons below to
-                    run one now.
+                    <strong><?php esc_html_e('Hosting + care-plan security checks are running.', 'clockwork-renegade'); ?></strong>
+                    <?php esc_html_e('Daily domain blacklist checks come with your hosting. Weekly malware scans (Sucuri) and daily WordPress core file integrity verification come with your care plan. Use the buttons below to run one now.', 'clockwork-renegade'); ?>
                 </div>
             </div>
             <?php
@@ -586,12 +643,17 @@ class SecurityPage
             ?>
             <div class="clockwork-card" style="border-left: 4px solid #f59e0b;">
                 <div class="clockwork-card__body">
-                    <strong>Hosting includes daily blacklist checks. A care plan adds the deeper scans.</strong>
-                    The <strong>domain blacklist check</strong> is already running — <?php echo esc_html(WhiteLabel::getAuthorName()); ?> checks every day to make sure
-                    your domain isn't flagged on Spamhaus, URLHaus, or Google Safe Browsing. With a care plan, they also run
-                    <strong>weekly Sucuri malware/JavaScript-injection scans</strong> and
-                    <strong>daily WordPress core file integrity verification</strong> over SSH.
-                    Talk to <?php echo esc_html(WhiteLabel::getAuthorName()); ?> about adding a care plan.
+                    <strong><?php esc_html_e('Hosting includes daily blacklist checks. A care plan adds the deeper scans.', 'clockwork-renegade'); ?></strong>
+                    <?php
+                    echo wp_kses(
+                        sprintf(
+                            /* translators: %1$s: agency / author display name (used twice) */
+                            __("The <strong>domain blacklist check</strong> is already running — %1\$s checks every day to make sure your domain isn't flagged on Spamhaus, URLHaus, or Google Safe Browsing. With a care plan, they also run <strong>weekly Sucuri malware/JavaScript-injection scans</strong> and <strong>daily WordPress core file integrity verification</strong> over SSH. Talk to %1\$s about adding a care plan.", 'clockwork-renegade'),
+                            esc_html(WhiteLabel::getAuthorName())
+                        ),
+                        ['strong' => []]
+                    );
+                    ?>
                 </div>
             </div>
             <?php
@@ -646,7 +708,7 @@ class SecurityPage
                     <?php wp_nonce_field(RunSecurityScanAction::NONCE_ACTION); ?>
                     <button type="submit" class="button clockwork-scan-card__run-btn">
                         <span class="dashicons dashicons-update"></span>
-                        Run scan now
+                        <?php esc_html_e('Run scan now', 'clockwork-renegade'); ?>
                     </button>
                 </form>
             <?php endif; ?>
@@ -660,29 +722,45 @@ class SecurityPage
 
             <?php if ($card['state'] === 'care-plan-off') : ?>
                 <p class="clockwork-scan-card__empty">
-                    <strong>Included with a care plan.</strong>
+                    <strong><?php esc_html_e('Included with a care plan.', 'clockwork-renegade'); ?></strong>
                     <?php if ($card['scan_type'] === 'sitecheck') : ?>
-                        <?php echo esc_html('Sucuri SiteCheck runs every Monday — scans your homepage for malware, JavaScript injections, and defacement. If anything trips, ' . WhiteLabel::getAuthorName() . ' gets alerted within minutes.'); ?>
+                        <?php
+                        echo esc_html(sprintf(
+                            /* translators: %s: agency / author display name */
+                            __('Sucuri SiteCheck runs every Monday — scans your homepage for malware, JavaScript injections, and defacement. If anything trips, %s gets alerted within minutes.', 'clockwork-renegade'),
+                            WhiteLabel::getAuthorName()
+                        ));
+                        ?>
                     <?php else : ?>
-                        <?php echo esc_html('Every WordPress core file is verified against WordPress.org\'s published checksums daily. Catches PHP backdoors, modified core files, and shells dropped into wp-includes — the kind of malware Sucuri\'s public scan can\'t see.'); ?>
+                        <?php esc_html_e('Every WordPress core file is verified against WordPress.org\'s published checksums daily. Catches PHP backdoors, modified core files, and shells dropped into wp-includes — the kind of malware Sucuri\'s public scan can\'t see.', 'clockwork-renegade'); ?>
                     <?php endif; ?>
                 </p>
             <?php elseif ($latest === null) : ?>
                 <p class="clockwork-scan-card__empty">
-                    No scan recorded yet. The next scheduled run is <strong><?php echo esc_html($card['cadence']); ?></strong>.
+                    <?php
+                    echo wp_kses(
+                        sprintf(
+                            /* translators: %s: scan cadence, e.g. "Daily — 02:15 UTC" */
+                            __('No scan recorded yet. The next scheduled run is <strong>%s</strong>.', 'clockwork-renegade'),
+                            esc_html($card['cadence'])
+                        ),
+                        ['strong' => []]
+                    );
+                    ?>
                 </p>
             <?php elseif ($sucuriBlocked) : ?>
                 <p class="clockwork-scan-card__note">
-                    <strong>Your site's firewall (likely Cloudflare) is blocking Sucuri's external scanner.</strong>
-                    This is normal for sites behind a WAF — Sucuri tries to fetch the homepage from their servers
-                    and your firewall rejects them as bots. The <strong>Domain blacklists</strong> card catches
-                    the same blacklist signal directly, and the <strong>Core file integrity</strong> check
-                    runs server-side — that's the deeper malware check anyway.
+                    <?php
+                    echo wp_kses(
+                        __("<strong>Your site's firewall (likely Cloudflare) is blocking Sucuri's external scanner.</strong> This is normal for sites behind a WAF — Sucuri tries to fetch the homepage from their servers and your firewall rejects them as bots. The <strong>Domain blacklists</strong> card catches the same blacklist signal directly, and the <strong>Core file integrity</strong> check runs server-side — that's the deeper malware check anyway.", 'clockwork-renegade'),
+                        ['strong' => []]
+                    );
+                    ?>
                 </p>
                 <dl class="clockwork-scan-card__stats">
                     <?php
-                    self::renderStat('Last attempt', self::humanTimeAgo((string) ($latest['ran_at'] ?? '')));
-                    self::renderStat('Response', (string) ($latest['error'] ?? '—'));
+                    self::renderStat(__('Last attempt', 'clockwork-renegade'), self::humanTimeAgo((string) ($latest['ran_at'] ?? '')));
+                    self::renderStat(__('Response', 'clockwork-renegade'), (string) ($latest['error'] ?? '—'));
                     ?>
                 </dl>
             <?php else : ?>
@@ -692,28 +770,43 @@ class SecurityPage
 
                 <dl class="clockwork-scan-card__stats">
                     <?php
-                    self::renderStat('Scanned', self::humanTimeAgo((string) ($latest['ran_at'] ?? '')));
-                    self::renderStat('Took', isset($latest['elapsed_ms']) ? number_format((int) $latest['elapsed_ms']).' ms' : '—');
+                    self::renderStat(__('Scanned', 'clockwork-renegade'), self::humanTimeAgo((string) ($latest['ran_at'] ?? '')));
+                    self::renderStat(
+                        __('Took', 'clockwork-renegade'),
+                        isset($latest['elapsed_ms'])
+                            ? sprintf(
+                                /* translators: %s: formatted number of milliseconds */
+                                __('%s ms', 'clockwork-renegade'),
+                                number_format((int) $latest['elapsed_ms'])
+                            )
+                            : '—'
+                    );
 
                     if ($card['scan_type'] === 'sitecheck') {
-                        self::renderStat('Malware', ! empty($details['has_malware_hit']) ? 'YES' : 'no');
-                        self::renderStat('Blacklist', ! empty($details['blacklist_hit']) ? 'YES' : 'no');
+                        self::renderStat(__('Malware', 'clockwork-renegade'), ! empty($details['has_malware_hit']) ? __('YES', 'clockwork-renegade') : __('no', 'clockwork-renegade'));
+                        self::renderStat(__('Blacklist', 'clockwork-renegade'), ! empty($details['blacklist_hit']) ? __('YES', 'clockwork-renegade') : __('no', 'clockwork-renegade'));
                     } elseif ($card['scan_type'] === 'blacklist') {
-                        self::renderStat('Blacklisted', ! empty($details['blacklist_hit']) ? 'YES' : 'no');
-                        self::renderStat('Result', ucfirst((string) ($details['status'] ?? 'unknown')));
+                        self::renderStat(__('Blacklisted', 'clockwork-renegade'), ! empty($details['blacklist_hit']) ? __('YES', 'clockwork-renegade') : __('no', 'clockwork-renegade'));
+                        self::renderStat(__('Result', 'clockwork-renegade'), ucfirst((string) ($details['status'] ?? 'unknown')));
                     } else {
                         $modified = (int) ($details['modified_files_count'] ?? 0);
                         $version = (string) ($details['wp_version'] ?? '');
-                        self::renderStat('Files flagged', (string) $modified);
-                        self::renderStat('WP version', $version !== '' ? $version : '—');
+                        self::renderStat(__('Files flagged', 'clockwork-renegade'), (string) $modified);
+                        self::renderStat(__('WP version', 'clockwork-renegade'), $version !== '' ? $version : '—');
                     }
                     ?>
                 </dl>
                 <?php if ($pill['variant'] === 'red') : ?>
                     <div class="clockwork-scan-card__alert-note">
                         <span class="dashicons dashicons-warning" aria-hidden="true"></span>
-                        <strong><?php echo esc_html(WhiteLabel::getAuthorName()); ?> has been alerted to these findings and is investigating.</strong>
-                        <?php echo WhiteLabel::supportLink('Reach out'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside supportLink() ?> if you have questions or haven't heard back.
+                        <strong><?php
+                        echo esc_html(sprintf(
+                            /* translators: %s: agency / author display name */
+                            __('%s has been alerted to these findings and is investigating.', 'clockwork-renegade'),
+                            WhiteLabel::getAuthorName()
+                        ));
+                        ?></strong>
+                        <?php echo WhiteLabel::supportLink(__('Reach out', 'clockwork-renegade')); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside supportLink() ?> <?php esc_html_e("if you have questions or haven't heard back.", 'clockwork-renegade'); ?>
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
@@ -764,34 +857,34 @@ class SecurityPage
     private static function statusPill(?array $latest, array $details, string $cardState, string $scanType = ''): array
     {
         if ($cardState === 'care-plan-off') {
-            return ['variant' => 'muted', 'label' => 'Disabled'];
+            return ['variant' => 'muted', 'label' => __('Disabled', 'clockwork-renegade')];
         }
         if ($cardState === 'host-unavailable') {
-            return ['variant' => 'muted', 'label' => 'Not available'];
+            return ['variant' => 'muted', 'label' => __('Not available', 'clockwork-renegade')];
         }
         if ($latest === null) {
-            return ['variant' => 'muted', 'label' => 'Not yet scanned'];
+            return ['variant' => 'muted', 'label' => __('Not yet scanned', 'clockwork-renegade')];
         }
         if (self::isSucuriBlockedByWaf($latest, $scanType)) {
-            return ['variant' => 'muted', 'label' => 'Blocked by firewall'];
+            return ['variant' => 'muted', 'label' => __('Blocked by firewall', 'clockwork-renegade')];
         }
         $status = (string) ($details['status'] ?? '');
         if ($status === 'failed' || empty($latest['ok'])) {
-            return ['variant' => 'warn', 'label' => 'Failed'];
+            return ['variant' => 'warn', 'label' => __('Failed', 'clockwork-renegade')];
         }
         // Same warning carve-out as historyPill() — see comment there.
         if ($status === 'warning') {
-            return ['variant' => 'warn', 'label' => 'Review'];
+            return ['variant' => 'warn', 'label' => __('Review', 'clockwork-renegade')];
         }
         $hasIssue = ($status === 'issues_found')
             || ! empty($details['has_malware_hit'])
             || ! empty($details['blacklist_hit'])
             || (int) ($details['modified_files_count'] ?? 0) > 0;
         if ($hasIssue) {
-            return ['variant' => 'red', 'label' => 'Issues found'];
+            return ['variant' => 'red', 'label' => __('Issues found', 'clockwork-renegade')];
         }
 
-        return ['variant' => 'green', 'label' => 'Clean'];
+        return ['variant' => 'green', 'label' => __('Clean', 'clockwork-renegade')];
     }
 
     /**
@@ -970,21 +1063,33 @@ class SecurityPage
         }
         $diff = time() - $ts;
         if ($diff < 60) {
-            return 'just now';
+            return __('just now', 'clockwork-renegade');
         }
         if ($diff < 3600) {
             $mins = (int) round($diff / 60);
 
-            return $mins.' minute'.($mins === 1 ? '' : 's').' ago';
+            return sprintf(
+                /* translators: %d: number of minutes */
+                _n('%d minute ago', '%d minutes ago', $mins, 'clockwork-renegade'),
+                $mins
+            );
         }
         if ($diff < 86400) {
             $hours = (int) round($diff / 3600);
 
-            return $hours.' hour'.($hours === 1 ? '' : 's').' ago';
+            return sprintf(
+                /* translators: %d: number of hours */
+                _n('%d hour ago', '%d hours ago', $hours, 'clockwork-renegade'),
+                $hours
+            );
         }
         $days = (int) round($diff / 86400);
 
-        return $days.' day'.($days === 1 ? '' : 's').' ago';
+        return sprintf(
+            /* translators: %d: number of days */
+            _n('%d day ago', '%d days ago', $days, 'clockwork-renegade'),
+            $days
+        );
     }
 
     private static function iconSvg(string $name): string

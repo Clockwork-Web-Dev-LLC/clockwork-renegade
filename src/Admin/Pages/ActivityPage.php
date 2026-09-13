@@ -181,7 +181,7 @@ class ActivityPage
 
         ?>
         <div class="cwk-month-picker">
-            <span class="cwk-month-picker__label">Month</span>
+            <span class="cwk-month-picker__label"><?php esc_html_e('Month', 'clockwork-renegade'); ?></span>
             <?php foreach ($months as $m) : ?>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=' . self::SLUG . '&month=' . $m)); ?>"
                    class="cwk-month-btn <?php echo $m === $current ? 'cwk-month-btn--active' : ''; ?>">
@@ -215,17 +215,17 @@ class ActivityPage
 
             <div class="cwk-summary-card__hero">
                 <span class="cwk-summary-card__number"><?php echo (int) $total; ?></span>
-                <span class="cwk-summary-card__label">actions this month</span>
+                <span class="cwk-summary-card__label"><?php esc_html_e('actions this month', 'clockwork-renegade'); ?></span>
             </div>
 
             <?php if ($onCarePlan) : ?>
                 <div class="cwk-summary-card__note">
                     <span class="cwk-summary-card__sparkle">✦</span>
-                    Run automatically — all part of your care plan
+                    <?php esc_html_e('Run automatically — all part of your care plan', 'clockwork-renegade'); ?>
                 </div>
             <?php else : ?>
                 <div class="cwk-summary-card__note cwk-summary-card__note--off">
-                    Some work shown here may be billed separately.
+                    <?php esc_html_e('Some work shown here may be billed separately.', 'clockwork-renegade'); ?>
                 </div>
             <?php endif; ?>
 
@@ -264,9 +264,9 @@ class ActivityPage
                     <table class="wp-list-table widefat striped">
                         <thead>
                             <tr>
-                                <th style="width: 14ch;">When</th>
-                                <th style="width: 14ch;">Action</th>
-                                <th>Summary</th>
+                                <th style="width: 14ch;"><?php esc_html_e('When', 'clockwork-renegade'); ?></th>
+                                <th style="width: 14ch;"><?php esc_html_e('Action', 'clockwork-renegade'); ?></th>
+                                <th><?php esc_html_e('Summary', 'clockwork-renegade'); ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -287,7 +287,7 @@ class ActivityPage
                                     <td>
                                         <?php echo esc_html($summary); ?>
                                         <?php if (! $ok) : ?>
-                                            <span style="background: #fee2e2; color: #b91c1c; font-size: 10px; padding: 2px 6px; border-radius: 999px; margin-left: 6px;">failed</span>
+                                            <span style="background: #fee2e2; color: #b91c1c; font-size: 10px; padding: 2px 6px; border-radius: 999px; margin-left: 6px;"><?php esc_html_e('failed', 'clockwork-renegade'); ?></span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
@@ -308,46 +308,46 @@ class ActivityPage
     private static function typeConfig(): array
     {
         return [
-            'security_scan'           => ['label' => 'Security scans',          'icon' => 'shield'],
-            'performance_scan'        => ['label' => 'Performance scans',       'icon' => 'gauge'],
-            'plugin_update'           => ['label' => 'Plugin updates',          'icon' => 'plugin'],
-            'uptime_check'            => ['label' => 'Uptime checks',           'icon' => 'pulse'],
-            'uptime_transition'       => ['label' => 'Uptime checks',           'icon' => 'pulse'],
-            'companion_install'       => ['label' => 'Companion installs',      'icon' => 'download'],
-            'auto_updates_configured' => ['label' => 'Auto-updates configured', 'icon' => 'refresh'],
-            'companion_update'        => ['label' => 'Companion updates',       'icon' => 'download'],
-            'theme_update'            => ['label' => 'Theme updates',           'icon' => 'theme'],
-            'core_update'             => ['label' => 'Core updates',            'icon' => 'wp'],
-            'sso_login'               => ['label' => 'SSO logins',              'icon' => 'login'],
-            'manual_ban'              => ['label' => 'Lockouts',                'icon' => 'ban'],
-            'manual_unban'            => ['label' => 'Unlocks',                 'icon' => 'check'],
-            'review_approve'          => ['label' => 'Reviews approved',        'icon' => 'check'],
-            'review_dismiss'          => ['label' => 'Reviews dismissed',       'icon' => 'dismiss'],
-            'care_plan_toggled'       => ['label' => 'Care plan changes',       'icon' => 'plan'],
-            'backup'                  => ['label' => 'Backups',                 'icon' => 'backup'],
+            'security_scan'           => ['label' => __('Security scans', 'clockwork-renegade'),          'icon' => 'shield'],
+            'performance_scan'        => ['label' => __('Performance scans', 'clockwork-renegade'),       'icon' => 'gauge'],
+            'plugin_update'           => ['label' => __('Plugin updates', 'clockwork-renegade'),          'icon' => 'plugin'],
+            'uptime_check'            => ['label' => __('Uptime checks', 'clockwork-renegade'),           'icon' => 'pulse'],
+            'uptime_transition'       => ['label' => __('Uptime checks', 'clockwork-renegade'),           'icon' => 'pulse'],
+            'companion_install'       => ['label' => __('Renegade installs', 'clockwork-renegade'),       'icon' => 'download'],
+            'auto_updates_configured' => ['label' => __('Auto-updates configured', 'clockwork-renegade'), 'icon' => 'refresh'],
+            'companion_update'        => ['label' => __('Renegade updates', 'clockwork-renegade'),        'icon' => 'download'],
+            'theme_update'            => ['label' => __('Theme updates', 'clockwork-renegade'),           'icon' => 'theme'],
+            'core_update'             => ['label' => __('Core updates', 'clockwork-renegade'),            'icon' => 'wp'],
+            'sso_login'               => ['label' => __('SSO logins', 'clockwork-renegade'),              'icon' => 'login'],
+            'manual_ban'              => ['label' => __('Lockouts', 'clockwork-renegade'),                'icon' => 'ban'],
+            'manual_unban'            => ['label' => __('Unlocks', 'clockwork-renegade'),                 'icon' => 'check'],
+            'review_approve'          => ['label' => __('Reviews approved', 'clockwork-renegade'),        'icon' => 'check'],
+            'review_dismiss'          => ['label' => __('Reviews dismissed', 'clockwork-renegade'),       'icon' => 'dismiss'],
+            'care_plan_toggled'       => ['label' => __('Care plan changes', 'clockwork-renegade'),       'icon' => 'plan'],
+            'backup'                  => ['label' => __('Backups', 'clockwork-renegade'),                 'icon' => 'backup'],
         ];
     }
 
     private static function labelForType(string $type): string
     {
         $labels = [
-            'plugin_update'           => 'Plugin update',
-            'sso_login'               => 'SSO login',
-            'companion_install'       => 'Companion install',
-            'companion_update'        => 'Companion update',
-            'manual_ban'              => 'Lockout',
-            'manual_unban'            => 'Unlock',
-            'review_approve'          => 'Review approved',
-            'review_dismiss'          => 'Review dismissed',
-            'care_plan_toggled'       => 'Care plan change',
-            'security_scan'           => 'Security scan',
-            'performance_scan'        => 'Performance scan',
-            'uptime_check'            => 'Uptime check',
-            'uptime_transition'       => 'Uptime check',
-            'auto_updates_configured' => 'Auto-updates configured',
-            'theme_update'            => 'Theme update',
-            'core_update'             => 'Core update',
-            'backup'                  => 'Backup',
+            'plugin_update'           => __('Plugin update', 'clockwork-renegade'),
+            'sso_login'               => __('SSO login', 'clockwork-renegade'),
+            'companion_install'       => __('Renegade install', 'clockwork-renegade'),
+            'companion_update'        => __('Renegade update', 'clockwork-renegade'),
+            'manual_ban'              => __('Lockout', 'clockwork-renegade'),
+            'manual_unban'            => __('Unlock', 'clockwork-renegade'),
+            'review_approve'          => __('Review approved', 'clockwork-renegade'),
+            'review_dismiss'          => __('Review dismissed', 'clockwork-renegade'),
+            'care_plan_toggled'       => __('Care plan change', 'clockwork-renegade'),
+            'security_scan'           => __('Security scan', 'clockwork-renegade'),
+            'performance_scan'        => __('Performance scan', 'clockwork-renegade'),
+            'uptime_check'            => __('Uptime check', 'clockwork-renegade'),
+            'uptime_transition'       => __('Uptime check', 'clockwork-renegade'),
+            'auto_updates_configured' => __('Auto-updates configured', 'clockwork-renegade'),
+            'theme_update'            => __('Theme update', 'clockwork-renegade'),
+            'core_update'             => __('Core update', 'clockwork-renegade'),
+            'backup'                  => __('Backup', 'clockwork-renegade'),
         ];
         return $labels[$type] ?? ucfirst(str_replace('_', ' ', $type));
     }
