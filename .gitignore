@@ -3,3 +3,4 @@ vendor/
 .phpunit.result.cache
 *.log
 .DS_Store
+dist/
