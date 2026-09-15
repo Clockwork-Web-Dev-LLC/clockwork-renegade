@@ -64,6 +64,10 @@ class PluginLifecycleRoute
             return new WP_Error('invalid_input', "Action must be 'activate' or 'deactivate'", ['status' => 400]);
         }
 
+        if ($action === 'deactivate' && $this->isConnectorPlugin($slug)) {
+            return new WP_Error('protected_plugin', 'Refusing to deactivate the Clockwork connector plugin', ['status' => 403]);
+        }
+
         $networkWide = ! empty($body['network_wide']);
 
         require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -107,6 +111,10 @@ class PluginLifecycleRoute
         $slug = isset($body['slug']) ? (string) $body['slug'] : '';
         if ($slug === '' || ! preg_match(self::FILE_SLUG_PATTERN, $slug)) {
             return new WP_Error('invalid_input', 'A valid plugin slug (directory/file.php) is required', ['status' => 400]);
+        }
+
+        if ($this->isConnectorPlugin($slug)) {
+            return new WP_Error('protected_plugin', 'Refusing to delete the Clockwork connector plugin', ['status' => 403]);
         }
 
         $networkWide = ! empty($body['network_wide']);
@@ -164,6 +172,9 @@ class PluginLifecycleRoute
         }
 
         $slug = isset($body['slug']) ? trim((string) $body['slug']) : '';
+        if (! empty($body['package_url'])) {
+            return new WP_Error('not_supported', 'Control-hosted plugin packages cannot be installed on Renegade', ['status' => 400]);
+        }
         if ($slug === '' || ! preg_match(self::REPO_SLUG_PATTERN, $slug)) {
             return new WP_Error('invalid_input', 'A valid WordPress.org plugin repository slug is required', ['status' => 400]);
         }
@@ -249,5 +260,18 @@ class PluginLifecycleRoute
             'version'     => (string) ($api->version ?? ''),
             'activated'   => $activated,
         ]);
+    }
+
+    /**
+     * Refuse deactivate/delete of Companion or Renegade — either bricks the control plane.
+     */
+    private function isConnectorPlugin(string $slug): bool
+    {
+        $normalized = strtolower(str_replace('\\', '/', $slug));
+        $base = basename($normalized);
+
+        return in_array($base, ['clockwork-companion.php', 'clockwork-renegade.php'], true)
+            || str_starts_with($normalized, 'clockwork-companion/')
+            || str_starts_with($normalized, 'clockwork-renegade/');
     }
 }

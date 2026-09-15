@@ -4,7 +4,7 @@ Tags: monitoring, backups, updates, security, fleet
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -99,6 +99,12 @@ No. Clockwork Renegade does not execute arbitrary remote code or eval(). All upd
 3. System telemetry and resource performance diagnostics.
 
 == Changelog ==
+
+= 1.0.1 - 2026-09-15 =
+* Feature: Chunked database optimization endpoints for revisions, transients, and drafts.
+* Feature: Remote debug.log viewer with automatic redaction of sensitive credentials.
+* Feature: Plugin lifecycle management (activate, deactivate, delete, and WordPress.org install).
+* Hardening: Strengthened path traversal checks and payload boundaries.
 
 = 1.0.0 =
 * Initial public release for the WordPress.org Plugin Directory.

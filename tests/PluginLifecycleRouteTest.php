@@ -158,4 +158,54 @@ class PluginLifecycleRouteTest extends TestCase
         $this->assertSame('1.6.5', $data['version']);
         $this->assertTrue($data['activated']);
     }
+
+    public function testInstallRejectsControlHostedPackageUrl(): void
+    {
+        $route = new PluginLifecycleRoute();
+        $req = new WP_REST_Request('POST', '/clockwork-renegade/v1/plugins/install', [
+            'package_url' => 'https://control.example.test/packages/foo.zip',
+            'sha256' => str_repeat('a', 64),
+        ]);
+        $res = $route->handleInstall($req);
+
+        $this->assertInstanceOf(\WP_Error::class, $res);
+        $this->assertSame('not_supported', $res->get_error_code());
+    }
+
+    public function testToggleRefusesDeactivatingConnectorPlugin(): void
+    {
+        $GLOBALS['wp_test_plugins']['clockwork-companion/clockwork-companion.php'] = [
+            'Name' => 'Clockwork Companion',
+        ];
+        $GLOBALS['wp_test_active_plugins'][] = 'clockwork-companion/clockwork-companion.php';
+
+        $route = new PluginLifecycleRoute();
+        $req = new WP_REST_Request('POST', '/clockwork-renegade/v1/plugins/toggle', [
+            'slug'   => 'clockwork-companion/clockwork-companion.php',
+            'action' => 'deactivate',
+        ]);
+        $res = $route->handleToggle($req);
+
+        $this->assertInstanceOf(\WP_Error::class, $res);
+        $this->assertSame('protected_plugin', $res->get_error_code());
+        $this->assertContains('clockwork-companion/clockwork-companion.php', $GLOBALS['wp_test_active_plugins']);
+    }
+
+    public function testDeleteRefusesConnectorPlugin(): void
+    {
+        $GLOBALS['wp_test_plugins']['clockwork-renegade/clockwork-renegade.php'] = [
+            'Name' => 'Clockwork Renegade',
+        ];
+
+        $route = new PluginLifecycleRoute();
+        $req = new WP_REST_Request('POST', '/clockwork-renegade/v1/plugins/delete', [
+            'slug' => 'clockwork-renegade/clockwork-renegade.php',
+        ]);
+        $res = $route->handleDelete($req);
+
+        $this->assertInstanceOf(\WP_Error::class, $res);
+        $this->assertSame('protected_plugin', $res->get_error_code());
+        $this->assertArrayHasKey('clockwork-renegade/clockwork-renegade.php', $GLOBALS['wp_test_plugins']);
+    }
 }
+
