@@ -12,7 +12,6 @@ use ClockworkRenegade\Admin\Pages\TrafficPage;
 use ClockworkRenegade\Admin\Pages\TwoFactorPage;
 use ClockworkRenegade\Admin\Pages\NotificationsPage;
 use ClockworkRenegade\Admin\Pages\UptimePage;
-use ClockworkRenegade\Admin\Pages\WhiteLabelPage;
 use ClockworkRenegade\WhiteLabel\WhiteLabel;
 
 /**
@@ -266,16 +265,6 @@ class Menu
             NotificationsPage::SLUG,
             [NotificationsPage::class, 'render']
         );
-
-        add_submenu_page(
-            self::SLUG,
-            __('Branding', 'clockwork-renegade'),
-            __('Branding', 'clockwork-renegade'),
-            self::CAPABILITY,
-            WhiteLabelPage::SLUG,
-            [WhiteLabelPage::class, 'render']
-        );
-
         add_submenu_page(
             self::SLUG,
             __('Connection', 'clockwork-renegade'),
@@ -311,11 +300,6 @@ class Menu
                 CLOCKWORK_RENEGADE_VERSION,
                 false
             );
-        }
-
-        // WP Media uploader for white-label logo selector
-        if (str_contains($hookSuffix, WhiteLabelPage::SLUG)) {
-            wp_enqueue_media();
         }
     }
 

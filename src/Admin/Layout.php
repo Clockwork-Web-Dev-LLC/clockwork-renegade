@@ -34,10 +34,6 @@ class Layout
         $all[] = ['slug' => 'backups', 'label' => __('Backups', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\BackupsPage::SLUG];
         $all[] = ['slug' => 'notifications', 'label' => __('Notifications', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\NotificationsPage::SLUG];
 
-        if (! WhiteLabel::isEnabled()) {
-            $all[] = ['slug' => 'branding', 'label' => __('Branding', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\WhiteLabelPage::SLUG];
-        }
-
         $all[] = ['slug' => 'connection', 'label' => __('Connection', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\ConnectionPage::SLUG];
 
         return $all;

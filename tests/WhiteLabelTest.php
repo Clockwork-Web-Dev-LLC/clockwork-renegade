@@ -316,4 +316,24 @@ class WhiteLabelTest extends TestCase
         $this->assertSame('Control Agency', $saved['company_name']);
         $this->assertSame('2026-09-13T00:00:00+00:00', $saved['synced_at']);
     }
+
+    public function testBrandingPageAndLocalSaveAreLockedDownWith403(): void
+    {
+        // 1. Layout tabs must never include branding
+        $tabs = \ClockworkRenegade\Admin\Layout::tabs();
+        $tabSlugs = array_column($tabs, "slug");
+        $this->assertNotContains("branding", $tabSlugs);
+
+        // 2. Direct render must die with 403
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("wp_die [403]");
+        \ClockworkRenegade\Admin\Pages\WhiteLabelPage::render();
+    }
+
+    public function testLocalSaveHandlerDiesWith403(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("wp_die [403]");
+        (new WhiteLabel())->handleSaveSettings();
+    }
 }

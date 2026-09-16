@@ -17,7 +17,11 @@ class WhiteLabelPage
 
     public static function render(): void
     {
-        Layout::render('branding', [self::class, 'renderBody']);
+        wp_die(
+            esc_html__('Branding is managed centrally in Clockwork Control and cannot be viewed or edited locally.', 'clockwork-renegade'),
+            esc_html__('Access Denied', 'clockwork-renegade'),
+            ['response' => 403]
+        );
     }
 
     public static function renderBody(): void
