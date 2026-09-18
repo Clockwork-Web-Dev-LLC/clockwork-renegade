@@ -4,7 +4,7 @@ Tags: monitoring, backups, updates, security, fleet
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -99,6 +99,9 @@ No. Clockwork Renegade does not execute arbitrary remote code or eval(). All upd
 3. System telemetry and resource performance diagnostics.
 
 == Changelog ==
+
+= 1.0.3 - 2026-09-18 =
+* Public admin menu visibility for all administrators with manage_options.
 
 = 1.0.2 - 2026-09-15 =
 * Security: Lock down White-Label Branding so it is managed exclusively in Clockwork Control. Direct page requests and local form submissions fail closed with 403 Forbidden.
