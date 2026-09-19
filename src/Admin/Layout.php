@@ -33,6 +33,7 @@ class Layout
         $all[] = ['slug' => 'forms', 'label' => __('Forms', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\FormsPage::SLUG];
         $all[] = ['slug' => 'backups', 'label' => __('Backups', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\BackupsPage::SLUG];
         $all[] = ['slug' => 'notifications', 'label' => __('Notifications', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\NotificationsPage::SLUG];
+        $all[] = ['slug' => 'update-coverage', 'label' => __('Update coverage', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\UpdateCoveragePage::SLUG];
 
         $all[] = ['slug' => 'connection', 'label' => __('Connection', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\ConnectionPage::SLUG];
 
