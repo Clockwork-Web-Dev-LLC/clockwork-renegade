@@ -325,6 +325,10 @@ class ActivityPage
             'review_dismiss'          => ['label' => __('Reviews dismissed', 'clockwork-renegade'),       'icon' => 'dismiss'],
             'care_plan_toggled'       => ['label' => __('Care plan changes', 'clockwork-renegade'),       'icon' => 'plan'],
             'backup'                  => ['label' => __('Backups', 'clockwork-renegade'),                 'icon' => 'backup'],
+            'cache_purged'            => ['label' => __('Caches purged', 'clockwork-renegade'),          'icon' => 'trash'],
+            'comments_cleanup'        => ['label' => __('Comment cleanups', 'clockwork-renegade'),       'icon' => 'message'],
+            'wfls_plugin_removed'     => ['label' => __('WFLS plugin removals', 'clockwork-renegade'),   'icon' => 'trash'],
+            'site.provider_migrated'  => ['label' => __('Host migrations', 'clockwork-renegade'),        'icon' => 'migrate'],
         ];
     }
 
@@ -348,6 +352,10 @@ class ActivityPage
             'theme_update'            => __('Theme update', 'clockwork-renegade'),
             'core_update'             => __('Core update', 'clockwork-renegade'),
             'backup'                  => __('Backup', 'clockwork-renegade'),
+            'cache_purged'            => __('Cache purge', 'clockwork-renegade'),
+            'comments_cleanup'        => __('Comment cleanup', 'clockwork-renegade'),
+            'wfls_plugin_removed'     => __('WFLS plugin removal', 'clockwork-renegade'),
+            'site.provider_migrated'  => __('Host migration', 'clockwork-renegade'),
         ];
         return $labels[$type] ?? ucfirst(str_replace('_', ' ', $type));
     }
@@ -369,6 +377,9 @@ class ActivityPage
             'dismiss'  => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
             'plan'     => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
             'backup'   => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+            'trash'    => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
+            'message'  => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+            'migrate'  => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3L4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/></svg>',
             'default'  => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>',
         ];
 

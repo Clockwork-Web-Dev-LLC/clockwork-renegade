@@ -74,15 +74,6 @@ class Menu
 </style>';
     }
 
-    /**
-     * Previously stripped the Clockwork menu from the sidebar for non-agency
-     * users. The plugin is now public to all administrators (manage_options),
-     * so this method is a no-op kept for backwards compatibility.
-     */
-    public function maybeHideMenu(): void
-    {
-        // No-op: Clockwork is public to all administrators.
-    }
 
     /**
      * Whether the Clockwork menu — and everything under it, including the
@@ -128,6 +119,23 @@ class Menu
             }
         }
 
+        // clockworkwp.com was Clockwork Web Dev's own domain before the
+        // clockworkwd.com rebrand (see WhiteLabel::DEFAULTS). Fleet-pushed
+        // `agency_email_domains` configs only ever list the current name, so
+        // any operator whose own login was never migrated off the old
+        // address would otherwise get silently locked out of Unlock,
+        // cross-user 2FA controls, and the enrollment nudge on every site
+        // that has domain gating turned on — a self-lockout of exactly the
+        // kind the support-email check above already guards against.
+        // Same category as the unlock_hub_domain / support_email defaults
+        // elsewhere in this file: an identity fact about this plugin's own
+        // vendor, not something a white-labeling agency's install needs to
+        // opt out of — a coincidental @clockworkwp.com login on someone
+        // else's fleet is not a realistic risk.
+        if (! in_array('@clockworkwp.com', $agencyDomains, true)) {
+            $agencyDomains[] = '@clockworkwp.com';
+        }
+
         $email = strtolower((string) $user->user_email);
         foreach ($agencyDomains as $domain) {
             if (str_ends_with($email, strtolower($domain))) {
@@ -141,7 +149,13 @@ class Menu
     public function addMenu(): void
     {
         $customIcon = WhiteLabel::getMenuIcon();
-        $menuIcon = ! empty($customIcon) ? $customIcon : WhiteLabel::bundledAssetUrl('assets/clockwork-logo-mark.svg').'?v=1.1';
+        // Cache-buster bumped to 1.2: the bundled SVG had a broken MIME type
+        // ("img/png" instead of "image/png") on its two embedded raster
+        // layers, so browsers silently dropped the colored circle + spike
+        // and rendered only the bare white "C" glyph in the sidebar. Fixed
+        // in the asset; the version bump forces browsers/CDNs that already
+        // cached the broken file to refetch it.
+        $menuIcon = ! empty($customIcon) ? $customIcon : WhiteLabel::bundledAssetUrl('assets/clockwork-logo-mark.svg').'?v=1.2';
         $menuTitle = WhiteLabel::getMenuTitle();
         $pluginName = WhiteLabel::getPluginName();
 
