@@ -34,7 +34,7 @@ class PerformancePage
      */
     public static function summary(): array
     {
-        $latest = Repository::latestPerformanceScanFromEngine('gtmetrix');
+        $latest = Repository::latestPerformanceScanFromEngines(['gtmetrix', 'pressable']);
         if ($latest === null || empty($latest['ok'])) {
             return ['hasScore' => false, 'score' => null, 'grade' => '—', 'variant' => 'muted'];
         }
@@ -58,22 +58,22 @@ class PerformancePage
 
     public static function renderBody(): void
     {
-        // Successful GTmetrix rows only, everywhere on this page. PSI
-        // fallback rows (and pre-cutover PSI-era rows) score under throttled
-        // mobile emulation — 30-60 on sites that grade 90+ on GTmetrix
-        // desktop — and failed rows describe scan-engine hiccups (quota,
+        // Successful primary-engine rows only (GTmetrix, Pressable), everywhere
+        // on this page. PSI fallback rows (and pre-cutover PSI-era rows) score
+        // under throttled mobile emulation — 30-60 on sites that grade 90+ on
+        // GTmetrix desktop — and failed rows describe scan-engine hiccups (quota,
         // blocked test agent), which are Clockwork's ops problem, not a
         // client-facing result. Showing either made healthy sites look
         // broken, so clients never see them; the raw rows stay in the
         // monitoring app's database for internal analysis.
         $onCarePlan = Repository::latestCarePlanFlag();
-        $latest = Repository::latestPerformanceScanFromEngine('gtmetrix');
+        $latest = Repository::latestPerformanceScanFromEngines(['gtmetrix', 'pressable']);
         $history = $onCarePlan
             ? array_values(array_filter(
                 Repository::findByActionType('performance_scan', 100),
                 fn ($row) => is_array($row)
                     && ! empty($row['ok'])
-                    && (self::decodeDetails($row['details'] ?? null)['engine'] ?? '') === 'gtmetrix'
+                    && in_array(self::decodeDetails($row['details'] ?? null)['engine'] ?? '', ['gtmetrix', 'pressable'], true)
             ))
             : [];
 
@@ -334,8 +334,16 @@ class PerformancePage
      */
     private static function engineConditionsLabel(array $details): string
     {
-        if (($details['engine'] ?? '') === 'gtmetrix') {
+        $engine = $details['engine'] ?? '';
+        if ($engine === 'gtmetrix') {
             return __('GTmetrix (desktop Chrome, pinned location)', 'clockwork-renegade');
+        }
+        if ($engine === 'pressable') {
+            $strategy = (string) ($details['strategy'] ?? 'mobile');
+
+            return $strategy === 'desktop'
+                ? __('Pressable Lighthouse (desktop)', 'clockwork-renegade')
+                : __('Pressable Lighthouse (simulated mobile phone)', 'clockwork-renegade');
         }
 
         $strategy = (string) ($details['strategy'] ?? 'mobile');
@@ -352,8 +360,12 @@ class PerformancePage
      */
     private static function engineShortLabel(array $details): string
     {
-        if (($details['engine'] ?? '') === 'gtmetrix') {
+        $engine = $details['engine'] ?? '';
+        if ($engine === 'gtmetrix') {
             return __('GTmetrix', 'clockwork-renegade');
+        }
+        if ($engine === 'pressable') {
+            return __('Pressable', 'clockwork-renegade');
         }
 
         $strategy = (string) ($details['strategy'] ?? '');

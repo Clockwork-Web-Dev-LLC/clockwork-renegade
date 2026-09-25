@@ -141,34 +141,54 @@ class Repository
     {
         return self::findByActionTypePaged($actionType, 0, $limit);
     }
+    /**
+     * Most recent SUCCESSFUL performance_scan row produced by one of the
+     * specified engines (e.g. ['gtmetrix', 'pressable']), or null.
+     * Matches on the details JSON ("engine":"gtmetrix" or "engine":"pressable"),
+     * so primary-engine scans are surfaced while hiding PSI fallback rows
+     * whose throttled mobile scores aren't comparable. Failed rows are excluded
+     * too — a scan-engine hiccup (quota, blocked test agent, Lighthouse
+     * timeout) is an ops problem for Clockwork, not a client-facing result.
+     *
+     * @param  string[]  $engines
+     * @return array<string, mixed>|null
+     */
+    public static function latestPerformanceScanFromEngines(array $engines = ['gtmetrix', 'pressable']): ?array
+    {
+        global $wpdb;
+        $table = Schema::tableName();
+
+        if (empty($engines)) {
+            return null;
+        }
+
+        $clauses = [];
+        $params = [];
+        foreach ($engines as $engine) {
+            $clauses[] = 'details LIKE %s';
+            $params[] = '%'.$wpdb->esc_like('"engine":"'.$engine.'"').'%';
+        }
+        $engineSql = '('.implode(' OR ', $clauses).')';
+
+        $query = "SELECT * FROM {$table} WHERE action_type = 'performance_scan' AND ok = 1 AND {$engineSql} ORDER BY ran_at DESC LIMIT 1";
+
+        $row = $wpdb->get_row(
+            $wpdb->prepare($query, ...$params),
+            ARRAY_A
+        );
+
+        return is_array($row) ? $row : null;
+    }
 
     /**
      * Most recent SUCCESSFUL performance_scan row produced by a specific
-     * engine, or null. Matches on the details JSON ("engine":"gtmetrix"
-     * etc.), so rows written before the engine field existed (pre-2026-06-27,
-     * PSI-only era) never match — which is the point: the Performance page
-     * shows only primary-engine scans and hides PSI fallback rows whose
-     * throttled mobile scores aren't comparable. Failed rows are excluded
-     * too — a scan-engine hiccup (quota, blocked test agent, Lighthouse
-     * timeout) is an ops problem for Clockwork, not a client-facing result.
+     * engine, or null.
      *
      * @return array<string, mixed>|null
      */
     public static function latestPerformanceScanFromEngine(string $engine): ?array
     {
-        global $wpdb;
-        $table = Schema::tableName();
-        $needle = '%'.$wpdb->esc_like('"engine":"'.$engine.'"').'%';
-
-        $row = $wpdb->get_row(
-            $wpdb->prepare(
-                "SELECT * FROM {$table} WHERE action_type = 'performance_scan' AND ok = 1 AND details LIKE %s ORDER BY ran_at DESC LIMIT 1",
-                $needle
-            ),
-            ARRAY_A
-        );
-
-        return is_array($row) ? $row : null;
+        return self::latestPerformanceScanFromEngines([$engine]);
     }
 
     /**

@@ -544,6 +544,14 @@ if (! class_exists('wpdb')) {
 
         public function get_var(?string $query = null, int $x = 0, int $y = 0): mixed
         {
+            if ($query && str_contains($query, 'care_plan_enabled FROM')) {
+                $rows = $this->table_rows['wp_clockwork_renegade_action_log'] ?? [];
+                if (empty($rows)) {
+                    return null;
+                }
+                usort($rows, fn ($a, $b) => strcmp($b['ran_at'] ?? '', $a['ran_at'] ?? ''));
+                return $rows[0]['care_plan_enabled'] ?? null;
+            }
             return null;
         }
 
@@ -553,6 +561,17 @@ if (! class_exists('wpdb')) {
         {
             if ($query && str_contains($query, 'clockwork_lockouts')) {
                 return $this->table_rows['wp_clockwork_lockouts'] ?? [];
+            }
+            if ($query && str_contains($query, 'action_log')) {
+                $rows = $this->table_rows['wp_clockwork_renegade_action_log'] ?? [];
+                if (preg_match("/action_type = '([^']+)'/", $query, $m)) {
+                    $actionType = $m[1];
+                    $rows = array_values(array_filter($rows, fn ($r) => ($r['action_type'] ?? '') === $actionType));
+                }
+                if (str_contains($query, 'ORDER BY ran_at DESC')) {
+                    usort($rows, fn ($a, $b) => strcmp($b['ran_at'] ?? '', $a['ran_at'] ?? ''));
+                }
+                return $rows;
             }
             return [];
         }
@@ -587,26 +606,62 @@ if (! class_exists('wpdb')) {
 
         public function get_row(?string $query = null, string $output = 'ARRAY_A', int $y = 0): mixed
         {
-            if (! $query || ! str_contains($query, 'clockwork_lockouts')) {
+            if (! $query) {
                 return null;
             }
 
-            $rows = $this->table_rows['wp_clockwork_lockouts'] ?? [];
-            $needleIp = null;
-            if (preg_match("/ip = '([^']+)'/", $query, $m)) {
-                $needleIp = stripslashes($m[1]);
+            if (str_contains($query, 'clockwork_lockouts')) {
+                $rows = $this->table_rows['wp_clockwork_lockouts'] ?? [];
+                $needleIp = null;
+                if (preg_match("/ip = '([^']+)'/", $query, $m)) {
+                    $needleIp = stripslashes($m[1]);
+                }
+
+                foreach ($rows as $row) {
+                    if ($needleIp !== null && ($row['ip'] ?? '') !== $needleIp) {
+                        continue;
+                    }
+
+                    if (! isset($row['id'])) {
+                        $row['id'] = 1;
+                    }
+
+                    return $row;
+                }
+
+                return null;
             }
 
-            foreach ($rows as $row) {
-                if ($needleIp !== null && ($row['ip'] ?? '') !== $needleIp) {
-                    continue;
+            if (str_contains($query, 'action_log')) {
+                $rows = $this->table_rows['wp_clockwork_renegade_action_log'] ?? [];
+                if (str_contains($query, 'ORDER BY ran_at DESC')) {
+                    usort($rows, fn ($a, $b) => strcmp($b['ran_at'] ?? '', $a['ran_at'] ?? ''));
+                }
+                foreach ($rows as $row) {
+                    if (str_contains($query, "action_type = 'performance_scan'") && ($row['action_type'] ?? '') !== 'performance_scan') {
+                        continue;
+                    }
+                    if (str_contains($query, 'ok = 1') && empty($row['ok'])) {
+                        continue;
+                    }
+                    if (preg_match_all("/details LIKE '%([^%]+)%'/", $query, $matches)) {
+                        $matchedAny = false;
+                        foreach ($matches[1] as $needle) {
+                            $needle = stripslashes($needle);
+                            if (str_contains((string) ($row['details'] ?? ''), $needle)) {
+                                $matchedAny = true;
+                                break;
+                            }
+                        }
+                        if (! $matchedAny) {
+                            continue;
+                        }
+                    }
+
+                    return $row;
                 }
 
-                if (! isset($row['id'])) {
-                    $row['id'] = 1;
-                }
-
-                return $row;
+                return null;
             }
 
             return null;
@@ -1135,5 +1190,13 @@ if (! function_exists('wp_cache_incr')) {
         }
         $GLOBALS['wp_test_object_cache'][$groupKey] = (int) $GLOBALS['wp_test_object_cache'][$groupKey] + $offset;
         return $GLOBALS['wp_test_object_cache'][$groupKey];
+    }
+}
+
+
+if (! function_exists('wp_date')) {
+    function wp_date(string $format, int $timestamp = 0, ?DateTimeZone $timezone = null): string
+    {
+        return date($format, $timestamp ?: time());
     }
 }
