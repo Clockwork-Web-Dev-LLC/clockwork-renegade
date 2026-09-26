@@ -525,6 +525,12 @@ if (! class_exists('wpdb')) {
         public function query(string $query): int
         {
             $this->queries[] = $query;
+            if (preg_match('/TRUNCATE TABLE `?([a-zA-Z0-9_]+)`?/i', $query, $m)) {
+                $this->table_rows[$m[1]] = [];
+            }
+            if (preg_match('/DELETE FROM `?([a-zA-Z0-9_]+)`?(\s*;)?$/i', $query, $m)) {
+                $this->table_rows[$m[1]] = [];
+            }
             return 1;
         }
 
@@ -1198,5 +1204,69 @@ if (! function_exists('wp_date')) {
     function wp_date(string $format, int $timestamp = 0, ?DateTimeZone $timezone = null): string
     {
         return date($format, $timestamp ?: time());
+    }
+}
+
+if (! function_exists("add_query_arg")) {
+    function add_query_arg(...$args): string
+    {
+        if (is_array($args[0])) {
+            $base = $args[1] ?? "https://example.com/wp-admin/admin.php";
+            $query = http_build_query($args[0]);
+            return str_contains($base, "?") ? "{$base}&{$query}" : "{$base}?{$query}";
+        }
+        return "https://example.com/wp-admin/admin.php";
+    }
+}
+
+if (! function_exists("check_admin_referer")) {
+    function check_admin_referer(string $action = "", string $query_arg = "_wpnonce"): bool
+    {
+        return true;
+    }
+}
+
+if (! function_exists("wp_safe_redirect")) {
+    function wp_safe_redirect(string $location, int $status = 302): bool
+    {
+        $GLOBALS["wp_test_last_redirect"] = $location;
+        return true;
+    }
+}
+
+
+if (! function_exists("checked")) {
+    function checked($checked, $current = true, bool $echo = true): string
+    {
+        $result = ((string) $checked === (string) $current) ? " checked=\"checked\"" : "";
+        if ($echo) {
+            echo $result;
+        }
+        return $result;
+    }
+}
+
+if (! function_exists("wp_nonce_field")) {
+    function wp_nonce_field(string $action = "", string $name = "_wpnonce", bool $referer = true, bool $echo = true): string
+    {
+        $html = "<input type=\"hidden\" name=\"" . esc_attr($name) . "\" value=\"test_nonce\" />";
+        if ($echo) {
+            echo $html;
+        }
+        return $html;
+    }
+}
+
+if (! function_exists("esc_textarea")) {
+    function esc_textarea(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES, "UTF-8");
+    }
+}
+
+if (! function_exists("sanitize_textarea_field")) {
+    function sanitize_textarea_field(string $str): string
+    {
+        return trim(strip_tags($str));
     }
 }

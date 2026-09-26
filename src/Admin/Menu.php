@@ -47,6 +47,10 @@ class Menu
         add_action('admin_head', [$this, 'outputIconCss']);
         add_action('admin_notices', [\ClockworkRenegade\Admin\Pages\UpdateCoveragePage::class, 'maybeRenderPluginsNotice']);
         add_action('admin_post_clockwork_save_notifications', [NotificationsPage::class, 'handleSave']);
+        add_action('admin_post_clockwork_gatekeeper_save_settings', [\ClockworkRenegade\Admin\Pages\AdvancedPage::class, 'handleSaveGatekeeper']);
+        add_action('admin_post_clockwork_gatekeeper_unlock_ip', [\ClockworkRenegade\Admin\Pages\AdvancedPage::class, 'handleUnlockIp']);
+        add_action('admin_post_clockwork_gatekeeper_unlock_all', [\ClockworkRenegade\Admin\Pages\AdvancedPage::class, 'handleUnlockAll']);
+        add_action('admin_post_clockwork_flush_cache', [\ClockworkRenegade\Admin\Pages\AdvancedPage::class, 'handleFlushCache']);
     }
 
     /**
@@ -266,19 +270,27 @@ class Menu
 
         add_submenu_page(
             self::SLUG,
-            __('Update coverage', 'clockwork-renegade'),
-            __('Update coverage', 'clockwork-renegade'),
+            __('Advanced', 'clockwork-renegade'),
+            __('Advanced', 'clockwork-renegade'),
             self::CAPABILITY,
-            \ClockworkRenegade\Admin\Pages\UpdateCoveragePage::SLUG,
-            [\ClockworkRenegade\Admin\Pages\UpdateCoveragePage::class, 'render']
+            \ClockworkRenegade\Admin\Pages\AdvancedPage::SLUG,
+            [\ClockworkRenegade\Admin\Pages\AdvancedPage::class, 'render']
         );
         add_submenu_page(
-            self::SLUG,
+            null,
             __('Connection', 'clockwork-renegade'),
             __('Connection', 'clockwork-renegade'),
             self::CAPABILITY,
             ConnectionPage::SLUG,
             [ConnectionPage::class, 'render']
+        );
+        add_submenu_page(
+            null,
+            __('Update coverage', 'clockwork-renegade'),
+            __('Update coverage', 'clockwork-renegade'),
+            self::CAPABILITY,
+            \ClockworkRenegade\Admin\Pages\UpdateCoveragePage::SLUG,
+            [\ClockworkRenegade\Admin\Pages\UpdateCoveragePage::class, 'render']
         );
     }
 

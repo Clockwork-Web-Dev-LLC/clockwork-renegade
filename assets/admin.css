@@ -115,6 +115,38 @@ body.wp-admin {
     border-bottom-color: var(--cwk-primary);
 }
 
+
+/* Sub-tab pill strip */
+.clockwork-admin__subtabs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    border: 1px solid var(--cwk-border);
+}
+.clockwork-admin__subtab {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cwk-text-muted);
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+.clockwork-admin__subtab:hover {
+    color: var(--cwk-text);
+    background: rgba(255, 255, 255, 0.6);
+}
+.clockwork-admin__subtab.is-active {
+    color: var(--cwk-text);
+    background: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
 .clockwork-admin__body { padding: 28px 32px 60px; }
 
 /* Page header inside the body */

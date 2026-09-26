@@ -33,9 +33,7 @@ class Layout
         $all[] = ['slug' => 'forms', 'label' => __('Forms', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\FormsPage::SLUG];
         $all[] = ['slug' => 'backups', 'label' => __('Backups', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\BackupsPage::SLUG];
         $all[] = ['slug' => 'notifications', 'label' => __('Notifications', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\NotificationsPage::SLUG];
-        $all[] = ['slug' => 'update-coverage', 'label' => __('Update coverage', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\UpdateCoveragePage::SLUG];
-
-        $all[] = ['slug' => 'connection', 'label' => __('Connection', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\ConnectionPage::SLUG];
+        $all[] = ['slug' => 'advanced', 'label' => __('Advanced', 'clockwork-renegade'), 'page' => \ClockworkRenegade\Admin\Pages\AdvancedPage::SLUG];
 
         return $all;
     }
@@ -97,6 +95,37 @@ class Layout
     /**
      * Helper for the "page header" block (h1 + subhead) inside a body callback.
      */
+    /**
+     * Render secondary pill subtabs.
+     *
+     * @param array<int, array{slug: string, label: string}> $subtabs
+     * @param string $activeSubtab
+     * @param string $pageSlug
+     */
+    public static function renderSubtabs(array $subtabs, string $activeSubtab, string $pageSlug): void
+    {
+        if (empty($subtabs)) {
+            return;
+        }
+        ?>
+        <nav class="clockwork-admin__subtabs" aria-label="<?php esc_attr_e('Advanced Navigation', 'clockwork-renegade'); ?>">
+            <?php foreach ($subtabs as $st) : ?>
+                <?php
+                $url = add_query_arg([
+                    'page' => $pageSlug,
+                    'tab'  => $st['slug'],
+                ], admin_url('admin.php'));
+                $isActive = $st['slug'] === $activeSubtab;
+                ?>
+                <a class="clockwork-admin__subtab <?php echo $isActive ? 'is-active' : ''; ?>"
+                   href="<?php echo esc_url($url); ?>">
+                    <?php echo esc_html($st['label']); ?>
+                </a>
+            <?php endforeach; ?>
+        </nav>
+        <?php
+    }
+
     public static function pageHeader(string $title, string $subhead = ''): void
     {
         ?>
