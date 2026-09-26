@@ -51,6 +51,8 @@ class Menu
         add_action('admin_post_clockwork_gatekeeper_unlock_ip', [\ClockworkRenegade\Admin\Pages\AdvancedPage::class, 'handleUnlockIp']);
         add_action('admin_post_clockwork_gatekeeper_unlock_all', [\ClockworkRenegade\Admin\Pages\AdvancedPage::class, 'handleUnlockAll']);
         add_action('admin_post_clockwork_flush_cache', [\ClockworkRenegade\Admin\Pages\AdvancedPage::class, 'handleFlushCache']);
+
+        ConnectionPage::registerAjax();
     }
 
     /**
@@ -260,7 +262,7 @@ class Menu
         );
 
         add_submenu_page(
-            self::SLUG,
+            null,
             __('Notifications', 'clockwork-renegade'),
             __('Notifications', 'clockwork-renegade'),
             self::CAPABILITY,

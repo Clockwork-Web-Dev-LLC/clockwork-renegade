@@ -70,11 +70,32 @@ class Settings
                 ? array_values(array_filter(array_map('trim', $payload['ignore_ips']), fn ($ip) => filter_var($ip, FILTER_VALIDATE_IP) !== false))
                 : $current['ignore_ips'],
             'ignore_cidrs' => isset($payload['ignore_cidrs']) && is_array($payload['ignore_cidrs'])
-                ? array_values(array_filter(array_map('trim', $payload['ignore_cidrs']), fn ($c) => is_string($c) && str_contains($c, '/')))
+                ? array_values(array_filter(array_map('trim', $payload['ignore_cidrs']), function ($c) {
+                    if (! is_string($c) || ! str_contains($c, '/')) {
+                        return false;
+                    }
+                    [$sub, $mask] = explode('/', $c, 2);
+                    if (! is_numeric($mask)) {
+                        return false;
+                    }
+                    $m = (int) $mask;
+                    if (filter_var($sub, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                        return $m >= 8 && $m <= 32;
+                    }
+                    if (filter_var($sub, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+                        return $m >= 16 && $m <= 128;
+                    }
+                    return false;
+                }))
                 : $current['ignore_cidrs'],
         ]);
 
         update_option(self::OPTION, $merged, false);
+
+        if (! empty($merged['enabled'])) {
+            self::maybeDeactivateLegacyLlar();
+        }
+
     }
 
     public static function enabled(): bool
@@ -87,4 +108,29 @@ class Settings
 
         return (bool) ($settings['enabled'] ?? false);
     }
+    /**
+     * Automatically deactivates legacy Limit Login Attempts plugins if Gatekeeper is active.
+     */
+    public static function maybeDeactivateLegacyLlar(): void
+    {
+        if (! function_exists('is_plugin_active')) {
+            if (defined('ABSPATH') && file_exists(ABSPATH . 'wp-admin/includes/plugin.php')) {
+                require_once ABSPATH . 'wp-admin/includes/plugin.php';
+            }
+        }
+
+        $llarPlugins = [
+            'limit-login-attempts-reloaded/limit-login-attempts-reloaded.php',
+            'limit-login-attempts/limit-login-attempts.php',
+        ];
+
+        foreach ($llarPlugins as $plugin) {
+            if (function_exists('is_plugin_active') && is_plugin_active($plugin)) {
+                if (function_exists('deactivate_plugins')) {
+                    deactivate_plugins($plugin, true);
+                }
+            }
+        }
+    }
+
 }

@@ -22,7 +22,8 @@ class ClientIp
             if (! empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
                 $candidate = trim((string) $_SERVER['HTTP_CF_CONNECTING_IP']);
             } elseif (! empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-                $candidate = trim(explode(',', (string) $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
+                $parts = array_map('trim', explode(',', (string) $_SERVER['HTTP_X_FORWARDED_FOR']));
+                $candidate = end($parts);
             }
         }
 

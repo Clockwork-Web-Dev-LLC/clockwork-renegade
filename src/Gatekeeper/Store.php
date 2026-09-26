@@ -117,57 +117,35 @@ class Store
             return;
         }
 
-        // Without persistent object cache: store attempt window on the row.
+        // Without persistent object cache: atomic upsert in database.
         global $wpdb;
         $table = Schema::tableName();
         $now = gmdate('Y-m-d H:i:s');
+        $windowCutoff = gmdate('Y-m-d H:i:s', time() - $window);
 
         $wpdb->suppress_errors(true);
-        $row = $wpdb->get_row($wpdb->prepare(
-            "SELECT id, attempts, attempts_window_start FROM `{$table}` WHERE ip = %s LIMIT 1",
+        $wpdb->query($wpdb->prepare(
+            "INSERT INTO `{$table}` (ip, consecutive_lockouts, attempts, attempts_window_start, created_at, updated_at)
+             VALUES (%s, 0, 1, %s, %s, %s)
+             ON DUPLICATE KEY UPDATE
+                 attempts = IF(attempts_window_start IS NOT NULL AND attempts_window_start > %s, attempts + 1, 1),
+                 attempts_window_start = IF(attempts_window_start IS NOT NULL AND attempts_window_start > %s, attempts_window_start, %s),
+                 updated_at = %s",
+            $ip, $now, $now, $now,
+            $windowCutoff,
+            $windowCutoff, $now,
+            $now
+        ));
+
+        $attempts = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT attempts FROM `{$table}` WHERE ip = %s LIMIT 1",
             $ip
-        ), ARRAY_A);
-
-        if ($row) {
-            $windowStartTs = 0;
-            if (! empty($row['attempts_window_start'])) {
-                $parsed = strtotime((string) $row['attempts_window_start'] . ' UTC');
-                $windowStartTs = $parsed !== false ? $parsed : 0;
-            }
-
-            if ($windowStartTs > 0 && time() - $windowStartTs <= $window) {
-                $newAttempts = ((int) $row['attempts']) + 1;
-                $wpdb->update(
-                    $table,
-                    ['attempts' => $newAttempts, 'updated_at' => $now],
-                    ['id' => $row['id']]
-                );
-
-                if ($newAttempts >= $threshold) {
-                    self::lock($ip);
-                }
-            } else {
-                $wpdb->update(
-                    $table,
-                    ['attempts' => 1, 'attempts_window_start' => $now, 'updated_at' => $now],
-                    ['id' => $row['id']]
-                );
-            }
-        } else {
-            $wpdb->insert($table, [
-                'ip' => $ip,
-                'consecutive_lockouts' => 0,
-                'attempts' => 1,
-                'attempts_window_start' => $now,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
-
-            if (1 >= $threshold) {
-                self::lock($ip);
-            }
-        }
+        ));
         $wpdb->suppress_errors(false);
+
+        if ($attempts >= $threshold) {
+            self::lock($ip);
+        }
 
         self::maybeLazyPrune();
     }
@@ -413,8 +391,12 @@ class Store
      */
     public static function isIgnored(string $ip): bool
     {
+        if ($ip === 'unknown') {
+            return false;
+        }
+
         if (! filter_var($ip, FILTER_VALIDATE_IP)) {
-            return true; // invalid IP is never locked
+            return false;
         }
 
         if (self::isLocalOrPrivate($ip)) {
@@ -445,14 +427,15 @@ class Store
         }
 
         [$subnet, $mask] = explode('/', $cidr, 2);
+        if (! is_numeric($mask)) {
+            return false;
+        }
         $mask = (int) $mask;
 
+        // IPv4 CIDR check (reject mask < 8 or mask > 32 to prevent 0.0.0.0/0 allowlisting everything)
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-            if ($mask < 0 || $mask > 32) {
+            if ($mask < 8 || $mask > 32) {
                 return false;
-            }
-            if ($mask === 0) {
-                return true;
             }
             $ipLong = ip2long($ip);
             $subnetLong = ip2long($subnet);
@@ -462,6 +445,32 @@ class Store
             $maskLong = -1 << (32 - $mask);
 
             return ($ipLong & $maskLong) === ($subnetLong & $maskLong);
+        }
+
+        // IPv6 CIDR check (reject mask < 16 or mask > 128)
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) && filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            if ($mask < 16 || $mask > 128) {
+                return false;
+            }
+            $ipBinary = inet_pton($ip);
+            $subnetBinary = inet_pton($subnet);
+            if ($ipBinary === false || $subnetBinary === false) {
+                return false;
+            }
+            $bytes = (int) floor($mask / 8);
+            $bits = $mask % 8;
+            if ($bytes > 0 && substr($ipBinary, 0, $bytes) !== substr($subnetBinary, 0, $bytes)) {
+                return false;
+            }
+            if ($bits > 0) {
+                $ipByte = ord($ipBinary[$bytes]);
+                $subnetByte = ord($subnetBinary[$bytes]);
+                $bitMask = (0xFF << (8 - $bits)) & 0xFF;
+                if (($ipByte & $bitMask) !== ($subnetByte & $bitMask)) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         return false;

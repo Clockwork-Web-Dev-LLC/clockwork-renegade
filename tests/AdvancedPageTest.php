@@ -7,6 +7,7 @@ use ClockworkRenegade\Admin\Pages\AdvancedPage;
 use ClockworkRenegade\Gatekeeper\Settings as GatekeeperSettings;
 use ClockworkRenegade\Gatekeeper\Store as GatekeeperStore;
 use PHPUnit\Framework\TestCase;
+use WP_User;
 
 class AdvancedPageTest extends TestCase
 {
@@ -40,16 +41,18 @@ class AdvancedPageTest extends TestCase
         $this->assertContains('gatekeeper', $slugs);
         $this->assertContains('connection', $slugs);
         $this->assertContains('updates', $slugs);
+        $this->assertContains('notifications', $slugs);
         $this->assertContains('caching', $slugs);
         $this->assertContains('diagnostics', $slugs);
     }
 
-    public function testLayoutTabsIncludesAdvanced(): void
+    public function testLayoutTabsIncludesAdvancedAndExcludesNotifications(): void
     {
         $tabs = Layout::tabs();
         $slugs = array_column($tabs, 'slug');
 
         $this->assertContains('advanced', $slugs);
+        $this->assertNotContains('notifications', $slugs);
         $this->assertNotContains('connection', $slugs);
         $this->assertNotContains('update-coverage', $slugs);
     }
@@ -90,6 +93,15 @@ class AdvancedPageTest extends TestCase
         $this->assertStringContainsString('Update coverage', $output);
     }
 
+    public function testRenderNotificationsSubtab(): void
+    {
+        ob_start();
+        AdvancedPage::render('notifications');
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Notifications', $output);
+    }
+
     public function testRenderCachingSubtab(): void
     {
         ob_start();
@@ -110,10 +122,11 @@ class AdvancedPageTest extends TestCase
         $this->assertStringContainsString('System Environment', $output);
         $this->assertStringContainsString('PHP Version', $output);
         $this->assertStringContainsString('WordPress Version', $output);
+        $this->assertStringContainsString('Gatekeeper Engine', $output);
         $this->assertStringContainsString('Copy System Report', $output);
     }
 
-    public function testHandleSaveGatekeeperUpdatesSettings(): void
+    public function testHandleSaveGatekeeperUpdatesSettingsForAgency(): void
     {
         $_POST = [
             'enabled' => '1',
@@ -144,6 +157,72 @@ class AdvancedPageTest extends TestCase
         $this->assertSame('help@example.com', $saved['support_email']);
         $this->assertSame(['198.51.100.1', '198.51.100.2'], $saved['ignore_ips']);
         $this->assertSame(['198.51.100.0/24'], $saved['ignore_cidrs']);
+    }
+
+    public function testHandleSaveGatekeeperForbiddenForNonAgency(): void
+    {
+        update_option('clockwork_renegade_branding', [
+            'agency_email_domains' => '@clockworkwd.com',
+        ]);
+        $clientUser = new WP_User();
+        $clientUser->user_email = 'admin@clientdomain.com';
+        $GLOBALS['wp_test_current_user'] = $clientUser;
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('wp_die [403]');
+
+        AdvancedPage::handleSaveGatekeeper();
+    }
+
+    public function testHandleUnlockAllForbiddenForNonAgency(): void
+    {
+        update_option('clockwork_renegade_branding', [
+            'agency_email_domains' => '@clockworkwd.com',
+        ]);
+        $clientUser = new WP_User();
+        $clientUser->user_email = 'admin@clientdomain.com';
+        $GLOBALS['wp_test_current_user'] = $clientUser;
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('wp_die [403]');
+
+        AdvancedPage::handleUnlockAll();
+    }
+
+    public function testHandleFlushCacheForbiddenForNonAgency(): void
+    {
+        update_option('clockwork_renegade_branding', [
+            'agency_email_domains' => '@clockworkwd.com',
+        ]);
+        $clientUser = new WP_User();
+        $clientUser->user_email = 'admin@clientdomain.com';
+        $GLOBALS['wp_test_current_user'] = $clientUser;
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('wp_die [403]');
+
+        AdvancedPage::handleFlushCache();
+    }
+
+    public function testHandleUnlockIpAllowedForNonAgency(): void
+    {
+        update_option('clockwork_renegade_branding', [
+            'agency_email_domains' => '@clockworkwd.com',
+        ]);
+        $clientUser = new WP_User();
+        $clientUser->user_email = 'admin@clientdomain.com';
+        $GLOBALS['wp_test_current_user'] = $clientUser;
+
+        GatekeeperSettings::update(['enabled' => true]);
+        $ip = '203.0.113.44';
+        GatekeeperStore::lock($ip);
+        $this->assertNotNull(GatekeeperStore::isLocked($ip));
+
+        $_POST = ['ip' => $ip];
+
+        AdvancedPage::handleUnlockIp();
+
+        $this->assertNull(GatekeeperStore::isLocked($ip));
     }
 
     public function testHandleUnlockIpClearsIpLockout(): void

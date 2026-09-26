@@ -531,6 +531,35 @@ if (! class_exists('wpdb')) {
             if (preg_match('/DELETE FROM `?([a-zA-Z0-9_]+)`?(\s*;)?$/i', $query, $m)) {
                 $this->table_rows[$m[1]] = [];
             }
+            if (preg_match('/INSERT INTO `?([a-zA-Z0-9_]+)`?.*ON DUPLICATE KEY UPDATE/is', $query, $m)) {
+                $tbl = $m[1];
+                if (preg_match("/VALUES \('([^']+)', \d+, \d+, '([^']+)', '([^']+)', '([^']+)'\)/is", $query, $vm)) {
+                    $ip = stripslashes($vm[1]);
+                    $start = stripslashes($vm[2]);
+                    $created = stripslashes($vm[3]);
+                    $updated = stripslashes($vm[4]);
+                    $found = false;
+                    foreach ($this->table_rows[$tbl] ?? [] as &$r) {
+                        if (($r['ip'] ?? '') === $ip) {
+                            $r['attempts'] = ((int) ($r['attempts'] ?? 0)) + 1;
+                            $r['updated_at'] = $updated;
+                            $found = true;
+                            break;
+                        }
+                    }
+                    if (!$found) {
+                        $this->table_rows[$tbl][] = [
+                            'id' => count($this->table_rows[$tbl] ?? []) + 1,
+                            'ip' => $ip,
+                            'consecutive_lockouts' => 0,
+                            'attempts' => 1,
+                            'attempts_window_start' => $start,
+                            'created_at' => $created,
+                            'updated_at' => $updated,
+                        ];
+                    }
+                }
+            }
             return 1;
         }
 
@@ -550,6 +579,17 @@ if (! class_exists('wpdb')) {
 
         public function get_var(?string $query = null, int $x = 0, int $y = 0): mixed
         {
+            if ($query && str_contains($query, 'SELECT attempts FROM')) {
+                if (preg_match("/ip = '([^']+)'/", $query, $m)) {
+                    $needleIp = stripslashes($m[1]);
+                    foreach ($this->table_rows['wp_clockwork_lockouts'] ?? [] as $r) {
+                        if (($r['ip'] ?? '') === $needleIp) {
+                            return (int) ($r['attempts'] ?? 0);
+                        }
+                    }
+                }
+                return 0;
+            }
             if ($query && str_contains($query, 'care_plan_enabled FROM')) {
                 $rows = $this->table_rows['wp_clockwork_renegade_action_log'] ?? [];
                 if (empty($rows)) {
@@ -1126,11 +1166,36 @@ if (! function_exists('wp_remote_get')) {
 
 if (! function_exists('wp_die')) {
     function wp_die($message = '', $title = '', $args = []) {
-        $status = is_array($args) && isset($args['response']) ? $args['response'] : 500;
+        $status = is_int($title) ? $title : (is_array($args) && isset($args['response']) ? $args['response'] : 500);
         throw new RuntimeException("wp_die [{$status}]: " . (is_scalar($message) ? $message : ''));
     }
 }
 
+
+
+if (! function_exists('wp_send_json_error')) {
+    function wp_send_json_error(mixed $data = null, ?int $status_code = null, int $options = 0): void
+    {
+        $status = $status_code ?? 400;
+        $message = is_array($data) ? ($data['message'] ?? json_encode($data)) : (string) $data;
+        throw new RuntimeException("wp_send_json_error [{$status}]: {$message}");
+    }
+}
+
+if (! function_exists('wp_send_json_success')) {
+    function wp_send_json_success(mixed $data = null, ?int $status_code = null, int $options = 0): void
+    {
+        $status = $status_code ?? 200;
+        $response = ['success' => true, 'data' => $data];
+        echo json_encode($response);
+    }
+}
+if (! function_exists('check_ajax_referer')) {
+    function check_ajax_referer(string|int $action = -1, string|false $query_arg = false, bool $die = true): int|false
+    {
+        return 1;
+    }
+}
 if (! function_exists('dbDelta')) {
     function dbDelta(string|array $queries = '', bool $execute = true): array
     {
@@ -1235,6 +1300,17 @@ if (! function_exists("wp_safe_redirect")) {
 }
 
 
+
+if (! function_exists("disabled")) {
+    function disabled($disabled, $current = true, bool $echo = true): string
+    {
+        $result = ((string) $disabled === (string) $current) ? " disabled=\"disabled\"" : "";
+        if ($echo) {
+            echo $result;
+        }
+        return $result;
+    }
+}
 if (! function_exists("checked")) {
     function checked($checked, $current = true, bool $echo = true): string
     {

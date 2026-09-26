@@ -319,4 +319,70 @@ class GatekeeperTest extends TestCase
         }
         unset($row);
     }
+
+    public function testZeroMaskCidrIsRejectedAndDoesNotAllowlistAll(): void
+    {
+        Settings::update([
+            'enabled' => true,
+            'ignore_cidrs' => ['0.0.0.0/0', '::/0'],
+        ]);
+
+        $stored = Settings::get();
+        $this->assertNotContains('0.0.0.0/0', $stored['ignore_cidrs']);
+        $this->assertNotContains('::/0', $stored['ignore_cidrs']);
+
+        $this->assertFalse(Store::ipInCidr('203.0.113.1', '0.0.0.0/0'));
+        $this->assertFalse(Store::isIgnored('203.0.113.1'));
+    }
+
+    public function testIpv6CidrMatching(): void
+    {
+        $this->assertTrue(Store::ipInCidr('2001:db8::1', '2001:db8::/32'));
+        $this->assertFalse(Store::ipInCidr('2001:db9::1', '2001:db8::/32'));
+    }
+
+    public function testUnknownIpIsNotIgnoredAndIsLockedWhenThresholdMet(): void
+    {
+        Settings::update(['enabled' => true, 'threshold' => 2]);
+        $this->assertFalse(Store::isIgnored('unknown'));
+
+        Store::incrementFailure('unknown');
+        $this->assertNull(Store::isLocked('unknown'));
+
+        Store::incrementFailure('unknown');
+        $this->assertNotNull(Store::isLocked('unknown'));
+    }
+    public function testConcurrency8IncrementsOnThreshold4LocksOnBothStores(): void
+    {
+        Settings::update(["enabled" => true, "threshold" => 4]);
+
+        // 1. MySQL store (wp_using_ext_object_cache = false)
+        $GLOBALS["wp_test_ext_object_cache"] = false;
+        $ipMysql = "198.51.100.101";
+        for ($i = 0; $i < 8; $i++) {
+            Store::incrementFailure($ipMysql);
+        }
+        $this->assertNotNull(Store::isLocked($ipMysql), "MySQL store must lock IP after 8 increments with threshold 4");
+
+        // 2. Object cache store (wp_using_ext_object_cache = true)
+        $GLOBALS["wp_test_ext_object_cache"] = true;
+        $ipCache = "198.51.100.102";
+        for ($i = 0; $i < 8; $i++) {
+            Store::incrementFailure($ipCache);
+        }
+        $this->assertNotNull(Store::isLocked($ipCache), "Object cache store must lock IP after 8 increments with threshold 4");
+
+        $GLOBALS["wp_test_ext_object_cache"] = false;
+    }
+
+    public function testEnablingGatekeeperDeactivatesLegacyLlar(): void
+    {
+        $pluginSlug = "limit-login-attempts-reloaded/limit-login-attempts-reloaded.php";
+        activate_plugin($pluginSlug);
+        $this->assertTrue(is_plugin_active($pluginSlug));
+
+        Settings::update(["enabled" => true]);
+
+        $this->assertFalse(is_plugin_active($pluginSlug));
+    }
 }

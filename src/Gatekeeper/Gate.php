@@ -33,7 +33,7 @@ class Gate
         }
 
         $ip = ClientIp::get();
-        if ($ip === 'unknown' || Store::isIgnored($ip)) {
+        if (Store::isIgnored($ip)) {
             return $user;
         }
 
@@ -74,7 +74,7 @@ class Gate
         }
 
         $ip = ClientIp::get();
-        if ($ip === 'unknown' || Store::isIgnored($ip)) {
+        if (Store::isIgnored($ip)) {
             return;
         }
 
