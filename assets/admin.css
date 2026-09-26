@@ -98,7 +98,8 @@ body.wp-admin {
     border-bottom: 1px solid var(--cwk-border);
     padding: 0 32px;
     display: flex;
-    gap: 4px;
+    flex-wrap: wrap;
+    gap: 0 4px;
 }
 .clockwork-admin__tab {
     padding: 14px 18px;
@@ -108,6 +109,7 @@ body.wp-admin {
     text-decoration: none;
     border-bottom: 3px solid transparent;
     transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
 }
 .clockwork-admin__tab:hover { color: var(--cwk-primary); }
 .clockwork-admin__tab.is-active {
@@ -399,4 +401,51 @@ body.wp-admin {
 .clockwork-admin .wrap > h1:first-child,
 .clockwork-admin .notice {
     display: none;
+}
+
+/* Responsive / Mobile Viewport rules */
+@media screen and (max-width: 960px) {
+    .clockwork-admin__tabs {
+        padding: 0 20px;
+    }
+    .clockwork-admin__tab {
+        padding: 12px 14px;
+    }
+}
+
+@media screen and (max-width: 782px) {
+    .clockwork-admin__header {
+        padding: 16px 20px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .clockwork-admin__tabs {
+        padding: 0 12px;
+    }
+    .clockwork-admin__tab {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+    .clockwork-admin__body {
+        padding: 20px 16px 40px;
+    }
+    .clockwork-admin__subtabs {
+        display: flex;
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .clockwork-admin__tabs {
+        padding: 0 8px;
+        gap: 0 2px;
+    }
+    .clockwork-admin__tab {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+    .clockwork-admin__subtab {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
 }
