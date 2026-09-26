@@ -84,6 +84,43 @@ class AdvancedPageTest extends TestCase
         $this->assertStringContainsString('cwkCopyConnectionKey', $output);
     }
 
+    public function testRenderSubtabFromGetQueryParam(): void
+    {
+        $_GET['tab'] = 'connection';
+        ob_start();
+        AdvancedPage::render();
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Connection Key', $output);
+        $this->assertStringContainsString('cwkCopyConnectionKey', $output);
+        unset($_GET['tab']);
+    }
+
+    public function testRenderSubtabWhenWordPressPassesEmptyStringHookArg(): void
+    {
+        $_GET['tab'] = 'notifications';
+        ob_start();
+        // WordPress do_action($page_hook) passes '' as the first argument to action callbacks
+        AdvancedPage::render('');
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Notifications', $output);
+        $this->assertStringContainsString('Slack', $output);
+        unset($_GET['tab']);
+    }
+
+    public function testRenderSubtabFallsBackToGatekeeperOnInvalidTab(): void
+    {
+        $_GET['tab'] = 'invalid_subtab_slug';
+        ob_start();
+        AdvancedPage::render('');
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Gatekeeper', $output);
+        $this->assertStringContainsString('Active Lockouts', $output);
+        unset($_GET['tab']);
+    }
+
     public function testRenderUpdatesSubtab(): void
     {
         ob_start();

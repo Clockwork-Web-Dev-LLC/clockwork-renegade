@@ -42,8 +42,12 @@ class AdvancedPage
     public static function render(?string $forcedTab = null): void
     {
         $allowed = array_column(self::subtabs(), 'slug');
-        $tab = $forcedTab ?? (isset($_GET['tab']) ? sanitize_key((string) $_GET['tab']) : 'gatekeeper');
-        if (! in_array($tab, $allowed, true)) {
+        if ($forcedTab !== null && $forcedTab !== '' && in_array($forcedTab, $allowed, true)) {
+            $tab = $forcedTab;
+        } elseif (isset($_GET['tab']) && is_string($_GET['tab'])) {
+            $cleaned = function_exists('sanitize_key') ? sanitize_key($_GET['tab']) : strtolower(preg_replace('/[^a-z0-9_\-]/', '', $_GET['tab']));
+            $tab = in_array($cleaned, $allowed, true) ? $cleaned : 'gatekeeper';
+        } else {
             $tab = 'gatekeeper';
         }
 
