@@ -101,6 +101,7 @@ No. Clockwork Renegade does not execute arbitrary remote code or eval(). All upd
 == Changelog ==
 
 = 1.1.0 - 2026-10-28 =
+* Self-updater: installs not distributed via WordPress.org now receive updates through the normal WordPress updater, sourced from GitHub Releases. Disable with `define('CLOCKWORK_RENEGADE_DISABLE_SELF_UPDATE', true);`.
 * Care Plan report recipients: manage who receives Care Plan & Maintenance Reports from the Notifications tab. New signed `/client-notifications` endpoint syncs recipients, frequency, and on/off state with Clockwork Control.
 
 = 1.0.3 - 2026-09-18 =

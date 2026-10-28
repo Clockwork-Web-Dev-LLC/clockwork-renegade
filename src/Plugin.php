@@ -144,6 +144,7 @@ class Plugin
         \ClockworkRenegade\Compat\WpForceLoginCompat::register();
         \ClockworkRenegade\Maintenance\MaintenanceGuard::register();
         \ClockworkRenegade\Support\PrivacyPolicy::register();
+        \ClockworkRenegade\Updates\SelfUpdater::register();
 
         // Register the per-request CPU/memory sampler IMMEDIATELY (not on a
         // hook). The sampler snapshots getrusage() at construction time and
