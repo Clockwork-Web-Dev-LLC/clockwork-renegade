@@ -378,19 +378,34 @@ class WhiteLabel
         $contentDir = defined('WP_CONTENT_DIR') ? rtrim(str_replace('\\', '/', (string) WP_CONTENT_DIR), '/') : '';
         $contentUrl = defined('WP_CONTENT_URL') ? rtrim((string) WP_CONTENT_URL, '/') : '';
 
+        $url = '';
         if ($dir !== '' && $contentDir !== '' && $contentUrl !== '' && str_starts_with($dir, $contentDir)) {
-            return $contentUrl.substr($dir, strlen($contentDir)).'/'.$relative;
+            $url = $contentUrl.substr($dir, strlen($contentDir)).'/'.$relative;
+        } elseif (($pluginFile = defined('CLOCKWORK_RENEGADE_FILE') ? CLOCKWORK_RENEGADE_FILE : ($dir !== '' ? $dir.'/clockwork-renegade.php' : '')) !== '' && function_exists('plugins_url')) {
+            $url = plugins_url($relative, $pluginFile);
         }
 
-        $pluginFile = defined('CLOCKWORK_RENEGADE_FILE')
-            ? CLOCKWORK_RENEGADE_FILE
-            : ($dir !== '' ? $dir.'/clockwork-renegade.php' : '');
-
-        if ($pluginFile !== '' && function_exists('plugins_url')) {
-            return plugins_url($relative, $pluginFile);
+        if ($url === '') {
+            return '';
         }
 
-        return '';
+        $isHttps = (function_exists('is_ssl') && is_ssl())
+            || (isset($_SERVER['HTTPS']) && 'off' !== strtolower((string) $_SERVER['HTTPS']))
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && 'https' === strtolower((string) $_SERVER['HTTP_X_FORWARDED_PROTO']))
+            || (isset($_SERVER['HTTP_CF_VISITOR']) && str_contains((string) $_SERVER['HTTP_CF_VISITOR'], '"scheme":"https"'));
+
+        if ($isHttps) {
+            if (function_exists('set_url_scheme')) {
+                return set_url_scheme($url, 'https');
+            }
+            if (str_starts_with($url, 'http://')) {
+                return 'https://'.substr($url, 7);
+            }
+        } elseif (function_exists('set_url_scheme')) {
+            return set_url_scheme($url);
+        }
+
+        return $url;
     }
 
     /**
