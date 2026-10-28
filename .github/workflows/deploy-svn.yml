@@ -1,9 +1,11 @@
 name: Deploy to WordPress.org SVN
 
+# Manual only. Renegade is distributed through GitHub Releases (release.yml),
+# so version tags must not trigger a WordPress.org deploy. Run this by hand
+# if the plugin is ever submitted to the WordPress.org directory — and build
+# that package with CLOCKWORK_RENEGADE_DISABLE_SELF_UPDATE defaulting to true.
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
 
 jobs:
   deploy:
