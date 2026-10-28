@@ -58,10 +58,20 @@ class EnrollmentNudge
 
     public function register(): void
     {
+        // 2FA is optional in Renegade; do not nag or force-lock admins.
+        if (! self::isForced()) {
+            return;
+        }
+
         add_action('admin_notices', [$this, 'maybeShowNudge']);
         add_action('admin_init', [$this, 'maybeEnforceGrace']);
         add_action('admin_post_'.self::DISMISS_ACTION, [$this, 'handleDismiss']);
         add_action('admin_post_'.self::SET_GRACE_ACTION, [$this, 'handleSetGrace']);
+    }
+
+    public static function isForced(): bool
+    {
+        return defined('CLOCKWORK_2FA_FORCE_ENROLLMENT') && (bool) CLOCKWORK_2FA_FORCE_ENROLLMENT;
     }
 
     public function maybeShowNudge(): void
@@ -193,6 +203,10 @@ class EnrollmentNudge
      */
     public static function isEligible(int $userId): bool
     {
+        if (! self::isForced()) {
+            return false;
+        }
+
         if ($userId <= 0) {
             return false;
         }

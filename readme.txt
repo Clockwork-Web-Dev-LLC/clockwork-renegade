@@ -4,7 +4,7 @@ Tags: monitoring, backups, updates, security, fleet
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -99,6 +99,12 @@ No. Clockwork Renegade does not execute arbitrary remote code or eval(). All upd
 3. System telemetry and resource performance diagnostics.
 
 == Changelog ==
+
+= 1.1.1 - 2026-10-28 =
+* Fix: Two-factor authentication is optional; removed forced enrollment countdown notice and admin lockout.
+* Fix: Enforce HTTPS scheme on bundled assets (admin.css, logo, scripts) to prevent browser mixed-content blocks on SSL sites.
+* Fix: Restore support button styling and add header background fallback.
+* Fix: Direct S3 archive backups recognize both companion and renegade sources.
 
 = 1.1.0 - 2026-10-28 =
 * Self-updater: installs not distributed via WordPress.org now receive updates through the normal WordPress updater, sourced from GitHub Releases. Disable with `define('CLOCKWORK_RENEGADE_DISABLE_SELF_UPDATE', true);`.
