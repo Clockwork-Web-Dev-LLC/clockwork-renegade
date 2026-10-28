@@ -100,6 +100,9 @@ No. Clockwork Renegade does not execute arbitrary remote code or eval(). All upd
 
 == Changelog ==
 
+= Unreleased =
+* Care Plan report recipients: manage who receives Care Plan & Maintenance Reports from the Notifications tab. New signed `/client-notifications` endpoint syncs recipients, frequency, and on/off state with Clockwork Control.
+
 = 1.0.3 - 2026-09-18 =
 * Public admin menu visibility for all administrators with manage_options.
 
