@@ -4,7 +4,7 @@ Tags: monitoring, backups, updates, security, fleet
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.0.4
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -100,7 +100,7 @@ No. Clockwork Renegade does not execute arbitrary remote code or eval(). All upd
 
 == Changelog ==
 
-= Unreleased =
+= 1.1.0 - 2026-10-28 =
 * Care Plan report recipients: manage who receives Care Plan & Maintenance Reports from the Notifications tab. New signed `/client-notifications` endpoint syncs recipients, frequency, and on/off state with Clockwork Control.
 
 = 1.0.3 - 2026-09-18 =

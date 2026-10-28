@@ -304,7 +304,7 @@ class Menu
             return;
         }
 
-        $cssVer = defined('CLOCKWORK_RENEGADE_VERSION') ? CLOCKWORK_RENEGADE_VERSION : '1.0.4';
+        $cssVer = defined('CLOCKWORK_RENEGADE_VERSION') ? CLOCKWORK_RENEGADE_VERSION : '1.1.0';
         $cssPath = defined('CLOCKWORK_RENEGADE_DIR') ? CLOCKWORK_RENEGADE_DIR . '/assets/admin.css' : '';
         if ($cssPath && file_exists($cssPath)) {
             $cssVer .= '.' . filemtime($cssPath);
