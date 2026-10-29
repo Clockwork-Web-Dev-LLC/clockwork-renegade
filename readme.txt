@@ -4,7 +4,7 @@ Tags: monitoring, backups, updates, security, fleet
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -99,6 +99,10 @@ No. Clockwork Renegade does not execute arbitrary remote code or eval(). All upd
 3. System telemetry and resource performance diagnostics.
 
 == Changelog ==
+
+= 1.1.2 - 2026-10-28 =
+* Feature: Backup manifests — collect detailed metadata (database table row counts & sizes, uploads, plugins, themes, exclusions) and embed manifest.json in backup archives.
+* Feature: Visual backup breakdown in WP Admin Backups table.
 
 = 1.1.1 - 2026-10-28 =
 * Fix: Two-factor authentication is optional; removed forced enrollment countdown notice and admin lockout.
