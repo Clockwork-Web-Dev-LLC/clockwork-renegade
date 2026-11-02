@@ -72,6 +72,7 @@ class UpdatesRefreshAjaxHandler
         if (! function_exists('wp_update_plugins')) {
             require_once ABSPATH.'wp-includes/update.php';
         }
+        delete_transient(\ClockworkRenegade\Updates\SelfUpdater::CACHE_KEY);
         $extra = ['source' => 'clockwork-renegade-loopback'];
         wp_update_plugins($extra);
         wp_update_themes($extra);
