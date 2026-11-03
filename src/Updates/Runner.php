@@ -60,6 +60,8 @@ class Runner
             return $this->fail($slug, 'plugin_not_installed', "No plugin installed at slug '{$slug}'.", $start);
         }
 
+        self::flushActivePluginsCache();
+        $activePluginsBefore = array_values(array_filter((array) get_option('active_plugins', []), 'is_string'));
         $beforeVersion = (string) ($all[$slug]['Version'] ?? '');
         $wasActive = is_plugin_active($slug);
 
@@ -101,7 +103,42 @@ class Runner
 
         $skin = new WP_Ajax_Upgrader_Skin();
         $upgrader = new Plugin_Upgrader($skin);
-        $result = $upgrader->upgrade($slug);
+
+        $preventDeactivate = null;
+        $preserveActivePlugins = null;
+        if ($wasActive && function_exists('add_filter')) {
+            $preventDeactivate = static function ($response) use ($upgrader) {
+                if (function_exists('remove_filter')) {
+                    remove_filter('upgrader_pre_install', [$upgrader, 'deactivate_plugin_before_upgrade'], 10);
+                }
+
+                return $response;
+            };
+            add_filter('upgrader_pre_install', $preventDeactivate, 1, 1);
+
+            $preserveActivePlugins = static function ($newValue) use ($slug, $activePluginsBefore) {
+                if (! is_array($newValue)) {
+                    return $newValue;
+                }
+                if (! in_array($slug, $newValue, true)) {
+                    return self::restorePluginInOrder($newValue, $activePluginsBefore, $slug);
+                }
+
+                return array_values($newValue);
+            };
+            add_filter('pre_update_option_active_plugins', $preserveActivePlugins, 9999, 1);
+        }
+
+        try {
+            $result = $upgrader->upgrade($slug);
+        } finally {
+            if ($preventDeactivate !== null && function_exists('remove_filter')) {
+                remove_filter('upgrader_pre_install', $preventDeactivate, 1);
+            }
+            if ($preserveActivePlugins !== null && function_exists('remove_filter')) {
+                remove_filter('pre_update_option_active_plugins', $preserveActivePlugins, 9999);
+            }
+        }
 
         $messages = $this->collectMessages($skin);
 
@@ -122,6 +159,8 @@ class Runner
             $afterVersion = (string) ($pluginData['Version'] ?? $beforeVersion);
         }
 
+        self::flushActivePluginsCache();
+
         // Re-activate if it was active before the upgrade. activate_plugin()
         // returns null on success, WP_Error on failure. Note: activating
         // doesn't re-fire the activation hook by default, which is what we
@@ -134,7 +173,11 @@ class Runner
                 $reactivationError = $activateResult->get_error_message();
                 $messages[] = 'Re-activation failed: ' . $reactivationError;
                 $reactivated = false;
+                if (is_plugin_active($slug) && function_exists('deactivate_plugins')) {
+                    deactivate_plugins($slug, true);
+                }
             } else {
+                self::ensureActivePluginOrderPersisted($slug, $activePluginsBefore);
                 $reactivated = true;
             }
         }
@@ -246,5 +289,101 @@ class Runner
     private function elapsed(float $start): int
     {
         return (int) round((microtime(true) - $start) * 1000);
+    }
+
+    public static function flushActivePluginsCache(): void
+    {
+        if (function_exists('wp_cache_delete')) {
+            wp_cache_delete('alloptions', 'options');
+            wp_cache_delete('active_plugins', 'options');
+        }
+    }
+
+    /**
+     * @param  list<string>  $orderBefore
+     * @param  list<string>  $additionalSlugs
+     */
+    public static function ensureActivePluginOrderPersisted(string $slug, array $orderBefore, array $additionalSlugs = []): void
+    {
+        self::flushActivePluginsCache();
+
+        $current = array_values(array_filter((array) get_option('active_plugins', []), 'is_string'));
+        $ensure = array_values(array_unique(array_merge([$slug], $additionalSlugs)));
+        $desired = self::restorePluginInOrder($current, $orderBefore, ...$ensure);
+
+        if ($desired !== $current) {
+            update_option('active_plugins', $desired);
+        }
+
+        if (isset($GLOBALS['wp_test_active_plugins']) && is_array($GLOBALS['wp_test_active_plugins'])) {
+            $GLOBALS['wp_test_active_plugins'] = $desired;
+        }
+
+        self::flushActivePluginsCache();
+    }
+
+    /**
+     * @param  array<int|string, mixed>  $current
+     * @param  list<string>  $orderBefore
+     * @return list<string>
+     */
+    public static function restorePluginInOrder(array $current, array $orderBefore, string ...$ensureSlugs): array
+    {
+        $currentStrings = array_values(array_filter($current, 'is_string'));
+        $targetSet = array_values(array_unique(array_merge($currentStrings, $ensureSlugs)));
+        $targetLookup = array_flip($targetSet);
+
+        $ordered = [];
+        $seen = [];
+        foreach ($orderBefore as $plugin) {
+            if (is_string($plugin) && isset($targetLookup[$plugin]) && ! isset($seen[$plugin])) {
+                $ordered[] = $plugin;
+                $seen[$plugin] = true;
+            }
+        }
+
+        $trailingNgg = [];
+        while ($ordered !== [] && str_starts_with((string) end($ordered), 'nextgen-gallery/')) {
+            array_unshift($trailingNgg, (string) array_pop($ordered));
+        }
+
+        $newPlugins = [];
+        foreach ($targetSet as $plugin) {
+            if (! isset($seen[$plugin])) {
+                if (str_starts_with($plugin, 'nextgen-gallery/')) {
+                    $trailingNgg[] = $plugin;
+                } else {
+                    $newPlugins[] = $plugin;
+                }
+                $seen[$plugin] = true;
+            }
+        }
+        sort($newPlugins);
+
+        if ($newPlugins !== []) {
+            // Skip any leading plugins that were intentionally pinned ahead of
+            // alphabetical order (e.g. gravityforms/gravityforms.php at index 0).
+            $alphaStart = 0;
+            $count = count($ordered);
+            while ($alphaStart + 1 < $count && strcmp($ordered[$alphaStart], $ordered[$alphaStart + 1]) > 0) {
+                $alphaStart++;
+            }
+
+            foreach ($newPlugins as $plugin) {
+                $inserted = false;
+                for ($i = $alphaStart, $n = count($ordered); $i < $n; $i++) {
+                    if (strcmp($plugin, $ordered[$i]) < 0) {
+                        array_splice($ordered, $i, 0, [$plugin]);
+                        $inserted = true;
+                        break;
+                    }
+                }
+                if (! $inserted) {
+                    $ordered[] = $plugin;
+                }
+            }
+        }
+
+        return array_values(array_merge($ordered, $trailingNgg));
     }
 }

@@ -1003,6 +1003,14 @@ if (! function_exists('activate_plugin')) {
             return $GLOBALS['wp_test_activate_plugin_error'];
         }
         $GLOBALS['wp_test_active_plugins'][] = $slug;
+        if (! $networkWide && isset($GLOBALS['wp_test_options']['active_plugins']) && is_array($GLOBALS['wp_test_options']['active_plugins'])) {
+            $current = $GLOBALS['wp_test_options']['active_plugins'];
+            if (! in_array($slug, $current, true)) {
+                $current[] = $slug;
+            }
+            sort($current);
+            update_option('active_plugins', $current);
+        }
         return null;
     }
 }
