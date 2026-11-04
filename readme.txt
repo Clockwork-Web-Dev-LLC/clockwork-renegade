@@ -4,7 +4,7 @@ Tags: monitoring, backups, updates, security, fleet
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -99,6 +99,10 @@ No. Clockwork Renegade does not execute arbitrary remote code or eval(). All upd
 3. System telemetry and resource performance diagnostics.
 
 == Changelog ==
+
+= 1.1.3 - 2026-11-04 =
+* Fix: Preserve active plugins in-place during single-plugin upgrades, flush object cache (`alloptions` and `active_plugins`), and maintain plugin load order to prevent concurrent shutdown hooks from overwriting `active_plugins`.
+* Fix: Pass the inner `$_POST['wpforms']` entry array to `wpforms()->process->process()` during WPForms contact form health checks and support `first-last` name subfields and choice labels.
 
 = 1.1.2 - 2026-10-28 =
 * Feature: Backup manifests — collect detailed metadata (database table row counts & sizes, uploads, plugins, themes, exclusions) and embed manifest.json in backup archives.

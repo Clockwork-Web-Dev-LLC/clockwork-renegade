@@ -3,7 +3,7 @@
  * Plugin Name:       Clockwork Renegade
  * Plugin URI:        https://clockworkcontrol.com
  * Description:       Connects your WordPress site to Clockwork Control for centralized monitoring, uptime verification, updates, and security telemetry.
- * Version:           1.1.2
+ * Version:           1.1.3
  * Requires at least: 6.4
  * Tested up to:      7.1
  * Requires PHP:      8.0
@@ -20,7 +20,7 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-define('CLOCKWORK_RENEGADE_VERSION', '1.1.2');
+define('CLOCKWORK_RENEGADE_VERSION', '1.1.3');
 if (! defined('CLOCKWORK_RENEGADE_DIR')) {
     define('CLOCKWORK_RENEGADE_DIR', __DIR__);
 }
