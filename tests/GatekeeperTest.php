@@ -26,7 +26,7 @@ class GatekeeperTest extends TestCase
         $GLOBALS['wp_test_status_header'] = 200;
         $_SERVER['REMOTE_ADDR'] = '203.0.113.10'; // TEST-NET-3
         $_SERVER['REQUEST_URI'] = '/wp-login.php';
-        unset($_SERVER['HTTP_CF_CONNECTING_IP'], $_SERVER['HTTP_X_FORWARDED_FOR']);
+        unset($_SERVER['HTTP_CF_CONNECTING_IP'], $_SERVER['HTTP_X_FORWARDED_FOR'], $GLOBALS['wp']);
     }
 
     public function testCapabilityIsAdvertised(): void
@@ -143,6 +143,7 @@ class GatekeeperTest extends TestCase
         $ip = '203.0.113.10';
         $_SERVER['REMOTE_ADDR'] = $ip;
         $_SERVER['REQUEST_URI'] = '/wp-json/clockwork-renegade/v1/lockouts';
+        $GLOBALS['wp'] = (object) ['query_vars' => ['rest_route' => '/clockwork-renegade/v1/lockouts']];
 
         Store::lock($ip);
         $this->assertNotNull(Store::isLocked($ip));
@@ -151,6 +152,47 @@ class GatekeeperTest extends TestCase
         $userObj = (object) ['ID' => 123];
         $result = Gate::earlyLockoutCheck($userObj, '', '');
         $this->assertSame($userObj, $result);
+    }
+
+    /**
+     * The exemption above used to be a substring test on the URL, so adding
+     * `?x=/wp-json/clockwork/` to wp-login.php or xmlrpc.php switched the
+     * lockout off: failures were not counted and a lock was ignored.
+     */
+    public function testNamespaceInALoginUrlDoesNotExemptTheRequest(): void
+    {
+        Settings::update(['enabled' => true, 'threshold' => 2]);
+        $ip = '203.0.113.10';
+        $_SERVER['REMOTE_ADDR'] = $ip;
+        if (! defined('REST_REQUEST')) {
+            define('REST_REQUEST', true); // makes a locked request return WP_Error instead of exit()
+        }
+
+        $probes = [
+            '/wp-login.php?x=/wp-json/clockwork/',
+            '/wp-login.php?x=/wp-json/clockwork-renegade/',
+            '/xmlrpc.php?rest_route=/clockwork/',
+            '/wp-login.php?rest_route=/clockwork-renegade/v1/lockouts',
+            '/wp-login.php?rest_route=%2Fclockwork-renegade%2F',
+        ];
+
+        foreach ($probes as $uri) {
+            Store::unlockIp($ip);
+            $_SERVER['REQUEST_URI'] = $uri;
+            $_SERVER['QUERY_STRING'] = (string) parse_url($uri, PHP_URL_QUERY);
+            parse_str($_SERVER['QUERY_STRING'], $_GET);
+
+            Gate::onLoginFailed('admin');
+            Gate::onLoginFailed('admin');
+            $this->assertNotNull(Store::isLocked($ip), "failures were not counted for {$uri}");
+
+            $result = Gate::earlyLockoutCheck(null, 'admin', 'guess');
+            $this->assertInstanceOf(WP_Error::class, $result, "lockout was skipped for {$uri}");
+            $this->assertSame('gatekeeper_locked', $result->get_error_code());
+        }
+
+        $_GET = [];
+        unset($_SERVER['QUERY_STRING']);
     }
 
     public function testSettingsRouteStoresEscapedFields(): void

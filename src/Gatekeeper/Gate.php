@@ -2,6 +2,7 @@
 
 namespace ClockworkRenegade\Gatekeeper;
 
+use ClockworkRenegade\Support\RestRequest;
 use WP_Error;
 
 class Gate
@@ -99,20 +100,22 @@ class Gate
         Store::resetOnSuccess($ip);
     }
 
+    /**
+     * True only when WordPress is dispatching one of this plugin's own REST
+     * routes — taken from the parsed route, never from the URL text.
+     *
+     * This used to be a substring test on REQUEST_URI and the query string,
+     * so `wp-login.php?x=/wp-json/clockwork/` (or the same on xmlrpc.php)
+     * counted as a "Clockwork REST" request: failures were not recorded and
+     * an existing lockout was ignored, giving unlimited password guesses.
+     * wp-login.php and xmlrpc.php never parse a REST route, so they can no
+     * longer qualify.
+     */
     private static function isClockworkRest(): bool
     {
-        $uri = (string) ($_SERVER['REQUEST_URI'] ?? '');
-        if (str_contains($uri, '/wp-json/clockwork/') || str_contains($uri, '/wp-json/clockwork-renegade/')) {
-            return true;
-        }
-
-        $query = (string) ($_SERVER['QUERY_STRING'] ?? '');
-        $restRoute = (string) ($_GET['rest_route'] ?? '');
-        $haystack = $uri . '&' . $query . '&' . $restRoute;
-
-        return str_contains($haystack, 'rest_route=/clockwork/')
-            || str_contains($haystack, 'rest_route=/clockwork-renegade/')
-            || str_contains($haystack, 'rest_route=%2Fclockwork%2F')
-            || str_contains($haystack, 'rest_route=%2Fclockwork-renegade%2F');
+        return RestRequest::inNamespace(
+            RestRequest::dispatchedRoute(),
+            [CLOCKWORK_RENEGADE_NAMESPACE, 'clockwork/v1']
+        );
     }
 }
