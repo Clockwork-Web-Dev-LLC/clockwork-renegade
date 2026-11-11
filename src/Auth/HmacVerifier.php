@@ -70,6 +70,12 @@ class HmacVerifier
             return new \WP_Error('missing_headers', 'Missing X-Clockwork-Signature or X-Clockwork-Timestamp', ['status' => 401]);
         }
 
+        if (! ctype_digit((string) $timestamp)) {
+            self::noteFailure($ip, 'stale_timestamp', $request);
+
+            return new \WP_Error('stale_timestamp', 'Timestamp outside replay window', ['status' => 401]);
+        }
+
         $tsInt = (int) $timestamp;
         if (abs(time() - $tsInt) > self::REPLAY_WINDOW_SECONDS) {
             self::noteFailure($ip, 'stale_timestamp', $request);
@@ -82,8 +88,20 @@ class HmacVerifier
             return new \WP_Error('no_secret', 'Renegade secret not initialised', ['status' => 500]);
         }
 
+        $path = '/wp-json'.$request->get_route();
+        $query = self::canonicalQuery($request);
+        if ($query !== '') {
+            $signature = $request->get_header('x_clockwork_signature_v2');
+            if (! $signature) {
+                self::noteFailure($ip, 'missing_headers', $request);
+
+                return new \WP_Error('missing_headers', 'Requests with query parameters must send X-Clockwork-Signature-V2', ['status' => 401]);
+            }
+            $path .= '?'.$query;
+        }
+
         $payload = strtoupper($request->get_method())
-            ."\n".'/wp-json'.$request->get_route()
+            ."\n".$path
             ."\n".$tsInt
             ."\n".$request->get_body();
 
@@ -118,9 +136,60 @@ class HmacVerifier
         return in_array(strtoupper($request->get_method()), ['POST', 'PUT', 'PATCH', 'DELETE'], true);
     }
 
+    /**
+     * Query params as signed by Clockwork: `rest_route` dropped, sorted by
+     * key, RFC 3986 encoded. Empty string when there are none.
+     */
+    public static function canonicalQuery(WP_REST_Request $request): string
+    {
+        $params = method_exists($request, 'get_query_params') ? (array) $request->get_query_params() : [];
+        unset($params['rest_route']);
+        if ($params === []) {
+            return '';
+        }
+        ksort($params, SORT_STRING);
+
+        return http_build_query($params, '', '&', PHP_QUERY_RFC3986);
+    }
+
+    /**
+     * Marks the signature as used and reports whether it already was via
+     * atomic INSERT IGNORE against wp_options.option_name.
+     */
     private static function alreadyConsumed(string $signature, int $timestamp): bool
     {
+        global $wpdb;
+
         $key = 'clockwork_hmac_used_'.substr(hash('sha256', $signature."\n".$timestamp), 0, 32);
+
+        if (! isset($wpdb) || ! is_object($wpdb)) {
+            return self::alreadyConsumedViaTransient($key);
+        }
+
+        $now = time();
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s AND CAST(option_value AS UNSIGNED) < %d",
+            $wpdb->esc_like('clockwork_hmac_used_').'%',
+            $now
+        ));
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $inserted = $wpdb->query($wpdb->prepare(
+            "INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'off')",
+            $key,
+            (string) ($now + self::REPLAY_WINDOW_SECONDS)
+        ));
+
+        if ($inserted === false) {
+            return self::alreadyConsumedViaTransient($key);
+        }
+
+        return (int) $inserted === 0;
+    }
+
+    private static function alreadyConsumedViaTransient(string $key): bool
+    {
         if (get_transient($key)) {
             return true;
         }

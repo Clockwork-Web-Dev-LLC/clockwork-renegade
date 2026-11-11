@@ -78,6 +78,10 @@ class ArchiveExtractor
      */
     public static function isUnsafeEntryName(string $name): bool
     {
+        if (str_contains($name, "\0")) {
+            return true;
+        }
+
         $normalized = str_replace('\\', '/', $name);
 
         if (str_starts_with($normalized, '/')) {
@@ -118,6 +122,15 @@ class ArchiveExtractor
 
                     return $name;
                 }
+                $opsys = 0;
+                $extAttr = 0;
+                if ($zip->getExternalAttributesIndex($i, $opsys, $extAttr, ZipArchive::FL_UNCHANGED)) {
+                    if ($opsys === ZipArchive::OPSYS_UNIX && ((($extAttr >> 16) & 0170000) === 0120000)) {
+                        $zip->close();
+
+                        return $name !== '' ? $name : "symlink:{$i}";
+                    }
+                }
             }
 
             $zip->close();
@@ -139,6 +152,10 @@ class ArchiveExtractor
             $name = is_array($entry) ? (string) ($entry['filename'] ?? '') : '';
             if ($name !== '' && self::isUnsafeEntryName($name)) {
                 return $name;
+            }
+            $extAttr = is_array($entry) ? (int) ($entry['external'] ?? 0) : 0;
+            if ((($extAttr >> 16) & 0170000) === 0120000) {
+                return $name !== '' ? $name : 'symlink';
             }
         }
 

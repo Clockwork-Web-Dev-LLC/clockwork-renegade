@@ -4,7 +4,7 @@ Tags: monitoring, backups, updates, security, fleet
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -99,6 +99,13 @@ No. Clockwork Renegade does not execute arbitrary remote code or eval(). All upd
 3. System telemetry and resource performance diagnostics.
 
 == Changelog ==
+
+= 1.1.4 - 2026-11-11 =
+* Security: Enforce `X-Clockwork-Signature-V2` canonical query signing and atomic `INSERT IGNORE` replay protection in `HmacVerifier`.
+* Security: Reject symlink/hardlink and path-traversal entries during backup archive extraction, enforce `WP_CONTENT_DIR` `realpath()` containment on file restores, and validate HTTPS/SSRF/host allowlists on S3 transfers and GitHub self-updates.
+* Security: Use `wp_safe_redirect()` with `Referrer-Policy: no-referrer` on SSO logins, validate proxy headers against trusted `REMOTE_ADDR` ranges in `MaintenanceGuard`, strip CR/LF in notification headers, cap `debug.log` tail reads via `fseek()`, escape `LIKE` wildcards in `DatabaseRoute`, and skip symlinked directories in `MalwareScanner`.
+* Fix: Preserve commercial plugin and theme update transient packages across REST-context update checks, flush transient object-cache keys after loopback refresh, and surface `WP_Upgrader_Skin` error messages on failed upgrades.
+* Fix: Allow `cleanup` in `CommentsActionRoute` REST argument validation.
 
 = 1.1.3 - 2026-11-04 =
 * Fix: Preserve active plugins in-place during single-plugin upgrades, flush object cache (`alloptions` and `active_plugins`), and maintain plugin load order to prevent concurrent shutdown hooks from overwriting `active_plugins`.

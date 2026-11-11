@@ -77,6 +77,11 @@ class FileApplier
         );
 
         foreach ($iterator as $item) {
+            // Never dereference symlinks extracted into staging.
+            if ($item->isLink()) {
+                continue;
+            }
+
             $subPath = substr($item->getPathname(), strlen(rtrim($stagingContentDir, '/\\')) + 1);
             $normalizedSubPath = str_replace('\\', '/', $subPath);
             if (ArchiveExtractor::isUnsafeEntryName($normalizedSubPath)) {
@@ -104,6 +109,9 @@ class FileApplier
             $dest = rtrim($liveContentDir, '/\\').DIRECTORY_SEPARATOR.$subPath;
 
             if ($item->isDir()) {
+                if (is_link($dest)) {
+                    return ['ok' => false, 'copied_count' => $copiedCount, 'deferred_companion_count' => count($deferredCompanionFiles), 'error' => "Refusing to traverse symlink directory {$dest}"];
+                }
                 if (! is_dir($dest) && ! @mkdir($dest, 0755, true) && ! is_dir($dest)) {
                     return ['ok' => false, 'copied_count' => $copiedCount, 'deferred_companion_count' => count($deferredCompanionFiles), 'error' => "Failed to create directory {$dest}"];
                 }
@@ -115,6 +123,10 @@ class FileApplier
                 continue;
             }
 
+            if (is_link($dest)) {
+                @unlink($dest);
+            }
+
             if (! @copy($item->getPathname(), $dest)) {
                 return ['ok' => false, 'copied_count' => $copiedCount, 'deferred_companion_count' => count($deferredCompanionFiles), 'error' => "Failed to copy file to {$dest}"];
             }
@@ -124,6 +136,9 @@ class FileApplier
         foreach ($deferredCompanionFiles as $pair) {
             $srcFile = $pair[0];
             $destFile = $pair[1];
+            if (is_link($destFile)) {
+                @unlink($destFile);
+            }
             if (! @copy($srcFile, $destFile)) {
                 return ['ok' => false, 'copied_count' => $copiedCount, 'deferred_companion_count' => count($deferredCompanionFiles), 'error' => "Failed to copy companion file to {$destFile}"];
             }

@@ -307,6 +307,9 @@ if (! class_exists('WP_REST_Request')) {
         public function get_body(): string { return $this->body ?: (!empty($this->jsonParams) ? json_encode($this->jsonParams) : ''); }
         public function get_param(string $key): mixed { return $this->jsonParams[$key] ?? null; }
         public function get_params(): array { return (array) $this->jsonParams; }
+        protected array $queryParams = [];
+        public function set_query_params(array $params): void { $this->queryParams = $params; }
+        public function get_query_params(): array { return $this->queryParams; }
     }
 }
 
@@ -525,10 +528,18 @@ if (! class_exists('wpdb')) {
         public string $terms = 'wp_terms';
         public string $users = 'wp_users';
         public array $queries = [];
+        /** option_name => true for rows written via INSERT IGNORE */
+        public array $insertedOptions = [];
 
         public function query(string $query): int
         {
             $this->queries[] = $query;
+            if (preg_match("/^INSERT IGNORE INTO \S+ \(option_name[^)]*\) VALUES \('([^']+)'/", $query, $m)) {
+                if (isset($this->insertedOptions[$m[1]])) {
+                    return 0;
+                }
+                $this->insertedOptions[$m[1]] = true;
+            }
             if (preg_match('/TRUNCATE TABLE `?([a-zA-Z0-9_]+)`?/i', $query, $m)) {
                 $this->table_rows[$m[1]] = [];
             }
@@ -570,7 +581,7 @@ if (! class_exists('wpdb')) {
         public function prepare(string $query, mixed ...$args): string
         {
             foreach ($args as $arg) {
-                $query = preg_replace('/%s/', "'".addslashes((string) $arg)."'", $query, 1);
+                $query = preg_replace('/%[sd]/', "'".addslashes((string) $arg)."'", $query, 1);
             }
 
             return $query;
