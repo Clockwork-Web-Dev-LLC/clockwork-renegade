@@ -20,6 +20,12 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
+// A second copy loaded in the same request (e.g. one in mu-plugins and one
+// in plugins) would redefine every constant and class below and fatal.
+if (defined('CLOCKWORK_RENEGADE_VERSION')) {
+    return;
+}
+
 define('CLOCKWORK_RENEGADE_VERSION', '1.1.4');
 if (! defined('CLOCKWORK_RENEGADE_DIR')) {
     define('CLOCKWORK_RENEGADE_DIR', __DIR__);

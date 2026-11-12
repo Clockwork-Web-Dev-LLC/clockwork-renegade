@@ -8,7 +8,6 @@ use ClockworkRenegade\Admin\FormsAjaxHandlers;
 use ClockworkRenegade\Admin\Menu;
 use ClockworkRenegade\Admin\Support\SupportForm;
 use ClockworkRenegade\Admin\UpdatesRefreshAjaxHandler;
-use ClockworkRenegade\Auth\Secret;
 use ClockworkRenegade\AuthAudit\Schema as AuthAuditSchema;
 use ClockworkRenegade\Rest\ActionLogAppendRoute;
 use ClockworkRenegade\Rest\AdminsRoute;
@@ -127,11 +126,13 @@ class Plugin
     public function boot(): void
     {
         (new WhiteLabel())->boot();
-        Secret::ensure();
-        ActionLogSchema::ensureInstalled();
-        AuthAuditSchema::ensureInstalled();
-        ResourceSchema::ensureInstalled();
-        \ClockworkRenegade\Gatekeeper\Schema::ensureInstalled();
+        // Secret + table schemas, checked through one autoloaded record.
+        \ClockworkRenegade\Updates\InstallState::ensure([
+            ActionLogSchema::class,
+            AuthAuditSchema::class,
+            ResourceSchema::class,
+            \ClockworkRenegade\Gatekeeper\Schema::class,
+        ]);
         \ClockworkRenegade\Gatekeeper\Store::maybeSchedulePrune();
         \ClockworkRenegade\Gatekeeper\Gate::register();
 
@@ -151,6 +152,9 @@ class Plugin
         // hooks shutdown internally, so the earlier this runs, the more of
         // the request lifecycle it captures.
         (new ResourceSampler())->register();
+
+        // No-store headers on every response from our REST namespace.
+        \ClockworkRenegade\Rest\NoStoreHeaders::register();
 
         add_action('rest_api_init', function (): void {
             (new HealthRoute())->register();
