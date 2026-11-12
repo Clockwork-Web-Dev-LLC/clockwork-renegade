@@ -329,6 +329,16 @@ class ActivityPage
             'comments_cleanup'        => ['label' => __('Comment cleanups', 'clockwork-renegade'),       'icon' => 'message'],
             'wfls_plugin_removed'     => ['label' => __('WFLS plugin removals', 'clockwork-renegade'),   'icon' => 'trash'],
             'site.provider_migrated'  => ['label' => __('Host migrations', 'clockwork-renegade'),        'icon' => 'migrate'],
+            // Recorded by the site itself (Auth\RemoteActionAudit) for
+            // privileged calls made over the signed REST API.
+            'code_snippet_run' => ['label' => __('Remote code runs', 'clockwork-renegade'), 'icon' => 'wrench'],
+            'code_snippet_result' => ['label' => __('Remote code results', 'clockwork-renegade'), 'icon' => 'wrench'],
+            'sso_link_minted' => ['label' => __('Login links issued', 'clockwork-renegade'), 'icon' => 'login'],
+            'sso_link_redeemed' => ['label' => __('Login links used', 'clockwork-renegade'), 'icon' => 'login'],
+            'connection_key_rotation' => ['label' => __('Connection key rotations', 'clockwork-renegade'), 'icon' => 'key'],
+            'plugin_installed' => ['label' => __('Plugin installs', 'clockwork-renegade'), 'icon' => 'plugin'],
+            'plugin_deleted' => ['label' => __('Plugin deletions', 'clockwork-renegade'), 'icon' => 'trash'],
+            'plugin_toggled' => ['label' => __('Plugin activations', 'clockwork-renegade'), 'icon' => 'plugin'],
         ];
     }
 
@@ -356,6 +366,14 @@ class ActivityPage
             'comments_cleanup'        => __('Comment cleanup', 'clockwork-renegade'),
             'wfls_plugin_removed'     => __('WFLS plugin removal', 'clockwork-renegade'),
             'site.provider_migrated'  => __('Host migration', 'clockwork-renegade'),
+            'code_snippet_run' => __('Remote code run', 'clockwork-renegade'),
+            'code_snippet_result' => __('Remote code result', 'clockwork-renegade'),
+            'sso_link_minted' => __('Login link issued', 'clockwork-renegade'),
+            'sso_link_redeemed' => __('Login link used', 'clockwork-renegade'),
+            'connection_key_rotation' => __('Connection key rotation', 'clockwork-renegade'),
+            'plugin_installed' => __('Plugin install', 'clockwork-renegade'),
+            'plugin_deleted' => __('Plugin deletion', 'clockwork-renegade'),
+            'plugin_toggled' => __('Plugin activation change', 'clockwork-renegade'),
         ];
         return $labels[$type] ?? ucfirst(str_replace('_', ' ', $type));
     }
