@@ -33,6 +33,12 @@ class UserSettings
 
     public const BACKUP_CODE_COUNT = 8;
 
+    /**
+     * Set when 2FA was activated somewhere the user never saw backup codes
+     * (a remote WFLS migration): there are none until they generate a set.
+     */
+    public const META_BACKUP_CODES_NEEDED = '_clockwork_2fa_backup_codes_needed';
+
     public static function isEnabled(int $userId): bool
     {
         return get_user_meta($userId, self::META_ENABLED, true) === '1'
@@ -132,6 +138,7 @@ class UserSettings
         delete_user_meta($userId, self::META_BACKUP_CODES);
         delete_user_meta($userId, self::META_PENDING_SECRET);
         delete_user_meta($userId, self::META_LAST_STEP);
+        delete_user_meta($userId, self::META_BACKUP_CODES_NEEDED);
     }
 
     /**
@@ -155,6 +162,7 @@ class UserSettings
         }
 
         update_user_meta($userId, self::META_BACKUP_CODES, $hashed);
+        delete_user_meta($userId, self::META_BACKUP_CODES_NEEDED);
 
         return $plain;
     }
@@ -185,6 +193,21 @@ class UserSettings
         }
 
         return false;
+    }
+
+    /**
+     * Replace the user's backup codes with none and flag that they must
+     * generate a set — for activations where nobody could be shown codes.
+     */
+    public static function requireBackupCodeRegeneration(int $userId): void
+    {
+        delete_user_meta($userId, self::META_BACKUP_CODES);
+        update_user_meta($userId, self::META_BACKUP_CODES_NEEDED, '1');
+    }
+
+    public static function backupCodesNeeded(int $userId): bool
+    {
+        return get_user_meta($userId, self::META_BACKUP_CODES_NEEDED, true) === '1';
     }
 
     public static function backupCodesRemaining(int $userId): int
