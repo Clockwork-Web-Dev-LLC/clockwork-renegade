@@ -141,6 +141,8 @@ No. Clockwork Renegade does not execute arbitrary remote code or eval(). All upd
 == Changelog ==
 
 = Unreleased =
+* Security: Gatekeeper attributes a request from one of Cloudflare's published addresses to the visitor in CF-Connecting-IP when no trusted proxies are configured, so one lockout no longer blocks everyone behind a Cloudflare edge. Set Trusted Proxies to "none" to turn this off.
+* Change: saving Gatekeeper settings no longer deactivates Limit Login Attempts Reloaded; Clockwork Control retires it after confirming Gatekeeper is enforcing.
 * Security: Close a REST nonce (CSRF) bypass in the wp-force-login compatibility filter. It approved REST authentication whenever the URL contained the plugin's namespace, even in a query string, which also skipped core's cookie-nonce check for any REST route. It now acts only on the plugin's own dispatched routes, as an anonymous user.
 * Security: Gatekeeper no longer exempts a login request whose URL merely mentions the plugin's REST namespace; only a dispatched `clockwork-renegade/v1` route is exempt.
 * Security: Gatekeeper trusts `CF-Connecting-IP` / `X-Forwarded-For` only from configured trusted proxies (Trusted Proxies setting, `CLOCKWORK_RENEGADE_TRUSTED_PROXIES`, or the `clockwork_renegade_trusted_proxies` filter; Cloudflare ranges via `clockwork_renegade_cloudflare_ranges`). An invalid header falls back to the connecting address instead of a shared bucket. The admin tab warns when your own request resolves to a private address or arrives unproxied from Cloudflare.
