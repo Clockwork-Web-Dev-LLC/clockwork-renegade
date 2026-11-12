@@ -66,10 +66,10 @@ class ConnectionPageTest extends TestCase
     public function testConnectionPageRestrictedForNonAgencyAdmin(): void
     {
         update_option('clockwork_renegade_branding', [
-            'agency_email_domains' => '@clockworkwd.com',
+            'agency_email_domains' => '@agency.example',
         ]);
         $clientUser = new WP_User();
-        $clientUser->user_email = 'admin@clientdomain.com';
+        $clientUser->user_email = 'admin@client.example';
         $GLOBALS['wp_test_current_user'] = $clientUser;
 
         ob_start();
@@ -84,10 +84,10 @@ class ConnectionPageTest extends TestCase
     public function testAjaxRevealCredentialsUnauthorizedForNonAgency(): void
     {
         update_option('clockwork_renegade_branding', [
-            'agency_email_domains' => '@clockworkwd.com',
+            'agency_email_domains' => '@agency.example',
         ]);
         $clientUser = new WP_User();
-        $clientUser->user_email = 'admin@clientdomain.com';
+        $clientUser->user_email = 'admin@client.example';
         $GLOBALS['wp_test_current_user'] = $clientUser;
 
         $this->expectException(\RuntimeException::class);
@@ -99,10 +99,10 @@ class ConnectionPageTest extends TestCase
     public function testAjaxRevealCredentialsSuccessForAgency(): void
     {
         update_option('clockwork_renegade_branding', [
-            'agency_email_domains' => '@clockworkwd.com',
+            'agency_email_domains' => '@agency.example',
         ]);
         $agencyUser = new WP_User();
-        $agencyUser->user_email = 'tech@clockworkwd.com';
+        $agencyUser->user_email = 'tech@agency.example';
         $GLOBALS['wp_test_current_user'] = $agencyUser;
 
         ob_start();

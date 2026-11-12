@@ -125,23 +125,6 @@ class Menu
             }
         }
 
-        // clockworkwp.com was Clockwork Web Dev's own domain before the
-        // clockworkwd.com rebrand (see WhiteLabel::DEFAULTS). Fleet-pushed
-        // `agency_email_domains` configs only ever list the current name, so
-        // any operator whose own login was never migrated off the old
-        // address would otherwise get silently locked out of Unlock,
-        // cross-user 2FA controls, and the enrollment nudge on every site
-        // that has domain gating turned on — a self-lockout of exactly the
-        // kind the support-email check above already guards against.
-        // Same category as the unlock_hub_domain / support_email defaults
-        // elsewhere in this file: an identity fact about this plugin's own
-        // vendor, not something a white-labeling agency's install needs to
-        // opt out of — a coincidental @clockworkwp.com login on someone
-        // else's fleet is not a realistic risk.
-        if (! in_array('@clockworkwp.com', $agencyDomains, true)) {
-            $agencyDomains[] = '@clockworkwp.com';
-        }
-
         $email = strtolower((string) $user->user_email);
         foreach ($agencyDomains as $domain) {
             if (str_ends_with($email, strtolower($domain))) {

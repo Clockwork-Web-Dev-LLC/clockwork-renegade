@@ -272,7 +272,9 @@ class HmacVerifierTest extends TestCase
         if (! defined('CLOCKWORK_RENEGADE_TRUST_PROXY')) {
             define('CLOCKWORK_RENEGADE_TRUST_PROXY', true);
         }
-        $_SERVER['REMOTE_ADDR'] = '198.51.100.1';
+        // The legacy constant trusts Cloudflare and private peers only (any
+        // other peer could forge the header), so the proxy here is private.
+        $_SERVER['REMOTE_ADDR'] = '10.0.0.1';
         $_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.99, 192.0.2.20';
         $audit = $this->recordingWpdb();
 

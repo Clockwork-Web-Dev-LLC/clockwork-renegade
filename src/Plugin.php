@@ -134,6 +134,7 @@ class Plugin
             \ClockworkRenegade\Gatekeeper\Schema::class,
         ]);
         \ClockworkRenegade\Gatekeeper\Store::maybeSchedulePrune();
+        register_deactivation_hook(CLOCKWORK_RENEGADE_FILE, [\ClockworkRenegade\Support\Uninstaller::class, 'deactivate']);
         \ClockworkRenegade\Gatekeeper\Gate::register();
 
         // Third-party plugin compatibility shims — run before route registration

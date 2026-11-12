@@ -30,10 +30,9 @@ namespace ClockworkRenegade\Compat;
  * again, which sees the document still empty (the bootstrap save never
  * persists real data) and re-triggers convert_to_elementor() -> save([])
  * -> after_save -> us again — an infinite recursion that hangs PHP-FPM
- * until the request times out (504). Reproduced live on AEX against a
- * never-opened JetEngine listing item (posts 1928/1918); a re-entrancy
- * lock is kept as a second line of defense in case any other Elementor
- * code path re-enters after_save mid-callback.
+ * until the request times out (504). Seen with a never-opened JetEngine
+ * listing item; a re-entrancy lock is kept as a second line of defense in
+ * case any other Elementor code path re-enters after_save mid-callback.
  */
 class ElementorCacheGuard
 {

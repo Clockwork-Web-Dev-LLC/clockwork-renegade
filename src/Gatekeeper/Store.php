@@ -2,9 +2,28 @@
 
 namespace ClockworkRenegade\Gatekeeper;
 
+// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- the lockout table is this plugin's own; its name comes from Schema::tableName(), values go through prepare().
+
+/**
+ * Failed-login counters and lockouts.
+ *
+ * Bucket: an IPv4 address counts on its own; an IPv6 address counts as its
+ * /64, because one client is normally handed a whole /64 and can rotate
+ * through it freely. The bucket is stored in the `ip` column as the /64's
+ * network address (e.g. 2001:db8:1:2::), which is still a valid IP for
+ * callers that list or unlock lockouts.
+ *
+ * Counting: an attempt is counted when it starts (Gate reserves it before
+ * the password is checked) and handed back if the password turns out to be
+ * right. The reservation is an atomic increment, so parallel requests cannot
+ * all slip past the threshold check before any of them has failed.
+ *
+ * On multisite the table and the object-cache group are shared by the whole
+ * network (see Schema::tableName()).
+ */
 class Store
 {
-    /** RFC1918, loopback, and link-local IPv4 ranges — never throttle these. */
+    /** RFC1918, loopback, and link-local IPv4 ranges. */
     private const LOCAL_V4_CIDRS = [
         '10.0.0.0/8',
         '172.16.0.0/12',
@@ -13,6 +32,30 @@ class Store
         '169.254.0.0/16',
     ];
 
+    public const CACHE_GROUP = 'gatekeeper';
+
+    private static bool $cacheGroupRegistered = false;
+
+    /**
+     * The key an address is counted and locked under: the address itself for
+     * IPv4, the /64 network address for IPv6.
+     */
+    public static function bucket(string $ip): string
+    {
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false) {
+            return $ip;
+        }
+
+        $packed = inet_pton($ip);
+        if ($packed === false || strlen($packed) !== 16) {
+            return $ip;
+        }
+
+        $network = inet_ntop(substr($packed, 0, 8).str_repeat("\0", 8));
+
+        return $network === false ? $ip : $network;
+    }
+
     /**
      * Checks whether an IP is currently locked out.
      *
@@ -20,15 +63,16 @@ class Store
      */
     public static function isLocked(string $ip): ?array
     {
-        if (self::isIgnored($ip)) {
+        if (self::isIgnored($ip, false)) {
             return null;
         }
 
         $now = time();
+        $bucket = self::bucket($ip);
 
         // 1. Hot cache check
         if (wp_using_ext_object_cache()) {
-            $cachedUnlock = wp_cache_get("gatekeeper_locked:{$ip}", 'gatekeeper');
+            $cachedUnlock = wp_cache_get("gatekeeper_locked:{$bucket}", self::cacheGroup());
             if (is_numeric($cachedUnlock)) {
                 $cachedUnlock = (int) $cachedUnlock;
                 if ($cachedUnlock > $now) {
@@ -50,7 +94,7 @@ class Store
         $wpdb->suppress_errors(true);
         $row = $wpdb->get_row($wpdb->prepare(
             "SELECT ip, unlock_at FROM `{$table}` WHERE ip = %s AND unlock_at IS NOT NULL AND unlock_at > %s LIMIT 1",
-            $ip,
+            $bucket,
             $nowUtc
         ), ARRAY_A);
         $wpdb->suppress_errors(false);
@@ -67,7 +111,7 @@ class Store
         $remaining = max(1, $unlockTs - $now);
 
         if (wp_using_ext_object_cache()) {
-            wp_cache_set("gatekeeper_locked:{$ip}", $unlockTs, 'gatekeeper', $remaining);
+            wp_cache_set("gatekeeper_locked:{$bucket}", $unlockTs, self::cacheGroup(), $remaining);
         }
 
         return [
@@ -78,80 +122,147 @@ class Store
     }
 
     /**
-     * Records a failed authentication attempt.
+     * Records a failed authentication attempt that was not reserved first,
+     * and locks the address when it reaches the threshold.
      */
     public static function incrementFailure(string $ip): void
     {
-        if (self::isIgnored($ip)) {
+        if (self::isIgnored($ip, false)) {
             return;
         }
 
         // Floods against an already-locked IP must not bump consecutive_lockouts
-        // into the 24h extended window.
+        // into the extended window.
         if (self::isLocked($ip) !== null) {
             return;
         }
 
-        $settings = Settings::get();
-        $threshold = (int) $settings['threshold'];
-        $window = (int) $settings['window_seconds'];
+        if (self::reserveAttempt($ip) >= (int) Settings::get()['threshold']) {
+            self::lock($ip);
+        }
+    }
+
+    /**
+     * Atomically count one attempt and return the count, this one included,
+     * within the current window.
+     */
+    public static function reserveAttempt(string $ip): int
+    {
+        $bucket = self::bucket($ip);
+        $window = (int) Settings::get()['window_seconds'];
+
+        self::maybeLazyPrune();
 
         if (wp_using_ext_object_cache()) {
-            $key = "gatekeeper_attempts:{$ip}";
-            $attempts = wp_cache_incr($key, 1, 'gatekeeper');
+            $key = "gatekeeper_attempts:{$bucket}";
+            // add() only creates a missing key, atomically and with the window
+            // as TTL; incr() on a key that does not exist would create one
+            // without a TTL on Redis and never expire.
+            wp_cache_add($key, 0, self::cacheGroup(), $window);
+            $attempts = wp_cache_incr($key, 1, self::cacheGroup());
             if ($attempts === false) {
-                wp_cache_set($key, 1, 'gatekeeper', $window);
+                wp_cache_set($key, 1, self::cacheGroup(), $window);
                 $attempts = 1;
-            } elseif ((int) $attempts === 1) {
-                // Redis INCR on a missing key creates it with no TTL, so the
-                // attempt window would never expire. Re-set with the window.
-                wp_cache_set($key, 1, 'gatekeeper', $window);
             }
 
-            if ((int) $attempts >= $threshold) {
-                self::lock($ip);
-            }
-
-            self::maybeLazyPrune();
-
-            return;
+            return (int) $attempts;
         }
 
-        // Without persistent object cache: atomic upsert in database.
         global $wpdb;
         $table = Schema::tableName();
         $now = gmdate('Y-m-d H:i:s');
         $windowCutoff = gmdate('Y-m-d H:i:s', time() - $window);
 
+        $upsert = static function (bool $returnCount) use ($wpdb, $table, $bucket, $now, $windowCutoff) {
+            $next = 'IF(attempts_window_start IS NOT NULL AND attempts_window_start > %s, attempts + 1, 1)';
+
+            return $wpdb->query($wpdb->prepare(
+                "INSERT INTO `{$table}` (ip, consecutive_lockouts, attempts, attempts_window_start, created_at, updated_at)
+                 VALUES (%s, 0, 1, %s, %s, %s)
+                 ON DUPLICATE KEY UPDATE
+                     attempts = ".($returnCount ? "LAST_INSERT_ID({$next})" : $next).",
+                     attempts_window_start = IF(attempts_window_start IS NOT NULL AND attempts_window_start > %s, attempts_window_start, %s),
+                     updated_at = %s",
+                $bucket,
+                $now,
+                $now,
+                $now,
+                $windowCutoff,
+                $windowCutoff,
+                $now,
+                $now
+            ));
+        };
+
         $wpdb->suppress_errors(true);
-        $wpdb->query($wpdb->prepare(
-            "INSERT INTO `{$table}` (ip, consecutive_lockouts, attempts, attempts_window_start, created_at, updated_at)
-             VALUES (%s, 0, 1, %s, %s, %s)
-             ON DUPLICATE KEY UPDATE
-                 attempts = IF(attempts_window_start IS NOT NULL AND attempts_window_start > %s, attempts + 1, 1),
-                 attempts_window_start = IF(attempts_window_start IS NOT NULL AND attempts_window_start > %s, attempts_window_start, %s),
-                 updated_at = %s",
-            $ip, $now, $now, $now,
-            $windowCutoff,
-            $windowCutoff, $now,
-            $now
-        ));
+        $result = $upsert(true);
 
-        $attempts = (int) $wpdb->get_var($wpdb->prepare(
-            "SELECT attempts FROM `{$table}` WHERE ip = %s LIMIT 1",
-            $ip
-        ));
-        $wpdb->suppress_errors(false);
-
-        if ($attempts >= $threshold) {
-            self::lock($ip);
+        // LAST_INSERT_ID(expr) hands this connection the value it wrote, so
+        // the count needs no second read that a parallel request could race.
+        // rows_affected is 1 for a new row (count 1) and 2 for an update.
+        $attempts = 0;
+        if ($result !== false) {
+            $affected = (int) ($wpdb->rows_affected ?? 0);
+            if ($affected === 1) {
+                $attempts = 1;
+            } elseif ($affected === 2 && (int) ($wpdb->insert_id ?? 0) > 0) {
+                $attempts = (int) $wpdb->insert_id;
+            }
+        } else {
+            // A database layer without LAST_INSERT_ID(expr) (SQLite
+            // drop-ins): plain upsert, then read the count back.
+            $upsert(false);
         }
 
-        self::maybeLazyPrune();
+        if ($attempts === 0) {
+            $attempts = (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT attempts FROM `{$table}` WHERE ip = %s LIMIT 1",
+                $bucket
+            ));
+        }
+        $wpdb->suppress_errors(false);
+
+        return max(1, $attempts);
+    }
+
+    /**
+     * Hand back an attempt reserved by reserveAttempt() whose credentials
+     * turned out to be valid. Only ever undoes a reservation: a successful
+     * login does not clear failures recorded before it.
+     */
+    public static function releaseAttempt(string $ip): void
+    {
+        $bucket = self::bucket($ip);
+
+        if (wp_using_ext_object_cache()) {
+            $key = "gatekeeper_attempts:{$bucket}";
+            $left = wp_cache_decr($key, 1, self::cacheGroup());
+            if (is_int($left) && $left < 0) {
+                wp_cache_set($key, 0, self::cacheGroup(), (int) Settings::get()['window_seconds']);
+            }
+
+            return;
+        }
+
+        global $wpdb;
+        $table = Schema::tableName();
+
+        $wpdb->suppress_errors(true);
+        $wpdb->query($wpdb->prepare(
+            "UPDATE `{$table}` SET attempts = attempts - 1 WHERE ip = %s AND attempts > 0",
+            $bucket
+        ));
+        $wpdb->suppress_errors(false);
     }
 
     /**
      * Transitions an IP into an active lockout state.
+     *
+     * A single conditional UPDATE does the whole transition, so two requests
+     * locking the same address at once produce one lockout, not two
+     * (which would also count twice towards the extended lockout).
+     * consecutive_lockouts only carries over when the previous lockout ended
+     * less than `consecutive_reset_seconds` ago.
      */
     public static function lock(string $ip): void
     {
@@ -159,126 +270,97 @@ class Store
         $consecutiveThreshold = (int) $settings['consecutive_lockouts_for_extended'];
         $normalDuration = (int) $settings['lockout_seconds'];
         $extendedDuration = (int) $settings['extended_lockout_seconds'];
+        $resetAfter = (int) $settings['consecutive_reset_seconds'];
 
         global $wpdb;
         $table = Schema::tableName();
-        $now = gmdate('Y-m-d H:i:s');
+        $bucket = self::bucket($ip);
+        $nowTs = time();
+        $now = gmdate('Y-m-d H:i:s', $nowTs);
+        $normalUntil = gmdate('Y-m-d H:i:s', $nowTs + $normalDuration);
+        $extendedUntil = gmdate('Y-m-d H:i:s', $nowTs + $extendedDuration);
+        $decayCutoff = gmdate('Y-m-d H:i:s', $nowTs - $resetAfter);
 
         $wpdb->suppress_errors(true);
-        $existing = $wpdb->get_row($wpdb->prepare(
-            "SELECT id, consecutive_lockouts, unlock_at FROM `{$table}` WHERE ip = %s LIMIT 1",
-            $ip
-        ), ARRAY_A);
 
-        if (is_array($existing) && ! empty($existing['unlock_at'])) {
-            $existingUnlock = strtotime((string) $existing['unlock_at'] . ' UTC');
-            if ($existingUnlock !== false && $existingUnlock > time()) {
-                $wpdb->suppress_errors(false);
+        // MySQL applies single-table SET clauses left to right: the first one
+        // reads the old unlock_at, the second sees the new consecutive count.
+        $updated = $wpdb->query($wpdb->prepare(
+            "UPDATE `{$table}` SET
+                 consecutive_lockouts = IF(unlock_at IS NOT NULL AND unlock_at > %s, consecutive_lockouts, 0) + 1,
+                 unlock_at = IF(consecutive_lockouts >= %d, %s, %s),
+                 attempts = 0,
+                 updated_at = %s
+             WHERE ip = %s AND (unlock_at IS NULL OR unlock_at <= %s)",
+            $decayCutoff,
+            $consecutiveThreshold,
+            $extendedUntil,
+            $normalUntil,
+            $now,
+            $bucket,
+            $now
+        ));
 
-                return;
+        if ((int) $updated === 0) {
+            // No row to update: either none exists yet, or the address is
+            // already locked. INSERT IGNORE creates the first case and leaves
+            // the second alone.
+            $wpdb->query($wpdb->prepare(
+                "INSERT IGNORE INTO `{$table}` (ip, unlock_at, consecutive_lockouts, attempts, created_at, updated_at)
+                 VALUES (%s, %s, 1, 0, %s, %s)",
+                $bucket,
+                $consecutiveThreshold <= 1 ? $extendedUntil : $normalUntil,
+                $now,
+                $now
+            ));
+        }
+
+        $unlockAt = $wpdb->get_var($wpdb->prepare(
+            "SELECT unlock_at FROM `{$table}` WHERE ip = %s LIMIT 1",
+            $bucket
+        ));
+        $wpdb->suppress_errors(false);
+
+        if (wp_using_ext_object_cache()) {
+            $unlockTs = is_string($unlockAt) ? strtotime($unlockAt . ' UTC') : false;
+            if ($unlockTs !== false && $unlockTs > $nowTs) {
+                wp_cache_set("gatekeeper_locked:{$bucket}", $unlockTs, self::cacheGroup(), $unlockTs - $nowTs);
             }
-        }
-
-        $currentConsecutive = (int) ($existing['consecutive_lockouts'] ?? 0);
-        $newConsecutive = $currentConsecutive + 1;
-
-        $duration = ($newConsecutive >= $consecutiveThreshold) ? $extendedDuration : $normalDuration;
-        $unlockAtTs = time() + $duration;
-        $unlockAt = gmdate('Y-m-d H:i:s', $unlockAtTs);
-
-        if ($existing) {
-            $wpdb->update($table, [
-                'unlock_at' => $unlockAt,
-                'consecutive_lockouts' => $newConsecutive,
-                'attempts' => 0,
-                'updated_at' => $now,
-            ], ['id' => $existing['id']]);
-        } else {
-            $wpdb->insert($table, [
-                'ip' => $ip,
-                'unlock_at' => $unlockAt,
-                'consecutive_lockouts' => $newConsecutive,
-                'attempts' => 0,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
-        }
-        $wpdb->suppress_errors(false);
-
-        if (wp_using_ext_object_cache()) {
-            wp_cache_set("gatekeeper_locked:{$ip}", $unlockAtTs, 'gatekeeper', $duration);
-            wp_cache_delete("gatekeeper_attempts:{$ip}", 'gatekeeper');
+            wp_cache_delete("gatekeeper_attempts:{$bucket}", self::cacheGroup());
         }
     }
 
     /**
-     * Resets attempt counters on successful login.
-     */
-    public static function resetOnSuccess(string $ip): void
-    {
-        global $wpdb;
-        $table = Schema::tableName();
-        $now = gmdate('Y-m-d H:i:s');
-
-        $wpdb->suppress_errors(true);
-        $wpdb->update($table, [
-            'attempts' => 0,
-            'consecutive_lockouts' => 0,
-            'unlock_at' => null,
-            'updated_at' => $now,
-        ], ['ip' => $ip]);
-        $wpdb->suppress_errors(false);
-
-        if (wp_using_ext_object_cache()) {
-            wp_cache_delete("gatekeeper_locked:{$ip}", 'gatekeeper');
-            wp_cache_delete("gatekeeper_attempts:{$ip}", 'gatekeeper');
-        }
-    }
-
-    /**
-     * Returns all active lockouts across all blogs (multisite-aware).
+     * Returns all active lockouts (one table for the whole network on multisite).
      *
      * @return array<int, array{ip: string, unlock_at: ?string, source_table: string}>
      */
     public static function activeLockouts(): array
     {
-        $siteIds = is_multisite() ? (array) get_sites(['fields' => 'ids', 'number' => 0]) : [null];
+        global $wpdb;
+        $table = Schema::tableName();
         $byIp = [];
-        $nowUtc = gmdate('Y-m-d H:i:s');
 
-        foreach ($siteIds as $siteId) {
-            if ($siteId !== null) {
-                switch_to_blog((int) $siteId);
-            }
+        $wpdb->suppress_errors(true);
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT ip, unlock_at FROM `{$table}` WHERE unlock_at IS NOT NULL AND unlock_at > %s",
+            gmdate('Y-m-d H:i:s')
+        ), ARRAY_A);
+        $wpdb->suppress_errors(false);
 
-            global $wpdb;
-            $table = Schema::tableName();
-
-            $wpdb->suppress_errors(true);
-            $rows = $wpdb->get_results($wpdb->prepare(
-                "SELECT ip, unlock_at FROM `{$table}` WHERE unlock_at IS NOT NULL AND unlock_at > %s",
-                $nowUtc
-            ), ARRAY_A);
-            $wpdb->suppress_errors(false);
-
-            if (is_array($rows)) {
-                foreach ($rows as $row) {
-                    $ip = trim((string) ($row['ip'] ?? ''));
-                    if (! filter_var($ip, FILTER_VALIDATE_IP)) {
-                        continue;
-                    }
-
-                    $ts = strtotime((string) ($row['unlock_at'] ?? '') . ' UTC');
-                    $byIp[$ip] = [
-                        'ip' => $ip,
-                        'unlock_at' => $ts ? gmdate('c', $ts) : null,
-                        'source_table' => 'clockwork_lockouts',
-                    ];
+        if (is_array($rows)) {
+            foreach ($rows as $row) {
+                $ip = trim((string) ($row['ip'] ?? ''));
+                if (! filter_var($ip, FILTER_VALIDATE_IP)) {
+                    continue;
                 }
-            }
 
-            if ($siteId !== null) {
-                restore_current_blog();
+                $ts = strtotime((string) ($row['unlock_at'] ?? '') . ' UTC');
+                $byIp[$ip] = [
+                    'ip' => $ip,
+                    'unlock_at' => $ts ? gmdate('c', $ts) : null,
+                    'source_table' => 'clockwork_lockouts',
+                ];
             }
         }
 
@@ -286,21 +368,28 @@ class Store
     }
 
     /**
-     * Unlocks a single IP address across native and legacy LLAR stores.
+     * Unlocks a single IP address (or IPv6 /64) across native and legacy LLAR stores.
      */
     public static function unlockIp(string $ip): void
     {
-        $siteIds = is_multisite() ? (array) get_sites(['fields' => 'ids', 'number' => 0]) : [null];
+        global $wpdb;
+        $table = Schema::tableName();
+        $bucket = self::bucket($ip);
 
-        foreach ($siteIds as $siteId) {
+        $wpdb->suppress_errors(true);
+        $wpdb->delete($table, ['ip' => $bucket]);
+        if ($bucket !== $ip) {
+            // Rows written before IPv6 addresses were grouped by /64.
+            $wpdb->delete($table, ['ip' => $ip]);
+        }
+        $wpdb->suppress_errors(false);
+
+        foreach (self::siteIds() as $siteId) {
             if ($siteId !== null) {
                 switch_to_blog((int) $siteId);
             }
 
-            global $wpdb;
-            $table = Schema::tableName();
             $wpdb->suppress_errors(true);
-            $wpdb->delete($table, ['ip' => $ip]);
             self::clearLegacyLlarIp($ip);
             $wpdb->suppress_errors(false);
 
@@ -312,8 +401,8 @@ class Store
         self::clearLegacyLlarIpNetwork($ip);
 
         if (wp_using_ext_object_cache()) {
-            wp_cache_delete("gatekeeper_locked:{$ip}", 'gatekeeper');
-            wp_cache_delete("gatekeeper_attempts:{$ip}", 'gatekeeper');
+            wp_cache_delete("gatekeeper_locked:{$bucket}", self::cacheGroup());
+            wp_cache_delete("gatekeeper_attempts:{$bucket}", self::cacheGroup());
         }
     }
 
@@ -324,30 +413,30 @@ class Store
      */
     public static function unlockAll(): int
     {
-        $siteIds = is_multisite() ? (array) get_sites(['fields' => 'ids', 'number' => 0]) : [null];
+        global $wpdb;
+        $table = Schema::tableName();
         $clearedIps = [];
 
-        foreach ($siteIds as $siteId) {
+        $wpdb->suppress_errors(true);
+        $ips = $wpdb->get_col("SELECT DISTINCT ip FROM `{$table}`");
+        if (is_array($ips)) {
+            foreach ($ips as $i) {
+                $clearedIps[$i] = true;
+                if (wp_using_ext_object_cache()) {
+                    wp_cache_delete("gatekeeper_locked:{$i}", self::cacheGroup());
+                    wp_cache_delete("gatekeeper_attempts:{$i}", self::cacheGroup());
+                }
+            }
+        }
+        $wpdb->query("TRUNCATE TABLE `{$table}`");
+        $wpdb->suppress_errors(false);
+
+        foreach (self::siteIds() as $siteId) {
             if ($siteId !== null) {
                 switch_to_blog((int) $siteId);
             }
 
-            global $wpdb;
-            $table = Schema::tableName();
-
             $wpdb->suppress_errors(true);
-            $ips = $wpdb->get_col("SELECT DISTINCT ip FROM `{$table}`");
-            if (is_array($ips)) {
-                foreach ($ips as $i) {
-                    $clearedIps[$i] = true;
-                    if (wp_using_ext_object_cache()) {
-                        wp_cache_delete("gatekeeper_locked:{$i}", 'gatekeeper');
-                        wp_cache_delete("gatekeeper_attempts:{$i}", 'gatekeeper');
-                    }
-                }
-            }
-            $wpdb->query("TRUNCATE TABLE `{$table}`");
-
             $llarTable = $wpdb->prefix . 'limit_login_lockouts';
             if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $llarTable)) === $llarTable) {
                 $llarIps = $wpdb->get_col("SELECT DISTINCT ip FROM `{$llarTable}`");
@@ -384,12 +473,19 @@ class Store
     }
 
     /**
-     * Checks whether an IP is in the ignore/bypass list (loopback, private, or configured).
+     * Checks whether an IP is in the ignore/bypass list.
+     *
+     * $autoIgnorePrivate: private and loopback addresses are skipped when
+     * they are the TCP peer — that is a proxy, a health check or the server
+     * itself, and counting it would lock out every visitor behind it. An
+     * address that came from a forwarding header is the client's own claim,
+     * relayed by a trusted proxy; it is not given that pass, or a client
+     * could exempt itself by sending a private address.
      *
      * TEST-NET / documentation ranges (203.0.113.0/24, etc.) are public as far
      * as Gatekeeper is concerned — FILTER_FLAG_NO_RES_RANGE would ignore them.
      */
-    public static function isIgnored(string $ip): bool
+    public static function isIgnored(string $ip, bool $autoIgnorePrivate = true): bool
     {
         if ($ip === 'unknown') {
             return false;
@@ -399,7 +495,7 @@ class Store
             return false;
         }
 
-        if (self::isLocalOrPrivate($ip)) {
+        if ($autoIgnorePrivate && self::isPrivate($ip)) {
             return true;
         }
 
@@ -498,20 +594,23 @@ class Store
     }
 
     /**
-     * Prune expired lockouts older than 48h with no consecutive history.
+     * Delete rows that are not locked and have seen no activity for longer
+     * than anything still depends on: the attempt window, the period over
+     * which consecutive lockouts are remembered, and at least 48 hours.
      */
     public static function prune(): void
     {
         global $wpdb;
+        $settings = Settings::get();
         $table = Schema::tableName();
         $nowUtc = gmdate('Y-m-d H:i:s');
-        $cutoff = gmdate('Y-m-d H:i:s', time() - 48 * 3600);
+        $keep = max(48 * 3600, (int) $settings['window_seconds'], (int) $settings['consecutive_reset_seconds']);
+        $cutoff = gmdate('Y-m-d H:i:s', time() - $keep);
 
         $wpdb->suppress_errors(true);
         $wpdb->query($wpdb->prepare(
             "DELETE FROM `{$table}`
-             WHERE consecutive_lockouts = 0
-               AND (unlock_at IS NULL OR unlock_at < %s)
+             WHERE (unlock_at IS NULL OR unlock_at < %s)
                AND updated_at < %s",
             $nowUtc,
             $cutoff
@@ -530,7 +629,11 @@ class Store
         }
     }
 
-    private static function isLocalOrPrivate(string $ip): bool
+    /**
+     * Loopback, RFC 1918, link-local, IPv6 unique-local / link-local. Also
+     * true for anything that is not a valid address.
+     */
+    public static function isPrivate(string $ip): bool
     {
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             foreach (self::LOCAL_V4_CIDRS as $cidr) {
@@ -569,6 +672,32 @@ class Store
         }
 
         return false;
+    }
+
+    /**
+     * Object-cache group for counters and lock markers. Global on multisite,
+     * so a lockout recorded on one site is seen, and cleared, on all of them.
+     */
+    private static function cacheGroup(): string
+    {
+        if (! self::$cacheGroupRegistered) {
+            self::$cacheGroupRegistered = true;
+            if (function_exists('wp_cache_add_global_groups')) {
+                wp_cache_add_global_groups([self::CACHE_GROUP]);
+            }
+        }
+
+        return self::CACHE_GROUP;
+    }
+
+    /**
+     * Every site in the network on multisite (no 100-site cap); [null] otherwise.
+     *
+     * @return array<int, int|null>
+     */
+    private static function siteIds(): array
+    {
+        return is_multisite() ? (array) get_sites(['fields' => 'ids', 'number' => 0]) : [null];
     }
 
     private static function clearLegacyLlarIp(string $ip): void

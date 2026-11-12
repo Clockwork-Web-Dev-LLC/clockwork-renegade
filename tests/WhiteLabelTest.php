@@ -30,15 +30,15 @@ class WhiteLabelTest extends TestCase
         update_option(WhiteLabel::OPTION_KEY, [
             'enabled' => true,
             'company_name' => 'Agency Prime',
-            'company_url' => 'https://agencyprime.com',
-            'support_email' => 'support@agencyprime.com',
-            'support_url' => 'https://agencyprime.com/docs',
+            'company_url' => 'https://agency.example',
+            'support_email' => 'support@agency.example',
+            'support_url' => 'https://agency.example/docs',
             'plugin_name' => 'Prime Guardian',
             'plugin_description' => 'Security & performance monitor.',
             'menu_title' => 'Prime Guardian',
             'brand_text' => 'Companion',
             'menu_icon' => 'dashicons-shield',
-            'logo_url' => 'https://agencyprime.com/logo.svg',
+            'logo_url' => 'https://agency.example/logo.svg',
             'hide_plugin_row' => true,
             'hide_help_links' => true,
             'footer_text' => 'Care provided by Agency Prime',
@@ -50,22 +50,22 @@ class WhiteLabelTest extends TestCase
         $this->assertSame('Prime Guardian', WhiteLabel::getMenuTitle());
         $this->assertSame('Companion', WhiteLabel::getBrandText());
         $this->assertSame('dashicons-shield', WhiteLabel::getMenuIcon());
-        $this->assertSame('https://agencyprime.com/logo.svg', WhiteLabel::getLogoUrl());
+        $this->assertSame('https://agency.example/logo.svg', WhiteLabel::getLogoUrl());
         $this->assertTrue(WhiteLabel::isPluginRowHidden());
         $this->assertTrue(WhiteLabel::areHelpLinksHidden());
         $this->assertSame('Care provided by Agency Prime', WhiteLabel::getFooterText());
-        $this->assertSame('https://agencyprime.com/docs', WhiteLabel::getSupportUrl());
+        $this->assertSame('https://agency.example/docs', WhiteLabel::getSupportUrl());
     }
 
     public function testSupportUrlFallsBackToMailtoWhenUrlIsEmpty(): void
     {
         update_option(WhiteLabel::OPTION_KEY, [
             'enabled' => true,
-            'support_email' => 'ops@agencyprime.com',
+            'support_email' => 'ops@agency.example',
             'support_url' => '',
         ]);
 
-        $this->assertSame('mailto:ops@agencyprime.com', WhiteLabel::getSupportUrl());
+        $this->assertSame('mailto:ops@agency.example', WhiteLabel::getSupportUrl());
     }
 
     public function testFilterAllPluginsModifiesCompanionMetadata(): void
@@ -73,7 +73,7 @@ class WhiteLabelTest extends TestCase
         update_option(WhiteLabel::OPTION_KEY, [
             'enabled' => true,
             'company_name' => 'Agency Alpha',
-            'company_url' => 'https://agencyalpha.com',
+            'company_url' => 'https://agencyalpha.example',
             'plugin_name' => 'Alpha Sentinel',
             'plugin_description' => 'Custom Sentinel Suite',
         ]);
@@ -93,7 +93,7 @@ class WhiteLabelTest extends TestCase
         ];
 
         // Simulate agency user viewing plugins
-        $GLOBALS['wp_test_current_user'] = new WP_User('dev@clockworkwd.com');
+        $GLOBALS['wp_test_current_user'] = new WP_User('dev@agency.example');
 
         $filtered = $whiteLabel->filterAllPlugins($plugins);
 
@@ -109,7 +109,7 @@ class WhiteLabelTest extends TestCase
         update_option(WhiteLabel::OPTION_KEY, [
             'enabled' => true,
             'hide_plugin_row' => true,
-            'support_email' => 'team@agencyalpha.com',
+            'support_email' => 'team@agencyalpha.example',
         ]);
 
         $whiteLabel = new WhiteLabel();
@@ -119,13 +119,13 @@ class WhiteLabelTest extends TestCase
         ];
 
         // 1. Client admin (non-agency email)
-        $GLOBALS['wp_test_current_user'] = new WP_User('client@acmecorp.com');
+        $GLOBALS['wp_test_current_user'] = new WP_User('client@acme.example');
         $filteredClient = $whiteLabel->filterAllPlugins($plugins);
         $this->assertArrayNotHasKey('clockwork-renegade/clockwork-renegade.php', $filteredClient);
         $this->assertArrayHasKey('akismet/akismet.php', $filteredClient);
 
         // 2. Agency admin (matching operator domain)
-        $GLOBALS['wp_test_current_user'] = new WP_User('support@agencyalpha.com');
+        $GLOBALS['wp_test_current_user'] = new WP_User('support@agencyalpha.example');
         $filteredAgency = $whiteLabel->filterAllPlugins($plugins);
         $this->assertArrayHasKey('clockwork-renegade/clockwork-renegade.php', $filteredAgency);
     }
@@ -135,7 +135,7 @@ class WhiteLabelTest extends TestCase
         update_option(WhiteLabel::OPTION_KEY, [
             'enabled' => true,
             'company_name' => 'Agency Alpha',
-            'company_url' => 'https://agencyalpha.com',
+            'company_url' => 'https://agencyalpha.example',
             'hide_help_links' => true,
         ]);
 
@@ -150,7 +150,7 @@ class WhiteLabelTest extends TestCase
 
         // Only author link should remain
         $this->assertCount(1, $filtered);
-        $this->assertStringContainsString('By <a href="https://agencyalpha.com">Agency Alpha</a>', $filtered[0]);
+        $this->assertStringContainsString('By <a href="https://agencyalpha.example">Agency Alpha</a>', $filtered[0]);
     }
 
     public function testFilterAdminFooterText(): void

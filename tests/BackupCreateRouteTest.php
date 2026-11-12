@@ -3,6 +3,7 @@
 namespace ClockworkRenegade\Tests;
 
 use ClockworkRenegade\Backup\ArchiveDownloader;
+use ClockworkRenegade\Backup\Paths;
 use ClockworkRenegade\Backup\S3DirectUploader;
 use ClockworkRenegade\Rest\BackupCreateRoute;
 use PHPUnit\Framework\TestCase;
@@ -122,7 +123,7 @@ class BackupCreateRouteTest extends TestCase
 
         $route = new BackupCreateRoute();
         $payload = [
-            'upload_url' => 'https://bucket.s3.amazonaws.com/archives/mysite.com/backup.zip?presigned=1',
+            'upload_url' => 'https://bucket.s3.amazonaws.com/archives/example.com/backup.zip?presigned=1',
             'headers' => [
                 'x-amz-storage-class' => 'GLACIER_IR',
             ],
@@ -131,8 +132,14 @@ class BackupCreateRouteTest extends TestCase
         ];
         $request = new WP_REST_Request('POST', '/clockwork-renegade/v1/backup/create', $payload);
 
+        // Left by an earlier run that died before its own cleanup.
+        $stale = Paths::stagingDir() . '/db-' . Paths::token() . '.sql.gz';
+        file_put_contents($stale, 'dump of a run killed by a timeout');
+        touch($stale, time() - 2 * 3600);
+
         $response = $route->handle($request);
 
+        $this->assertFileDoesNotExist($stale, 'Expected leftovers of earlier runs to be swept');
         $this->assertNotInstanceOf(WP_Error::class, $response);
         $this->assertSame(200, $response->get_status());
         $data = $response->get_data();
@@ -161,7 +168,7 @@ class BackupCreateRouteTest extends TestCase
 
         // Verify S3DirectUploader received parameters
         $this->assertTrue($uploadedData['file_exists_during_upload']);
-        $this->assertSame('https://bucket.s3.amazonaws.com/archives/mysite.com/backup.zip?presigned=1', $uploadedData['upload_url']);
+        $this->assertSame('https://bucket.s3.amazonaws.com/archives/example.com/backup.zip?presigned=1', $uploadedData['upload_url']);
         $this->assertSame(['x-amz-storage-class' => 'GLACIER_IR'], $uploadedData['headers']);
 
         // Verify local staging file was automatically unlinked in finally block

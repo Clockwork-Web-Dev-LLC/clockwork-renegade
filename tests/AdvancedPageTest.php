@@ -6,11 +6,17 @@ use ClockworkRenegade\Admin\Layout;
 use ClockworkRenegade\Admin\Pages\AdvancedPage;
 use ClockworkRenegade\Gatekeeper\Settings as GatekeeperSettings;
 use ClockworkRenegade\Gatekeeper\Store as GatekeeperStore;
+use ClockworkRenegade\Tests\Fakes\GatekeeperWpdb;
 use PHPUnit\Framework\TestCase;
 use WP_User;
 
+require_once __DIR__ . '/Fakes/GatekeeperWpdb.php';
+
 class AdvancedPageTest extends TestCase
 {
+    /** @var mixed */
+    private $previousWpdb;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -18,15 +24,15 @@ class AdvancedPageTest extends TestCase
         $GLOBALS['wp_test_current_user'] = (object) ['ID' => 1, 'user_email' => 'admin@example.com'];
         $GLOBALS['wp_test_object_cache'] = [];
         $GLOBALS['wp_test_object_cache_expire'] = [];
-        if (isset($GLOBALS['wpdb']->table_rows)) {
-            $GLOBALS['wpdb']->table_rows['wp_clockwork_lockouts'] = [];
-        }
+        $this->previousWpdb = $GLOBALS['wpdb'];
+        $GLOBALS['wpdb'] = new GatekeeperWpdb();
         $_GET = [];
         $_POST = [];
     }
 
     protected function tearDown(): void
     {
+        $GLOBALS['wpdb'] = $this->previousWpdb;
         while (ob_get_level() > 1) {
             ob_end_clean();
         }
@@ -196,13 +202,46 @@ class AdvancedPageTest extends TestCase
         $this->assertSame(['198.51.100.0/24'], $saved['ignore_cidrs']);
     }
 
+    /**
+     * WordPress slashes $_POST. Without wp_unslash() an apostrophe was stored
+     * as \' and gained another backslash on every save.
+     */
+    public function testHandleSaveGatekeeperStoresApostrophesUnslashed(): void
+    {
+        $_POST = [
+            'enabled' => '1',
+            'headline' => addslashes("You've been locked out"),
+            'body' => addslashes("Don't panic, it's temporary."),
+        ];
+
+        AdvancedPage::handleSaveGatekeeper();
+        AdvancedPage::handleSaveGatekeeper();
+
+        $saved = GatekeeperSettings::get();
+        $this->assertSame("You've been locked out", $saved['headline']);
+        $this->assertSame("Don't panic, it's temporary.", $saved['body']);
+    }
+
+    public function testSupportFormUnslashesTicketText(): void
+    {
+        $fields = \ClockworkRenegade\Admin\Support\SupportForm::readSubmission([
+            'first_name' => addslashes("D'Arcy"),
+            'short_desc' => addslashes("Site's down"),
+            'long_desc' => addslashes("It says \"error\" and won't load."),
+        ]);
+
+        $this->assertSame("D'Arcy", $fields['first_name']);
+        $this->assertSame("Site's down", $fields['short_desc']);
+        $this->assertSame("It says \"error\" and won't load.", $fields['long_desc']);
+    }
+
     public function testHandleSaveGatekeeperForbiddenForNonAgency(): void
     {
         update_option('clockwork_renegade_branding', [
-            'agency_email_domains' => '@clockworkwd.com',
+            'agency_email_domains' => '@agency.example',
         ]);
         $clientUser = new WP_User();
-        $clientUser->user_email = 'admin@clientdomain.com';
+        $clientUser->user_email = 'admin@client.example';
         $GLOBALS['wp_test_current_user'] = $clientUser;
 
         $this->expectException(\RuntimeException::class);
@@ -214,10 +253,10 @@ class AdvancedPageTest extends TestCase
     public function testHandleUnlockAllForbiddenForNonAgency(): void
     {
         update_option('clockwork_renegade_branding', [
-            'agency_email_domains' => '@clockworkwd.com',
+            'agency_email_domains' => '@agency.example',
         ]);
         $clientUser = new WP_User();
-        $clientUser->user_email = 'admin@clientdomain.com';
+        $clientUser->user_email = 'admin@client.example';
         $GLOBALS['wp_test_current_user'] = $clientUser;
 
         $this->expectException(\RuntimeException::class);
@@ -229,10 +268,10 @@ class AdvancedPageTest extends TestCase
     public function testHandleFlushCacheForbiddenForNonAgency(): void
     {
         update_option('clockwork_renegade_branding', [
-            'agency_email_domains' => '@clockworkwd.com',
+            'agency_email_domains' => '@agency.example',
         ]);
         $clientUser = new WP_User();
-        $clientUser->user_email = 'admin@clientdomain.com';
+        $clientUser->user_email = 'admin@client.example';
         $GLOBALS['wp_test_current_user'] = $clientUser;
 
         $this->expectException(\RuntimeException::class);
@@ -244,10 +283,10 @@ class AdvancedPageTest extends TestCase
     public function testHandleUnlockIpAllowedForNonAgency(): void
     {
         update_option('clockwork_renegade_branding', [
-            'agency_email_domains' => '@clockworkwd.com',
+            'agency_email_domains' => '@agency.example',
         ]);
         $clientUser = new WP_User();
-        $clientUser->user_email = 'admin@clientdomain.com';
+        $clientUser->user_email = 'admin@client.example';
         $GLOBALS['wp_test_current_user'] = $clientUser;
 
         GatekeeperSettings::update(['enabled' => true]);

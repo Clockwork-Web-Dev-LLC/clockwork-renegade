@@ -25,18 +25,18 @@ class MenuTest extends TestCase
      */
     public function testNoConfiguredDomainsMeansEveryAdministratorSeesTheMenu(): void
     {
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('owner@someshop.com')));
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('admin@clientdomain.com')));
+        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('owner@shop.example')));
+        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('admin@client.example')));
     }
 
     public function testConfiguredDomainsGateTheMenu(): void
     {
         update_option(WhiteLabel::OPTION_KEY, [
-            'agency_email_domains' => '@agencyprime.com',
+            'agency_email_domains' => '@agency.example',
         ]);
 
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('ops@agencyprime.com')));
-        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('owner@someshop.com')));
+        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('ops@agency.example')));
+        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('owner@shop.example')));
     }
 
     /**
@@ -47,11 +47,11 @@ class MenuTest extends TestCase
     {
         update_option(WhiteLabel::OPTION_KEY, [
             'enabled' => false,
-            'agency_email_domains' => 'agencyprime.com',
+            'agency_email_domains' => 'agency.example',
         ]);
 
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('ops@agencyprime.com')));
-        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('owner@someshop.com')));
+        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('ops@agency.example')));
+        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('owner@shop.example')));
     }
 
     /**
@@ -62,13 +62,13 @@ class MenuTest extends TestCase
     {
         update_option(WhiteLabel::OPTION_KEY, [
             'enabled' => true,
-            'agency_email_domains' => '@agencyprime.com',
-            'support_email' => 'tech@superagency.io',
+            'agency_email_domains' => '@agency.example',
+            'support_email' => 'tech@superagency.example',
         ]);
 
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('ops@agencyprime.com')));
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('sarah@superagency.io')));
-        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('owner@someshop.com')));
+        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('ops@agency.example')));
+        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('sarah@superagency.example')));
+        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('owner@shop.example')));
     }
 
     #[DataProvider('domainFormatProvider')]
@@ -76,8 +76,8 @@ class MenuTest extends TestCase
     {
         update_option(WhiteLabel::OPTION_KEY, ['agency_email_domains' => $configured]);
 
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('ops@agencyprime.com')));
-        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('owner@someshop.com')));
+        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('ops@agency.example')));
+        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('owner@shop.example')));
     }
 
     /**
@@ -86,43 +86,43 @@ class MenuTest extends TestCase
     public static function domainFormatProvider(): array
     {
         return [
-            'bare domain' => ['agencyprime.com'],
-            'leading at' => ['@agencyprime.com'],
-            'full address' => ['someone@agencyprime.com'],
-            'uppercase' => ['@AgencyPrime.COM'],
-            'comma separated' => ['@other.test, @agencyprime.com'],
-            'newline separated' => ["@other.test\n@agencyprime.com"],
-            'padded with spaces' => ['  @agencyprime.com  '],
+            'bare domain' => ['agency.example'],
+            'leading at' => ['@agency.example'],
+            'full address' => ['someone@agency.example'],
+            'uppercase' => ['@Agency.EXAMPLE'],
+            'comma separated' => ['@other.test, @agency.example'],
+            'newline separated' => ["@other.test\n@agency.example"],
+            'padded with spaces' => ['  @agency.example  '],
         ];
     }
 
     public function testMatchIsCaseInsensitiveOnTheUserAddress(): void
     {
-        update_option(WhiteLabel::OPTION_KEY, ['agency_email_domains' => '@agencyprime.com']);
+        update_option(WhiteLabel::OPTION_KEY, ['agency_email_domains' => '@agency.example']);
 
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('OPS@AgencyPrime.com')));
+        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('OPS@Agency.Example')));
     }
 
     /**
      * A configured domain must not match a lookalike registrable domain —
-     * "notagencyprime.com" ends with "agencyprime.com" as a bare substring,
+     * "notagency.example" ends with "agency.example" as a bare substring,
      * so the "@" in the stored form is what keeps them apart.
      */
     public function testLookalikeDomainDoesNotMatch(): void
     {
-        update_option(WhiteLabel::OPTION_KEY, ['agency_email_domains' => '@agencyprime.com']);
+        update_option(WhiteLabel::OPTION_KEY, ['agency_email_domains' => '@agency.example']);
 
-        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('ops@notagencyprime.com')));
+        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('ops@notagency.example')));
     }
 
     public function testFilterCanOverrideConfiguredDomains(): void
     {
-        update_option(WhiteLabel::OPTION_KEY, ['agency_email_domains' => '@agencyprime.com']);
+        update_option(WhiteLabel::OPTION_KEY, ['agency_email_domains' => '@agency.example']);
 
-        add_filter('clockwork_renegade_agency_email_domains', fn () => ['@vanguardweb.dev']);
+        add_filter('clockwork_renegade_agency_email_domains', fn () => ['@vanguard.example']);
 
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('help@vanguardweb.dev')));
-        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('ops@agencyprime.com')));
+        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('help@vanguard.example')));
+        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('ops@agency.example')));
     }
 
     public function testUnparseableEntriesAreIgnoredRatherThanGatingOnNothing(): void
@@ -130,56 +130,27 @@ class MenuTest extends TestCase
         update_option(WhiteLabel::OPTION_KEY, ['agency_email_domains' => '@, ,,  ']);
 
         // Nothing parseable survived, so this is the "unconfigured" case.
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('owner@someshop.com')));
+        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('owner@shop.example')));
     }
 
     public function testUserWithoutAnEmailIsNotAgencyWhenGatingIsOn(): void
     {
-        update_option(WhiteLabel::OPTION_KEY, ['agency_email_domains' => '@agencyprime.com']);
+        update_option(WhiteLabel::OPTION_KEY, ['agency_email_domains' => '@agency.example']);
 
         $this->assertFalse(Menu::currentUserIsAgency(new WP_User('')));
     }
 
     /**
-     * clockworkwp.com was Clockwork Web Dev's own domain before the
-     * clockworkwd.com rebrand. Fleet-pushed `agency_email_domains` configs
-     * only ever list the current name, so anyone whose own login was never
-     * migrated off the old address would otherwise get locked out of
-     * Unlock, cross-user 2FA controls, and the enrollment nudge on every
-     * site that has domain gating turned on — treated the same as the
-     * support-email self-lockout guard just above.
+     * No vendor domain is treated as agency behind the configuration's back:
+     * a white-labelled install grants agency access only to what it lists.
      */
-    public function testLegacyClockworkwpDomainIsAlwaysTreatedAsAgency(): void
+    public function testOnlyConfiguredDomainsAreAgency(): void
     {
-        update_option(WhiteLabel::OPTION_KEY, [
-            'agency_email_domains' => '@clockworkwd.com',
-        ]);
+        update_option(WhiteLabel::OPTION_KEY, ['agency_email_domains' => '@agency.example']);
+        add_filter('clockwork_renegade_agency_email_domains', fn () => ['@vanguard.example']);
 
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('aaron@clockworkwp.com')));
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('AARON@ClockworkWP.com')));
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('aaron@clockworkwd.com')));
-        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('owner@someshop.com')));
-    }
-
-    /**
-     * A filter that deliberately overrides the domain list to something
-     * unrelated to Clockwork altogether (e.g. a white-labeled agency running
-     * this plugin as their own product) must still recognize the legacy
-     * domain — it's an identity fact about this plugin's own vendor, not an
-     * opt-in a third-party install would ever configure around.
-     */
-    public function testLegacyClockworkwpDomainSurvivesAFilterOverride(): void
-    {
-        update_option(WhiteLabel::OPTION_KEY, ['agency_email_domains' => '@agencyprime.com']);
-        add_filter('clockwork_renegade_agency_email_domains', fn () => ['@vanguardweb.dev']);
-
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('legacy@clockworkwp.com')));
-    }
-
-    public function testLegacyClockworkwpDomainIsNotDuplicatedWhenAlreadyConfigured(): void
-    {
-        update_option(WhiteLabel::OPTION_KEY, ['agency_email_domains' => '@clockworkwp.com']);
-
-        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('anyone@clockworkwp.com')));
+        $this->assertTrue(Menu::currentUserIsAgency(new WP_User('help@vanguard.example')));
+        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('legacy@vendor.example')));
+        $this->assertFalse(Menu::currentUserIsAgency(new WP_User('ops@agency.example')));
     }
 }

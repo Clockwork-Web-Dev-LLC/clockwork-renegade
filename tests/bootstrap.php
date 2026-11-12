@@ -381,7 +381,7 @@ if (! function_exists('wp_verify_nonce')) {
 if (! function_exists('wp_get_current_user')) {
     function wp_get_current_user(): ?WP_User
     {
-        return $GLOBALS['wp_test_current_user'] ?? new WP_User('admin@clientdomain.com');
+        return $GLOBALS['wp_test_current_user'] ?? new WP_User('admin@client.example');
     }
 }
 
@@ -613,6 +613,12 @@ if (! defined('ARRAY_N')) {
 if (! function_exists('delete_site_option')) {
     function delete_site_option(string $option): bool
     {
+        if (! empty($GLOBALS['wp_test_is_multisite'])) {
+            unset($GLOBALS['wp_test_site_options'][$option]);
+
+            return true;
+        }
+
         return delete_option($option);
     }
 }
@@ -620,7 +626,8 @@ if (! function_exists('delete_site_option')) {
 if (! function_exists('is_multisite')) {
     function is_multisite(): bool
     {
-        // Single-site unless a test opts in.
+        // Single-site unless a test opts in (plugins-a; plugins-b Gatekeeper
+        // and uninstall multisite tests use the same switch).
         return ! empty($GLOBALS['wp_test_is_multisite']);
     }
 }
@@ -1074,6 +1081,11 @@ if (! function_exists('wp_get_theme')) {
 if (! function_exists('get_site_option')) {
     function get_site_option(string $option, mixed $default = false): mixed
     {
+        // Network options live in their own store when a test enables multisite.
+        if (! empty($GLOBALS['wp_test_is_multisite'])) {
+            return $GLOBALS['wp_test_site_options'][$option] ?? $default;
+        }
+
         return get_option($option, $default);
     }
 }
@@ -1294,6 +1306,11 @@ if (! function_exists('update_user_meta')) {
 if (! function_exists('wp_unslash')) {
     function wp_unslash(mixed $val): mixed
     {
+        // Recursive like core's stripslashes_deep(), so unslashing all of $_POST works.
+        if (is_array($val)) {
+            return array_map('wp_unslash', $val);
+        }
+
         return is_string($val) ? stripslashes($val) : $val;
     }
 }
@@ -1598,6 +1615,7 @@ if (! function_exists('is_user_logged_in')) {
     function is_user_logged_in(): bool
     {
         // Opt-in per test: many tests leave a current user behind.
+        // (Also used by the plugins-b maintenance-bypass tests.)
         return ! empty($GLOBALS['wp_test_logged_in']);
     }
 }
@@ -1631,15 +1649,18 @@ if (! function_exists('wp_nonce_url')) {
     }
 }
 if (! function_exists('get_sites')) {
+    // Shared: plugins-b uninstall tests also read the recorded arguments.
     function get_sites(array $args = []): array
     {
+        $GLOBALS['wp_test_get_sites_args'][] = $args;
+
         return $GLOBALS['wp_test_site_ids'] ?? [1];
     }
 }
 
 if (! function_exists('switch_to_blog')) {
     /** Points $wpdb's per-blog table names at the blog, as core does. */
-    function switch_to_blog(int $blogId): bool
+    function switch_to_blog(int $blogId, bool $deprecated = false): bool
     {
         $GLOBALS['wp_test_blog_stack'][] = $blogId;
         $prefix = $blogId > 1 ? 'wp_' . $blogId . '_' : 'wp_';
@@ -1677,17 +1698,19 @@ foreach (['class-plugin-upgrader.php', 'class-plugin-upgrader-skin.php', 'class-
 }
 
 if (! function_exists('remove_filter')) {
+    // Shared by plugins-a and plugins-b: removes every registration of the
+    // callback (core keys by callback, so a callback is registered once).
     function remove_filter(string $tag, mixed $callback, int $priority = 10): bool
     {
+        $removed = false;
         foreach ($GLOBALS['wp_test_filters'][$tag] ?? [] as $i => $registered) {
             if ($registered === $callback) {
                 unset($GLOBALS['wp_test_filters'][$tag][$i]);
-
-                return true;
+                $removed = true;
             }
         }
 
-        return false;
+        return $removed;
     }
 }
 
@@ -1735,10 +1758,16 @@ if (! function_exists('download_url')) {
 
 // ---- plugins-a stubs: options-table double ----
 if (! function_exists('maybe_unserialize')) {
+    // Shared by plugins-a (options-table double) and plugins-b (backup
+    // PluginState): serialized strings come back as values, including a
+    // serialized false; anything else is returned unchanged.
     function maybe_unserialize(mixed $data): mixed
     {
-        if (is_string($data) && ($un = @unserialize($data, ['allowed_classes' => false])) !== false) {
-            return $un;
+        if (is_string($data)) {
+            $un = @unserialize($data, ['allowed_classes' => false]);
+            if ($un !== false || $data === 'b:0;') {
+                return $un;
+            }
         }
 
         return $data;
@@ -1752,3 +1781,132 @@ if (! function_exists('maybe_serialize')) {
     }
 }
 // ---- end plugins-a options-table double ----
+
+// ===== plugins-b stubs =====
+// -----------------------------------------------------------------------------
+// Multisite + object-cache stubs used by the Gatekeeper tests.
+// Multisite stays off unless $GLOBALS['wp_test_is_multisite'] is set; network
+// options live in $GLOBALS['wp_test_site_options'], per-site options of other
+// sites in $GLOBALS['wp_test_blog_options'][$blogId]. get_sites(),
+// switch_to_blog() and restore_current_blog() are the shared ones in the
+// plugins-a block above.
+// -----------------------------------------------------------------------------
+
+if (! function_exists('update_site_option')) {
+    function update_site_option(string $option, mixed $value): bool
+    {
+        if (! empty($GLOBALS['wp_test_is_multisite'])) {
+            $GLOBALS['wp_test_site_options'][$option] = $value;
+
+            return true;
+        }
+
+        return update_option($option, $value);
+    }
+}
+
+if (! function_exists('get_main_site_id')) {
+    function get_main_site_id(?int $network_id = null): int
+    {
+        return (int) ($GLOBALS['wp_test_main_site_id'] ?? 1);
+    }
+}
+
+if (! function_exists('get_blog_option')) {
+    function get_blog_option(?int $id, string $option, mixed $default = false): mixed
+    {
+        return $GLOBALS['wp_test_blog_options'][(int) $id][$option] ?? $default;
+    }
+}
+
+if (! function_exists('wp_cache_add_global_groups')) {
+    function wp_cache_add_global_groups(string|array $groups): void
+    {
+        foreach ((array) $groups as $group) {
+            $GLOBALS['wp_test_global_cache_groups'][$group] = true;
+        }
+    }
+}
+
+if (! function_exists('wp_cache_add')) {
+    function wp_cache_add(string|int $key, mixed $data, string $group = '', int $expire = 0): bool
+    {
+        $groupKey = $group . ':' . $key;
+        if (isset($GLOBALS['wp_test_object_cache'][$groupKey])) {
+            return false;
+        }
+        $GLOBALS['wp_test_object_cache'][$groupKey] = $data;
+        $GLOBALS['wp_test_object_cache_expire'][$groupKey] = $expire;
+
+        return true;
+    }
+}
+
+if (! function_exists('wp_cache_decr')) {
+    function wp_cache_decr(string|int $key, int $offset = 1, string $group = ''): int|false
+    {
+        $groupKey = $group . ':' . $key;
+        if (! isset($GLOBALS['wp_test_object_cache'][$groupKey])) {
+            return false;
+        }
+        $GLOBALS['wp_test_object_cache'][$groupKey] = (int) $GLOBALS['wp_test_object_cache'][$groupKey] - $offset;
+
+        return $GLOBALS['wp_test_object_cache'][$groupKey];
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Uninstall / deactivation stubs (UninstallerTest).
+// -----------------------------------------------------------------------------
+
+if (! defined('CLOCKWORK_RENEGADE_FILE')) {
+    define('CLOCKWORK_RENEGADE_FILE', dirname(__DIR__) . '/clockwork-renegade.php');
+}
+
+if (! function_exists('wp_clear_scheduled_hook')) {
+    function wp_clear_scheduled_hook(string $hook, array $args = [], bool $wp_error = false): int|false
+    {
+        $GLOBALS['wp_test_cleared_cron'][] = $hook;
+
+        return 1;
+    }
+}
+
+if (! function_exists('register_deactivation_hook')) {
+    function register_deactivation_hook(string $file, callable $callback): void
+    {
+        $GLOBALS['wp_test_deactivation_hooks'][$file][] = $callback;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Maintenance bypass: is_user_logged_in() comes from the plugins-a block above
+// (default logged out); the REST prefix goes through rest_url_prefix like core.
+// -----------------------------------------------------------------------------
+
+if (! function_exists('rest_get_url_prefix')) {
+    function rest_get_url_prefix(): string
+    {
+        return (string) apply_filters('rest_url_prefix', 'wp-json');
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Contact-form lab mode: hooks must be removable so tests can check cleanup.
+// -----------------------------------------------------------------------------
+
+if (! function_exists('remove_action')) {
+    function remove_action(string $tag, callable $callback, int $priority = 10): bool
+    {
+        $removed = false;
+        foreach ($GLOBALS['wp_test_actions'][$tag] ?? [] as $i => $registered) {
+            if ($registered === $callback) {
+                unset($GLOBALS['wp_test_actions'][$tag][$i]);
+                $removed = true;
+            }
+        }
+
+        return $removed;
+    }
+}
+// ===== end plugins-b stubs =====

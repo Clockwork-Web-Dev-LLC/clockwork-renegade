@@ -34,9 +34,20 @@ class LifecycleTest extends TestCase
         $this->assertSame('clockwork-connection', \ClockworkRenegade\Admin\Pages\ConnectionPage::SLUG);
     }
 
-    public function testPrivacyPolicyRegistersContent(): void
+    /**
+     * wp_add_privacy_policy_content() before admin_init is rejected by core
+     * with _doing_it_wrong, so registering must only hook admin_init.
+     */
+    public function testPrivacyPolicyContentIsAddedOnAdminInit(): void
     {
+        $GLOBALS['wp_test_actions']['admin_init'] = [];
+
         PrivacyPolicy::register();
+
+        $this->assertSame([], $GLOBALS['wp_test_privacy_content'], 'Nothing may be added before admin_init');
+        $this->assertSame([[PrivacyPolicy::class, 'addContent']], $GLOBALS['wp_test_actions']['admin_init']);
+
+        PrivacyPolicy::addContent();
 
         $this->assertArrayHasKey('Clockwork Renegade', $GLOBALS['wp_test_privacy_content']);
         $this->assertStringContainsString('Clockwork Control', $GLOBALS['wp_test_privacy_content']['Clockwork Renegade']);
@@ -63,7 +74,8 @@ class LifecycleTest extends TestCase
         $queries = implode("\n", $GLOBALS['wpdb']->queries);
         $this->assertStringContainsString('DROP TABLE IF EXISTS `wp_clockwork_renegade_action_log`', $queries);
         $this->assertStringContainsString('DROP TABLE IF EXISTS `wp_clockwork_renegade_auth_failures`', $queries);
-        $this->assertStringContainsString('DROP TABLE IF EXISTS `wp_clockwork_renegade_resource_samples`', $queries);
+        $this->assertStringContainsString('DROP TABLE IF EXISTS `wp_clockwork_resource_hourly`', $queries);
+        $this->assertStringContainsString('DROP TABLE IF EXISTS `wp_clockwork_lockouts`', $queries);
     }
 
     public function testCodeSnippetsRouteIsExcluded(): void

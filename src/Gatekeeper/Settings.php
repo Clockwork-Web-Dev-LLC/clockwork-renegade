@@ -2,9 +2,24 @@
 
 namespace ClockworkRenegade\Gatekeeper;
 
+/**
+ * Gatekeeper policy.
+ *
+ * On multisite the policy is one network option: users and their passwords
+ * are shared by every site in the network, so a per-site switch would let
+ * guesses move to whichever subsite has the protection off. Sites upgraded
+ * from per-site storage read the main site's old value until the policy is
+ * saved again (Schema copies it on upgrade).
+ */
 class Settings
 {
     public const OPTION = 'clockwork_gatekeeper_settings';
+
+    /** Trusted-proxy keyword: Cloudflare's published edge ranges (ClientIp::CLOUDFLARE_RANGES). */
+    public const PROXY_CLOUDFLARE = 'cloudflare';
+
+    /** Trusted-proxy keyword: loopback, RFC 1918 and IPv6 unique-local peers. */
+    public const PROXY_PRIVATE = 'private';
 
     /**
      * @return array<string, mixed>
@@ -28,6 +43,13 @@ class Settings
             'unlock_url' => '',
             'ignore_ips' => [],
             'ignore_cidrs' => [],
+            // Peers allowed to tell us the client address through
+            // CF-Connecting-IP / X-Forwarded-For: IPs, CIDRs, or the
+            // keywords "cloudflare" and "private". Empty: headers ignored.
+            'trusted_proxies' => [],
+            // A lockout that ended longer ago than this no longer counts
+            // towards the extended lockout.
+            'consecutive_reset_seconds' => 86400,
         ];
     }
 
@@ -36,12 +58,101 @@ class Settings
      */
     public static function get(): array
     {
-        $stored = get_option(self::OPTION, []);
-        if (! is_array($stored)) {
-            $stored = [];
+        $stored = self::stored();
+
+        return array_merge(self::defaults(), is_array($stored) ? $stored : []);
+    }
+
+    /**
+     * The saved policy, or null when none was ever saved.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function stored(): ?array
+    {
+        if (! is_multisite()) {
+            $value = get_option(self::OPTION, null);
+
+            return is_array($value) ? $value : null;
         }
 
-        return array_merge(self::defaults(), $stored);
+        $value = get_site_option(self::OPTION, null);
+        if (is_array($value)) {
+            return $value;
+        }
+
+        // Not migrated yet: the main site's per-site option is what was in force there.
+        $legacy = function_exists('get_blog_option') && function_exists('get_main_site_id')
+            ? get_blog_option(get_main_site_id(), self::OPTION, null)
+            : null;
+
+        return is_array($legacy) ? $legacy : null;
+    }
+
+    /**
+     * @param array<string, mixed> $settings
+     */
+    private static function save(array $settings): void
+    {
+        if (is_multisite()) {
+            update_site_option(self::OPTION, $settings);
+
+            return;
+        }
+
+        update_option(self::OPTION, $settings, false);
+    }
+
+    /**
+     * Normalise a list of trusted proxies: IPv4/IPv6 addresses, CIDRs, and
+     * the keywords PROXY_CLOUDFLARE / PROXY_PRIVATE. Anything else is dropped.
+     *
+     * @param mixed $entries Array, or a string separated by commas, spaces or newlines.
+     * @return list<string>
+     */
+    public static function sanitizeProxyList($entries): array
+    {
+        if (is_string($entries)) {
+            $entries = preg_split('/[\s,]+/', $entries) ?: [];
+        }
+        if (! is_array($entries)) {
+            return [];
+        }
+
+        $clean = [];
+        foreach ($entries as $entry) {
+            if (! is_string($entry)) {
+                continue;
+            }
+            $entry = strtolower(trim($entry));
+            if ($entry === self::PROXY_CLOUDFLARE || $entry === self::PROXY_PRIVATE) {
+                $clean[] = $entry;
+            } elseif (filter_var($entry, FILTER_VALIDATE_IP) !== false || self::isValidCidr($entry)) {
+                $clean[] = $entry;
+            }
+        }
+
+        return array_values(array_unique($clean));
+    }
+
+    public static function isValidCidr(string $cidr): bool
+    {
+        if (! str_contains($cidr, '/')) {
+            return false;
+        }
+        [$sub, $mask] = explode('/', $cidr, 2);
+        if (! ctype_digit($mask)) {
+            return false;
+        }
+        $m = (int) $mask;
+        if (filter_var($sub, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            return $m >= 8 && $m <= 32;
+        }
+        if (filter_var($sub, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            return $m >= 16 && $m <= 128;
+        }
+
+        return false;
     }
 
     /**
@@ -70,27 +181,15 @@ class Settings
                 ? array_values(array_filter(array_map('trim', $payload['ignore_ips']), fn ($ip) => filter_var($ip, FILTER_VALIDATE_IP) !== false))
                 : $current['ignore_ips'],
             'ignore_cidrs' => isset($payload['ignore_cidrs']) && is_array($payload['ignore_cidrs'])
-                ? array_values(array_filter(array_map('trim', $payload['ignore_cidrs']), function ($c) {
-                    if (! is_string($c) || ! str_contains($c, '/')) {
-                        return false;
-                    }
-                    [$sub, $mask] = explode('/', $c, 2);
-                    if (! is_numeric($mask)) {
-                        return false;
-                    }
-                    $m = (int) $mask;
-                    if (filter_var($sub, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                        return $m >= 8 && $m <= 32;
-                    }
-                    if (filter_var($sub, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-                        return $m >= 16 && $m <= 128;
-                    }
-                    return false;
-                }))
+                ? array_values(array_filter(array_map('trim', $payload['ignore_cidrs']), fn ($c) => is_string($c) && self::isValidCidr($c)))
                 : $current['ignore_cidrs'],
+            'trusted_proxies' => isset($payload['trusted_proxies'])
+                ? self::sanitizeProxyList($payload['trusted_proxies'])
+                : $current['trusted_proxies'],
+            'consecutive_reset_seconds' => isset($payload['consecutive_reset_seconds']) ? max(3600, min(2592000, (int) $payload['consecutive_reset_seconds'])) : $current['consecutive_reset_seconds'],
         ]);
 
-        update_option(self::OPTION, $merged, false);
+        self::save($merged);
 
         if (! empty($merged['enabled'])) {
             self::maybeDeactivateLegacyLlar();
