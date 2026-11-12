@@ -198,12 +198,13 @@ class Settings
             'consecutive_reset_seconds' => isset($payload['consecutive_reset_seconds']) ? max(3600, min(2592000, (int) $payload['consecutive_reset_seconds'])) : $current['consecutive_reset_seconds'],
         ]);
 
+        // Enabling Gatekeeper leaves Limit Login Attempts Reloaded alone:
+        // Clockwork retires LLAR itself, site by site, once it has confirmed
+        // Gatekeeper is enforcing there. Deactivating it here would switch
+        // LLAR off whenever a save leaves `enabled` on, even when
+        // CLOCKWORK_GATEKEEPER_DISABLE stops Gatekeeper enforcing, leaving
+        // the site with no login throttling at all. Running both is harmless.
         self::save($merged);
-
-        if (! empty($merged['enabled'])) {
-            self::maybeDeactivateLegacyLlar();
-        }
-
     }
 
     public static function enabled(): bool
@@ -216,29 +217,4 @@ class Settings
 
         return (bool) ($settings['enabled'] ?? false);
     }
-    /**
-     * Automatically deactivates legacy Limit Login Attempts plugins if Gatekeeper is active.
-     */
-    public static function maybeDeactivateLegacyLlar(): void
-    {
-        if (! function_exists('is_plugin_active')) {
-            if (defined('ABSPATH') && file_exists(ABSPATH . 'wp-admin/includes/plugin.php')) {
-                require_once ABSPATH . 'wp-admin/includes/plugin.php';
-            }
-        }
-
-        $llarPlugins = [
-            'limit-login-attempts-reloaded/limit-login-attempts-reloaded.php',
-            'limit-login-attempts/limit-login-attempts.php',
-        ];
-
-        foreach ($llarPlugins as $plugin) {
-            if (function_exists('is_plugin_active') && is_plugin_active($plugin)) {
-                if (function_exists('deactivate_plugins')) {
-                    deactivate_plugins($plugin, true);
-                }
-            }
-        }
-    }
-
 }

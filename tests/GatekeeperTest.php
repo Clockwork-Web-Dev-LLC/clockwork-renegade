@@ -429,15 +429,20 @@ class GatekeeperTest extends TestCase
 
     }
 
-    public function testEnablingGatekeeperDeactivatesLegacyLlar(): void
+    /**
+     * Clockwork retires LLAR itself after confirming Gatekeeper enforces;
+     * saving a policy must not deactivate it on its own, least of all when
+     * Gatekeeper is not enforcing at all.
+     */
+    public function testEnablingGatekeeperLeavesLlarActive(): void
     {
-        $pluginSlug = "limit-login-attempts-reloaded/limit-login-attempts-reloaded.php";
+        $pluginSlug = 'limit-login-attempts-reloaded/limit-login-attempts-reloaded.php';
         activate_plugin($pluginSlug);
+
+        Settings::update(['enabled' => true]);
+
+        $this->assertTrue(Settings::get()['enabled']);
         $this->assertTrue(is_plugin_active($pluginSlug));
-
-        Settings::update(["enabled" => true]);
-
-        $this->assertFalse(is_plugin_active($pluginSlug));
     }
 
     // ---------------------------------------------------------------------
