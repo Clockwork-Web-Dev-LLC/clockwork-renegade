@@ -410,7 +410,7 @@ class AdvancedPage
                             <?php esc_html_e('Trusted Proxies', 'clockwork-renegade'); ?>
                         </h3>
                         <p style="margin:0 0 8px 0; font-size:12px; color:var(--cwk-text-muted);">
-                            <?php esc_html_e('Connections from these addresses may name the real visitor in the CF-Connecting-IP or X-Forwarded-For header; from anywhere else those headers are ignored. One IP or CIDR per line, or "cloudflare" for Cloudflare\'s published ranges and "private" for loopback and private networks. Leave empty if the web server already puts the visitor\'s address in REMOTE_ADDR.', 'clockwork-renegade'); ?>
+                            <?php esc_html_e('Connections from these addresses may name the real visitor in the CF-Connecting-IP or X-Forwarded-For header; from anywhere else those headers are ignored. One IP or CIDR per line, or "cloudflare" for Cloudflare\'s published ranges and "private" for loopback and private networks. When left empty, Cloudflare\'s addresses may still name the visitor in CF-Connecting-IP (and nothing else is trusted); enter "none" to trust no connection at all.', 'clockwork-renegade'); ?>
                         </p>
                         <p style="margin:0 0 8px 0; font-size:12px; color:var(--cwk-text-muted);">
                             <?php
