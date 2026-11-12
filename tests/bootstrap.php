@@ -1544,3 +1544,22 @@ if (! function_exists('register_deactivation_hook')) {
         $GLOBALS['wp_test_deactivation_hooks'][$file][] = $callback;
     }
 }
+
+// -----------------------------------------------------------------------------
+// Maintenance bypass: logged-in state is test-controlled (default logged out),
+// and the REST prefix goes through the rest_url_prefix filter like core.
+// -----------------------------------------------------------------------------
+
+if (! function_exists('is_user_logged_in')) {
+    function is_user_logged_in(): bool
+    {
+        return ! empty($GLOBALS['wp_test_logged_in']);
+    }
+}
+
+if (! function_exists('rest_get_url_prefix')) {
+    function rest_get_url_prefix(): string
+    {
+        return (string) apply_filters('rest_url_prefix', 'wp-json');
+    }
+}
