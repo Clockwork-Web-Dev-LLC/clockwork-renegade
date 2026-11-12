@@ -15,6 +15,11 @@ use WP_REST_Response;
  *
  * Supports native Gatekeeper store, with fallback to Limit Login Attempts Reloaded (LLAR)
  * during fleet migration. DELETE clears both native and legacy LLAR stores.
+ *
+ * On multisite the LLAR fallback reads every blog plus LLAR's network-wide
+ * option, matching what DELETE clears (Gatekeeper's own store already
+ * spans the network). Every list goes through ReportedBlocks before it
+ * leaves the site, because Clockwork turns it into IP bans.
  */
 class LockoutsRoute
 {
@@ -37,42 +42,96 @@ class LockoutsRoute
     public function handle(WP_REST_Request $request): WP_REST_Response
     {
         if (GatekeeperSettings::enabled()) {
-            return new WP_REST_Response([
-                'ok' => true,
-                'lockouts' => GatekeeperStore::activeLockouts(),
-            ]);
+            return $this->respond(GatekeeperStore::activeLockouts());
         }
 
         $native = GatekeeperStore::activeLockouts();
         if (! empty($native)) {
-            return new WP_REST_Response([
-                'ok' => true,
-                'lockouts' => $native,
-            ]);
+            return $this->respond($native);
         }
 
         // Fall back to legacy LLAR read
-        global $wpdb;
-
-        $prefix = $wpdb->prefix;
-        $tableName = $prefix . 'limit_login_lockouts';
-        $optionsTable = $prefix . 'options';
-
         $byIp = [];
+        $siteIds = is_multisite() ? array_map('intval', (array) get_sites(['fields' => 'ids', 'number' => 0])) : [null];
 
-        foreach ($this->fromTable($tableName) as $row) {
-            $byIp[$row['ip']] = $row;
+        foreach ($siteIds as $siteId) {
+            if ($siteId !== null) {
+                switch_to_blog($siteId);
+            }
+
+            global $wpdb;
+            foreach ($this->fromTable($wpdb->prefix . 'limit_login_lockouts') as $row) {
+                $byIp[$row['ip']] ??= $row;
+            }
+            // Option-row entries fill in only IPs the table didn't already supply.
+            foreach ($this->fromOptionRow($wpdb->options) as $row) {
+                $byIp[$row['ip']] ??= $row;
+            }
+
+            if ($siteId !== null) {
+                restore_current_blog();
+            }
         }
 
-        // Option-row entries fill in only IPs the table didn't already supply.
-        foreach ($this->fromOptionRow($optionsTable) as $row) {
-            $byIp[$row['ip']] ??= $row;
+        if (is_multisite()) {
+            foreach ($this->fromNetworkOption() as $row) {
+                $byIp[$row['ip']] ??= $row;
+            }
         }
+
+        return $this->respond(array_values($byIp));
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $rows
+     */
+    private function respond(array $rows): WP_REST_Response
+    {
+        $filtered = ReportedBlocks::filter($rows);
 
         return new WP_REST_Response([
             'ok' => true,
-            'lockouts' => array_values($byIp),
+            'lockouts' => $filtered['rows'],
+            'truncated' => $filtered['truncated'],
         ]);
+    }
+
+    /**
+     * LLAR "Network/Site Wide" lockouts from wp_sitemeta, read directly to
+     * bypass a possibly stale object cache.
+     *
+     * @return array<int, array{ip: string, unlock_at: ?string, source_table: string}>
+     */
+    private function fromNetworkOption(): array
+    {
+        global $wpdb;
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $raw = $wpdb->get_var($wpdb->prepare(
+            "SELECT meta_value FROM {$wpdb->sitemeta} WHERE site_id = %d AND meta_key = 'limit_login_lockouts' LIMIT 1",
+            get_current_network_id()
+        ));
+        $lockouts = is_string($raw) && $raw !== '' ? @unserialize($raw, ['allowed_classes' => false]) : [];
+        if (! is_array($lockouts)) {
+            return [];
+        }
+
+        $now = time();
+        $out = [];
+        foreach ($lockouts as $ip => $unlockTs) {
+            $ip = trim((string) $ip);
+            $unlockTs = (int) $unlockTs;
+            if (! filter_var($ip, FILTER_VALIDATE_IP) || ($unlockTs > 0 && $unlockTs <= $now)) {
+                continue;
+            }
+            $out[] = [
+                'ip' => $ip,
+                'unlock_at' => $unlockTs > 0 ? gmdate('c', $unlockTs) : null,
+                'source_table' => $wpdb->sitemeta . ':limit_login_lockouts',
+            ];
+        }
+
+        return $out;
     }
 
     public function handleDelete(WP_REST_Request $request): WP_REST_Response
