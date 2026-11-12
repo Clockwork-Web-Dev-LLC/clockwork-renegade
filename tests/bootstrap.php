@@ -1497,3 +1497,21 @@ if (! function_exists('wp_cache_decr')) {
         return $GLOBALS['wp_test_object_cache'][$groupKey];
     }
 }
+
+// -----------------------------------------------------------------------------
+// Backup restore: PluginState reads raw option rows and unserializes them.
+// -----------------------------------------------------------------------------
+
+if (! function_exists('maybe_unserialize')) {
+    function maybe_unserialize(mixed $data): mixed
+    {
+        if (is_string($data) && preg_match('/^(a|O|s|i|d|b):/', $data)) {
+            $value = @unserialize($data);
+            if ($value !== false || $data === 'b:0;') {
+                return $value;
+            }
+        }
+
+        return $data;
+    }
+}
