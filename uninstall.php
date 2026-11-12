@@ -28,6 +28,8 @@ spl_autoload_register(function (string $class): void {
 });
 
 // Clockwork Companion stores some data under the same names (2FA user meta,
-// update exceptions, white-label options, the hourly resource table); leave
-// those alone while it is running on this site.
-ClockworkRenegade\Support\Uninstaller::run(! defined('CLOCKWORK_COMPANION_VERSION'));
+// update exceptions, white-label options, the hourly resource table,
+// Gatekeeper's lockout table and policy); leave those alone while it is
+// installed on this site, active or not.
+$companionInstalled = defined('CLOCKWORK_COMPANION_VERSION') || ClockworkRenegade\Support\Uninstaller::companionInstalled();
+ClockworkRenegade\Support\Uninstaller::run(! $companionInstalled);

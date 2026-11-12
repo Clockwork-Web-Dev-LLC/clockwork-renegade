@@ -26,9 +26,11 @@ use ClockworkRenegade\WhiteLabel\WhiteLabel;
  *
  * Some names are shared with Clockwork Companion (2FA user meta, the
  * update-exception and white-label options, SSO nonces, generic
- * clockwork_* transients, the hourly resource table). They are only
- * removed when Companion is not running on the site (uninstall.php checks),
- * so uninstalling one plugin cannot wipe the other's settings.
+ * clockwork_* transients, the hourly resource table, and Gatekeeper's
+ * lockout table, policy option and prune event). They are only removed when
+ * Companion is not installed on the site (companionInstalled(), checked by
+ * uninstall.php), so uninstalling one plugin cannot wipe the other's data —
+ * including when Companion is installed but switched off at that moment.
  */
 class Uninstaller
 {
@@ -48,7 +50,6 @@ class Uninstaller
             MaintenanceGuard::OPTION_KEY,
             RestoreState::OPTION_KEY,
             WhiteLabel::OPTION_KEY,
-            GatekeeperSettings::OPTION,
             GatekeeperSchema::VERSION_OPTION,
             ActionLogSchema::VERSION_OPTION,
             AuthAuditSchema::VERSION_OPTION,
@@ -68,6 +69,16 @@ class Uninstaller
         ];
     }
 
+    /**
+     * Options removed by name that Companion stores under the same name.
+     *
+     * @return list<string>
+     */
+    public static function sharedOptionNames(): array
+    {
+        return [GatekeeperSettings::OPTION];
+    }
+
     /** LIKE patterns of options Companion uses under the same names. */
     public static function sharedOptionPatterns(): array
     {
@@ -85,24 +96,52 @@ class Uninstaller
     /** LIKE pattern of user meta keys (shared with Companion). */
     public const USER_META_PATTERN = '\\_clockwork\\_2fa\\_%';
 
-    /** @return list<string> */
+    /**
+     * Cron hooks only this plugin schedules.
+     *
+     * @return list<string>
+     */
     public static function cronHooks(): array
+    {
+        return [];
+    }
+
+    /**
+     * Cron hooks Companion schedules under the same name (its Gatekeeper
+     * prunes the shared lockout table).
+     *
+     * @return list<string>
+     */
+    public static function sharedCronHooks(): array
     {
         return ['clockwork_gatekeeper_prune'];
     }
 
     /**
-     * Tables of the current site (and, on multisite, the network lockout
-     * table) that only this plugin uses.
+     * Tables of the current site that only this plugin uses.
      *
      * @return list<string>
      */
     public static function tables(): array
     {
+        return [
+            ActionLogSchema::tableName(),
+            AuthAuditSchema::tableName(),
+        ];
+    }
+
+    /**
+     * Tables Companion creates under the same name: the hourly resource
+     * table, and Gatekeeper's lockout table (on multisite the network table
+     * plus any per-site tables an older version left).
+     *
+     * @return list<string>
+     */
+    public static function sharedTables(): array
+    {
         return array_values(array_unique(array_merge(
             [
-                ActionLogSchema::tableName(),
-                AuthAuditSchema::tableName(),
+                ResourceSchema::tableName(),
                 GatekeeperSchema::tableName(),
             ],
             GatekeeperSchema::legacySiteTables()
@@ -110,13 +149,36 @@ class Uninstaller
     }
 
     /**
-     * Tables Companion creates under the same name.
-     *
-     * @return list<string>
+     * Whether Clockwork Companion is installed on this site: in the plugins
+     * list (active or not, on any site of a network) or as a must-use
+     * plugin. (uninstall.php also treats a loaded Companion as installed.)
+     * Companion has no uninstaller of its own, so its options outlive it and
+     * are deliberately not used as the signal: a site that moved from
+     * Companion to this plugin would otherwise never get the shared data
+     * cleaned up.
      */
-    public static function sharedTables(): array
+    public static function companionInstalled(): bool
     {
-        return [ResourceSchema::tableName()];
+        if (defined('WPMU_PLUGIN_DIR') && is_file(WPMU_PLUGIN_DIR . '/clockwork-companion.php')) {
+            return true;
+        }
+
+        if (! function_exists('get_plugins') && defined('ABSPATH') && is_file(ABSPATH . 'wp-admin/includes/plugin.php')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+
+        if (function_exists('get_plugins')) {
+            foreach (array_keys((array) get_plugins()) as $file) {
+                if (basename((string) $file) === 'clockwork-companion.php') {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // No plugin API: look for the loader in any plugin folder.
+        return defined('WP_PLUGIN_DIR') && (glob(WP_PLUGIN_DIR . '/*/clockwork-companion.php') ?: []) !== [];
     }
 
     /**
@@ -124,7 +186,7 @@ class Uninstaller
      */
     public static function coversOption(string $name): bool
     {
-        if (in_array($name, self::optionNames(), true)) {
+        if (in_array($name, array_merge(self::optionNames(), self::sharedOptionNames()), true)) {
             return true;
         }
         foreach (array_merge(self::optionPatterns(), self::sharedOptionPatterns()) as $pattern) {
@@ -162,7 +224,7 @@ class Uninstaller
      *
      * @param  bool  $withShared Also remove data stored under names Companion
      *                           shares; uninstall.php passes false while
-     *                           Companion is running.
+     *                           Companion is installed.
      */
     public static function run(bool $withShared = true): void
     {
@@ -175,12 +237,14 @@ class Uninstaller
                 restore_current_blog();
             }
 
-            foreach (self::optionNames() as $option) {
+            foreach ($withShared ? array_merge(self::optionNames(), self::sharedOptionNames()) : self::optionNames() as $option) {
                 delete_site_option($option);
             }
             $patterns = $withShared ? array_merge(self::optionPatterns(), self::sharedOptionPatterns()) : self::optionPatterns();
             self::deleteLike((string) ($wpdb->sitemeta ?? $wpdb->base_prefix.'sitemeta'), 'meta_key', $patterns);
-            self::dropTable(GatekeeperSchema::tableName());
+            if ($withShared) {
+                self::dropTable(GatekeeperSchema::tableName());
+            }
         } else {
             self::uninstallSite($withShared);
         }
@@ -195,11 +259,11 @@ class Uninstaller
     {
         global $wpdb;
 
-        foreach (self::cronHooks() as $hook) {
+        foreach ($withShared ? array_merge(self::cronHooks(), self::sharedCronHooks()) : self::cronHooks() as $hook) {
             self::clearCron($hook);
         }
 
-        foreach (self::optionNames() as $option) {
+        foreach ($withShared ? array_merge(self::optionNames(), self::sharedOptionNames()) : self::optionNames() as $option) {
             delete_option($option);
         }
         $patterns = $withShared ? array_merge(self::optionPatterns(), self::sharedOptionPatterns()) : self::optionPatterns();
@@ -216,13 +280,15 @@ class Uninstaller
 
     /**
      * Deactivation: stop the scheduled prune, on every site of a network.
+     * The shared hook is cleared too: Companion, if it is running, schedules
+     * it again on its next request.
      */
     public static function deactivate(): void
     {
         if (is_multisite()) {
             foreach ((array) get_sites(['fields' => 'ids', 'number' => 0]) as $siteId) {
                 switch_to_blog((int) $siteId);
-                foreach (self::cronHooks() as $hook) {
+                foreach (array_merge(self::cronHooks(), self::sharedCronHooks()) as $hook) {
                     self::clearCron($hook);
                 }
                 restore_current_blog();
@@ -231,7 +297,7 @@ class Uninstaller
             return;
         }
 
-        foreach (self::cronHooks() as $hook) {
+        foreach (array_merge(self::cronHooks(), self::sharedCronHooks()) as $hook) {
             self::clearCron($hook);
         }
     }

@@ -21,6 +21,13 @@ class UninstallerTest extends TestCase
         $GLOBALS['wp_test_options'] = [];
         $GLOBALS['wpdb'] = new \wpdb();
         $GLOBALS['wp_test_cleared_cron'] = [];
+        $GLOBALS['wp_test_plugins'] = [];
+    }
+
+    protected function tearDown(): void
+    {
+        $GLOBALS['wp_test_plugins'] = [];
+        parent::tearDown();
     }
 
     /** @return array<string, string> file => contents */
@@ -97,7 +104,7 @@ class UninstallerTest extends TestCase
         }
 
         $this->assertNotEmpty($hooks);
-        $this->assertSame([], array_values(array_diff($hooks, Uninstaller::cronHooks())));
+        $this->assertSame([], array_values(array_diff($hooks, array_merge(Uninstaller::cronHooks(), Uninstaller::sharedCronHooks()))));
     }
 
     public function testEverySchemaTableIsDropped(): void
@@ -164,10 +171,19 @@ class UninstallerTest extends TestCase
 
     public function testDataSharedWithCompanionIsKeptWhileCompanionRuns(): void
     {
+        update_option('clockwork_gatekeeper_settings', ['enabled' => true]);
+        update_option('clockwork_renegade_secret', 'secret');
+
         Uninstaller::run(false);
 
         $queries = implode("\n", $GLOBALS['wpdb']->queries);
-        $this->assertStringContainsString('DROP TABLE IF EXISTS `wp_clockwork_lockouts`', $queries);
+        // Companion's Gatekeeper uses the same lockout table, policy option
+        // and prune event.
+        $this->assertStringNotContainsString('clockwork_lockouts', $queries);
+        $this->assertSame(['enabled' => true], get_option('clockwork_gatekeeper_settings'));
+        $this->assertNotContains('clockwork_gatekeeper_prune', $GLOBALS['wp_test_cleared_cron']);
+        $this->assertFalse(get_option('clockwork_renegade_secret'), 'Renegade-only data still goes');
+        $this->assertStringContainsString('DROP TABLE IF EXISTS `wp_clockwork_renegade_action_log`', $queries);
         $this->assertStringNotContainsString('wp_usermeta', $queries);
         $this->assertStringNotContainsString('clockwork_resource_hourly', $queries);
         $this->assertStringNotContainsString('clockwork\\_update\\_exceptions', $queries);
@@ -188,5 +204,50 @@ class UninstallerTest extends TestCase
         update_option('clockwork_renegade_secret_pending', 'next');
         Uninstaller::run();
         $this->assertFalse(get_option('clockwork_renegade_secret_pending'));
+    }
+
+    public function testMultisiteKeepsTheNetworkLockoutTableAndPolicyWhileCompanionIsInstalled(): void
+    {
+        $GLOBALS['wp_test_is_multisite'] = true;
+        $GLOBALS['wp_test_site_ids'] = [1, 2];
+        $GLOBALS['wp_test_site_options'] = ['clockwork_gatekeeper_settings' => ['enabled' => true]];
+
+        try {
+            Uninstaller::run(false);
+            $kept = $GLOBALS['wp_test_site_options']['clockwork_gatekeeper_settings'] ?? null;
+        } finally {
+            $GLOBALS['wp_test_is_multisite'] = false;
+            $GLOBALS['wp_test_site_options'] = [];
+            unset($GLOBALS['wp_test_site_ids']);
+        }
+
+        $this->assertSame(['enabled' => true], $kept);
+        $this->assertStringNotContainsString('clockwork_lockouts', implode("\n", $GLOBALS['wpdb']->queries));
+        $this->assertNotContains('clockwork_gatekeeper_prune', $GLOBALS['wp_test_cleared_cron']);
+    }
+
+    /**
+     * uninstall.php keeps shared data whenever Companion is installed, not
+     * only while it is active: deleting Renegade while Companion is switched
+     * off must not wipe the lockout table Companion uses when it comes back.
+     */
+    public function testCompanionCountsAsInstalledWhenOnlyInThePluginsList(): void
+    {
+        $this->assertFalse(Uninstaller::companionInstalled());
+
+        $GLOBALS['wp_test_plugins'] = ['clockwork-renegade/clockwork-renegade.php' => ['Name' => 'Clockwork Renegade']];
+        $this->assertFalse(Uninstaller::companionInstalled());
+
+        // Inactive, and installed from an archive under a different folder name.
+        $GLOBALS['wp_test_plugins']['clockwork-companion-main/clockwork-companion.php'] = ['Name' => 'Clockwork Companion'];
+        $this->assertTrue(Uninstaller::companionInstalled());
+    }
+
+    public function testUninstallScriptDecidesOnCompanionBeingInstalled(): void
+    {
+        $script = (string) file_get_contents(dirname(__DIR__) . '/uninstall.php');
+
+        $this->assertStringContainsString("defined('CLOCKWORK_COMPANION_VERSION') || ClockworkRenegade\\Support\\Uninstaller::companionInstalled();", $script);
+        $this->assertStringContainsString('Uninstaller::run(! $companionInstalled);', $script);
     }
 }
