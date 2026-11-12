@@ -238,10 +238,10 @@ class AdvancedPageTest extends TestCase
     public function testHandleSaveGatekeeperForbiddenForNonAgency(): void
     {
         update_option('clockwork_renegade_branding', [
-            'agency_email_domains' => '@clockworkwd.com',
+            'agency_email_domains' => '@agency.example',
         ]);
         $clientUser = new WP_User();
-        $clientUser->user_email = 'admin@clientdomain.com';
+        $clientUser->user_email = 'admin@client.example';
         $GLOBALS['wp_test_current_user'] = $clientUser;
 
         $this->expectException(\RuntimeException::class);
@@ -253,10 +253,10 @@ class AdvancedPageTest extends TestCase
     public function testHandleUnlockAllForbiddenForNonAgency(): void
     {
         update_option('clockwork_renegade_branding', [
-            'agency_email_domains' => '@clockworkwd.com',
+            'agency_email_domains' => '@agency.example',
         ]);
         $clientUser = new WP_User();
-        $clientUser->user_email = 'admin@clientdomain.com';
+        $clientUser->user_email = 'admin@client.example';
         $GLOBALS['wp_test_current_user'] = $clientUser;
 
         $this->expectException(\RuntimeException::class);
@@ -268,10 +268,10 @@ class AdvancedPageTest extends TestCase
     public function testHandleFlushCacheForbiddenForNonAgency(): void
     {
         update_option('clockwork_renegade_branding', [
-            'agency_email_domains' => '@clockworkwd.com',
+            'agency_email_domains' => '@agency.example',
         ]);
         $clientUser = new WP_User();
-        $clientUser->user_email = 'admin@clientdomain.com';
+        $clientUser->user_email = 'admin@client.example';
         $GLOBALS['wp_test_current_user'] = $clientUser;
 
         $this->expectException(\RuntimeException::class);
@@ -283,10 +283,10 @@ class AdvancedPageTest extends TestCase
     public function testHandleUnlockIpAllowedForNonAgency(): void
     {
         update_option('clockwork_renegade_branding', [
-            'agency_email_domains' => '@clockworkwd.com',
+            'agency_email_domains' => '@agency.example',
         ]);
         $clientUser = new WP_User();
-        $clientUser->user_email = 'admin@clientdomain.com';
+        $clientUser->user_email = 'admin@client.example';
         $GLOBALS['wp_test_current_user'] = $clientUser;
 
         GatekeeperSettings::update(['enabled' => true]);

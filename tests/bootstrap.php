@@ -283,7 +283,7 @@ if (! function_exists('wp_verify_nonce')) {
 if (! function_exists('wp_get_current_user')) {
     function wp_get_current_user(): ?WP_User
     {
-        return $GLOBALS['wp_test_current_user'] ?? new WP_User('admin@clientdomain.com');
+        return $GLOBALS['wp_test_current_user'] ?? new WP_User('admin@client.example');
     }
 }
 

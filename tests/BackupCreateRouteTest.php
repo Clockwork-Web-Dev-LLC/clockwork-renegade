@@ -123,7 +123,7 @@ class BackupCreateRouteTest extends TestCase
 
         $route = new BackupCreateRoute();
         $payload = [
-            'upload_url' => 'https://bucket.s3.amazonaws.com/archives/mysite.com/backup.zip?presigned=1',
+            'upload_url' => 'https://bucket.s3.amazonaws.com/archives/example.com/backup.zip?presigned=1',
             'headers' => [
                 'x-amz-storage-class' => 'GLACIER_IR',
             ],
@@ -168,7 +168,7 @@ class BackupCreateRouteTest extends TestCase
 
         // Verify S3DirectUploader received parameters
         $this->assertTrue($uploadedData['file_exists_during_upload']);
-        $this->assertSame('https://bucket.s3.amazonaws.com/archives/mysite.com/backup.zip?presigned=1', $uploadedData['upload_url']);
+        $this->assertSame('https://bucket.s3.amazonaws.com/archives/example.com/backup.zip?presigned=1', $uploadedData['upload_url']);
         $this->assertSame(['x-amz-storage-class' => 'GLACIER_IR'], $uploadedData['headers']);
 
         // Verify local staging file was automatically unlinked in finally block

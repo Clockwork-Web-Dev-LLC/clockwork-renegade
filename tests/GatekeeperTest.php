@@ -224,8 +224,8 @@ class GatekeeperTest extends TestCase
             'headline' => 'Agency Access Paused',
             'body' => 'Please wait {duration} before next attempt.',
             'support_label' => 'Service Desk',
-            'support_email' => 'helpdesk@example.gov',
-            'support_url' => 'https://example.gov/support',
+            'support_email' => 'helpdesk@example.org',
+            'support_url' => 'https://example.org/support',
             'show_ip' => true,
             'show_unlock_link' => true,
             'unlock_url' => 'https://example.com/unlock',
@@ -245,7 +245,7 @@ class GatekeeperTest extends TestCase
         $this->assertSame(5, $stored['threshold']);
         $this->assertSame(900, $stored['window_seconds']);
         $this->assertSame('Agency Access Paused', $stored['headline']);
-        $this->assertSame('helpdesk@example.gov', $stored['support_email']);
+        $this->assertSame('helpdesk@example.org', $stored['support_email']);
         $this->assertSame(['203.0.113.99'], $stored['ignore_ips']);
         $this->assertSame(['203.0.113.0/24'], $stored['ignore_cidrs']);
     }
