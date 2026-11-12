@@ -17,6 +17,7 @@ function clockwork_renegade_uninstall_site(): void
     $known_options = [
         'clockwork_renegade_secret',
         'clockwork_renegade_secret_pending',
+        'clockwork_renegade_install_state',
         'clockwork_renegade_branding',
         'clockwork_renegade_detected_forms',
         'clockwork_renegade_form_test_subscriptions',

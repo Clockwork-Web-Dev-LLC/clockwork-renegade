@@ -8,7 +8,6 @@ use ClockworkRenegade\Admin\FormsAjaxHandlers;
 use ClockworkRenegade\Admin\Menu;
 use ClockworkRenegade\Admin\Support\SupportForm;
 use ClockworkRenegade\Admin\UpdatesRefreshAjaxHandler;
-use ClockworkRenegade\Auth\Secret;
 use ClockworkRenegade\AuthAudit\Schema as AuthAuditSchema;
 use ClockworkRenegade\Rest\ActionLogAppendRoute;
 use ClockworkRenegade\Rest\AdminsRoute;
@@ -127,21 +126,13 @@ class Plugin
     public function boot(): void
     {
         (new WhiteLabel())->boot();
-        try {
-            Secret::ensure();
-        } catch (\Throwable $e) {
-            // Never let the secret bootstrap take the whole site down: every
-            // front-end and admin request runs boot(). HmacVerifier answers
-            // no_secret until a secret can be stored.
-            if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
-                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-                error_log('[clockwork] secret bootstrap failed: '.$e->getMessage());
-            }
-        }
-        ActionLogSchema::ensureInstalled();
-        AuthAuditSchema::ensureInstalled();
-        ResourceSchema::ensureInstalled();
-        \ClockworkRenegade\Gatekeeper\Schema::ensureInstalled();
+        // Secret + table schemas, checked through one autoloaded record.
+        \ClockworkRenegade\Updates\InstallState::ensure([
+            ActionLogSchema::class,
+            AuthAuditSchema::class,
+            ResourceSchema::class,
+            \ClockworkRenegade\Gatekeeper\Schema::class,
+        ]);
         \ClockworkRenegade\Gatekeeper\Store::maybeSchedulePrune();
         \ClockworkRenegade\Gatekeeper\Gate::register();
 
