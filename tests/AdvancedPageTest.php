@@ -202,6 +202,39 @@ class AdvancedPageTest extends TestCase
         $this->assertSame(['198.51.100.0/24'], $saved['ignore_cidrs']);
     }
 
+    /**
+     * WordPress slashes $_POST. Without wp_unslash() an apostrophe was stored
+     * as \' and gained another backslash on every save.
+     */
+    public function testHandleSaveGatekeeperStoresApostrophesUnslashed(): void
+    {
+        $_POST = [
+            'enabled' => '1',
+            'headline' => addslashes("You've been locked out"),
+            'body' => addslashes("Don't panic, it's temporary."),
+        ];
+
+        AdvancedPage::handleSaveGatekeeper();
+        AdvancedPage::handleSaveGatekeeper();
+
+        $saved = GatekeeperSettings::get();
+        $this->assertSame("You've been locked out", $saved['headline']);
+        $this->assertSame("Don't panic, it's temporary.", $saved['body']);
+    }
+
+    public function testSupportFormUnslashesTicketText(): void
+    {
+        $fields = \ClockworkRenegade\Admin\Support\SupportForm::readSubmission([
+            'first_name' => addslashes("D'Arcy"),
+            'short_desc' => addslashes("Site's down"),
+            'long_desc' => addslashes("It says \"error\" and won't load."),
+        ]);
+
+        $this->assertSame("D'Arcy", $fields['first_name']);
+        $this->assertSame("Site's down", $fields['short_desc']);
+        $this->assertSame("It says \"error\" and won't load.", $fields['long_desc']);
+    }
+
     public function testHandleSaveGatekeeperForbiddenForNonAgency(): void
     {
         update_option('clockwork_renegade_branding', [

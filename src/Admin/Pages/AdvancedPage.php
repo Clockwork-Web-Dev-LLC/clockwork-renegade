@@ -661,27 +661,31 @@ class AdvancedPage
 
         check_admin_referer('clockwork_gatekeeper_save');
 
-        $ignoreIpsRaw = explode("\n", (string) ($_POST['ignore_ips'] ?? ''));
-        $ignoreCidrsRaw = explode("\n", (string) ($_POST['ignore_cidrs'] ?? ''));
+        // WordPress adds slashes to $_POST; without unslashing, an apostrophe
+        // in the headline was stored as \' and gained a backslash per save.
+        $post = wp_unslash($_POST);
 
-        $windowMins = max(1, min(1440, (int) ($_POST['window_minutes'] ?? 20)));
-        $lockoutMins = max(1, min(10080, (int) ($_POST['lockout_minutes'] ?? 20)));
-        $extendedHours = max(1, min(720, (int) ($_POST['extended_lockout_hours'] ?? 24)));
+        $ignoreIpsRaw = explode("\n", (string) ($post['ignore_ips'] ?? ''));
+        $ignoreCidrsRaw = explode("\n", (string) ($post['ignore_cidrs'] ?? ''));
+
+        $windowMins = max(1, min(1440, (int) ($post['window_minutes'] ?? 20)));
+        $lockoutMins = max(1, min(10080, (int) ($post['lockout_minutes'] ?? 20)));
+        $extendedHours = max(1, min(720, (int) ($post['extended_lockout_hours'] ?? 24)));
 
         GatekeeperSettings::update([
-            'enabled' => ! empty($_POST['enabled']),
-            'threshold' => max(1, min(50, (int) ($_POST['threshold'] ?? 4))),
+            'enabled' => ! empty($post['enabled']),
+            'threshold' => max(1, min(50, (int) ($post['threshold'] ?? 4))),
             'window_seconds' => $windowMins * 60,
             'lockout_seconds' => $lockoutMins * 60,
-            'consecutive_lockouts_for_extended' => max(1, min(20, (int) ($_POST['consecutive_lockouts_for_extended'] ?? 4))),
+            'consecutive_lockouts_for_extended' => max(1, min(20, (int) ($post['consecutive_lockouts_for_extended'] ?? 4))),
             'extended_lockout_seconds' => $extendedHours * 3600,
-            'headline' => sanitize_text_field((string) ($_POST['headline'] ?? '')),
-            'body' => sanitize_textarea_field((string) ($_POST['body'] ?? '')),
-            'support_email' => sanitize_email((string) ($_POST['support_email'] ?? '')),
-            'support_url' => esc_url_raw((string) ($_POST['support_url'] ?? '')),
+            'headline' => sanitize_text_field((string) ($post['headline'] ?? '')),
+            'body' => sanitize_textarea_field((string) ($post['body'] ?? '')),
+            'support_email' => sanitize_email((string) ($post['support_email'] ?? '')),
+            'support_url' => esc_url_raw((string) ($post['support_url'] ?? '')),
             'ignore_ips' => $ignoreIpsRaw,
             'ignore_cidrs' => $ignoreCidrsRaw,
-            'trusted_proxies' => (string) wp_unslash($_POST['trusted_proxies'] ?? ''),
+            'trusted_proxies' => (string) ($post['trusted_proxies'] ?? ''),
         ]);
 
         self::redirectAndExit(add_query_arg([

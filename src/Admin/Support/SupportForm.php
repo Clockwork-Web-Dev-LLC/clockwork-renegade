@@ -500,6 +500,30 @@ class SupportForm
         <?php
     }
 
+    /**
+     * Sanitised form fields from a request array. WordPress adds slashes to
+     * $_POST, so values are unslashed first; without that an apostrophe in a
+     * message reached the ticket as \'.
+     *
+     * @param  array<string, mixed>  $post
+     * @return array{first_name: string, last_name: string, email: string, website_url: string, short_desc: string, long_desc: string, approved: bool, subscribe: bool}
+     */
+    public static function readSubmission(array $post): array
+    {
+        $post = wp_unslash($post);
+
+        return [
+            'first_name' => sanitize_text_field((string) ($post['first_name'] ?? '')),
+            'last_name' => sanitize_text_field((string) ($post['last_name'] ?? '')),
+            'email' => sanitize_email((string) ($post['email'] ?? '')),
+            'website_url' => esc_url_raw((string) ($post['website_url'] ?? get_site_url())),
+            'short_desc' => sanitize_text_field((string) ($post['short_desc'] ?? '')),
+            'long_desc' => sanitize_textarea_field((string) ($post['long_desc'] ?? '')),
+            'approved' => ! empty($post['approved']),
+            'subscribe' => ! empty($post['subscribe']),
+        ];
+    }
+
     public static function handleSubmit(): void
     {
         check_ajax_referer('cwk_support_submit', 'nonce');
@@ -513,14 +537,16 @@ class SupportForm
             wp_send_json_error(['message' => __('Insufficient permissions.', 'clockwork-renegade')], 403);
         }
 
-        $firstName = sanitize_text_field((string) ($_POST['first_name'] ?? ''));
-        $lastName  = sanitize_text_field((string) ($_POST['last_name'] ?? ''));
-        $email     = sanitize_email((string) ($_POST['email'] ?? ''));
-        $siteUrl   = esc_url_raw((string) ($_POST['website_url'] ?? get_site_url()));
-        $shortDesc = sanitize_text_field((string) ($_POST['short_desc'] ?? ''));
-        $longDesc  = sanitize_textarea_field((string) ($_POST['long_desc'] ?? ''));
-        $approved  = ! empty($_POST['approved']);
-        $subscribe = ! empty($_POST['subscribe']);
+        [
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => $email,
+            'website_url' => $siteUrl,
+            'short_desc' => $shortDesc,
+            'long_desc' => $longDesc,
+            'approved' => $approved,
+            'subscribe' => $subscribe,
+        ] = self::readSubmission($_POST);
 
         if (! $firstName || ! $lastName || ! $email || ! $shortDesc || ! $longDesc) {
             wp_send_json_error(['message' => __('Please fill in all required fields.', 'clockwork-renegade')], 422);

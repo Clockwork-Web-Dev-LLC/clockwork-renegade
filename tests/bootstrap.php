@@ -1200,6 +1200,11 @@ if (! function_exists('update_user_meta')) {
 if (! function_exists('wp_unslash')) {
     function wp_unslash(mixed $val): mixed
     {
+        // Recursive like core's stripslashes_deep(), so unslashing all of $_POST works.
+        if (is_array($val)) {
+            return array_map('wp_unslash', $val);
+        }
+
         return is_string($val) ? stripslashes($val) : $val;
     }
 }
