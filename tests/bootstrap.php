@@ -508,6 +508,12 @@ if (! defined('ARRAY_N')) {
 if (! function_exists('delete_site_option')) {
     function delete_site_option(string $option): bool
     {
+        if (! empty($GLOBALS['wp_test_is_multisite'])) {
+            unset($GLOBALS['wp_test_site_options'][$option]);
+
+            return true;
+        }
+
         return delete_option($option);
     }
 }
@@ -515,7 +521,8 @@ if (! function_exists('delete_site_option')) {
 if (! function_exists('is_multisite')) {
     function is_multisite(): bool
     {
-        return false;
+        // Off unless a test opts in (Gatekeeper multisite tests).
+        return ! empty($GLOBALS['wp_test_is_multisite']);
     }
 }
 
@@ -968,6 +975,11 @@ if (! function_exists('wp_get_theme')) {
 if (! function_exists('get_site_option')) {
     function get_site_option(string $option, mixed $default = false): mixed
     {
+        // Network options live in their own store when a test enables multisite.
+        if (! empty($GLOBALS['wp_test_is_multisite'])) {
+            return $GLOBALS['wp_test_site_options'][$option] ?? $default;
+        }
+
         return get_option($option, $default);
     }
 }
@@ -1386,5 +1398,102 @@ if (! function_exists("sanitize_textarea_field")) {
     function sanitize_textarea_field(string $str): string
     {
         return trim(strip_tags($str));
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Multisite + object-cache stubs used by the Gatekeeper tests.
+// Multisite stays off unless $GLOBALS['wp_test_is_multisite'] is set; network
+// options live in $GLOBALS['wp_test_site_options'], per-site options of other
+// sites in $GLOBALS['wp_test_blog_options'][$blogId].
+// -----------------------------------------------------------------------------
+
+if (! function_exists('update_site_option')) {
+    function update_site_option(string $option, mixed $value): bool
+    {
+        if (! empty($GLOBALS['wp_test_is_multisite'])) {
+            $GLOBALS['wp_test_site_options'][$option] = $value;
+
+            return true;
+        }
+
+        return update_option($option, $value);
+    }
+}
+
+if (! function_exists('get_sites')) {
+    function get_sites(array $args = []): array
+    {
+        $GLOBALS['wp_test_get_sites_args'][] = $args;
+
+        return $GLOBALS['wp_test_site_ids'] ?? [1];
+    }
+}
+
+if (! function_exists('get_main_site_id')) {
+    function get_main_site_id(?int $network_id = null): int
+    {
+        return (int) ($GLOBALS['wp_test_main_site_id'] ?? 1);
+    }
+}
+
+if (! function_exists('get_blog_option')) {
+    function get_blog_option(?int $id, string $option, mixed $default = false): mixed
+    {
+        return $GLOBALS['wp_test_blog_options'][(int) $id][$option] ?? $default;
+    }
+}
+
+if (! function_exists('switch_to_blog')) {
+    function switch_to_blog(int $new_blog_id, bool $deprecated = false): bool
+    {
+        $GLOBALS['wp_test_blog_stack'][] = $new_blog_id;
+
+        return true;
+    }
+}
+
+if (! function_exists('restore_current_blog')) {
+    function restore_current_blog(): bool
+    {
+        array_pop($GLOBALS['wp_test_blog_stack']);
+
+        return true;
+    }
+}
+
+if (! function_exists('wp_cache_add_global_groups')) {
+    function wp_cache_add_global_groups(string|array $groups): void
+    {
+        foreach ((array) $groups as $group) {
+            $GLOBALS['wp_test_global_cache_groups'][$group] = true;
+        }
+    }
+}
+
+if (! function_exists('wp_cache_add')) {
+    function wp_cache_add(string|int $key, mixed $data, string $group = '', int $expire = 0): bool
+    {
+        $groupKey = $group . ':' . $key;
+        if (isset($GLOBALS['wp_test_object_cache'][$groupKey])) {
+            return false;
+        }
+        $GLOBALS['wp_test_object_cache'][$groupKey] = $data;
+        $GLOBALS['wp_test_object_cache_expire'][$groupKey] = $expire;
+
+        return true;
+    }
+}
+
+if (! function_exists('wp_cache_decr')) {
+    function wp_cache_decr(string|int $key, int $offset = 1, string $group = ''): int|false
+    {
+        $groupKey = $group . ':' . $key;
+        if (! isset($GLOBALS['wp_test_object_cache'][$groupKey])) {
+            return false;
+        }
+        $GLOBALS['wp_test_object_cache'][$groupKey] = (int) $GLOBALS['wp_test_object_cache'][$groupKey] - $offset;
+
+        return $GLOBALS['wp_test_object_cache'][$groupKey];
     }
 }

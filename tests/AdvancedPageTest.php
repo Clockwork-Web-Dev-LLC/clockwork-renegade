@@ -6,11 +6,17 @@ use ClockworkRenegade\Admin\Layout;
 use ClockworkRenegade\Admin\Pages\AdvancedPage;
 use ClockworkRenegade\Gatekeeper\Settings as GatekeeperSettings;
 use ClockworkRenegade\Gatekeeper\Store as GatekeeperStore;
+use ClockworkRenegade\Tests\Fakes\GatekeeperWpdb;
 use PHPUnit\Framework\TestCase;
 use WP_User;
 
+require_once __DIR__ . '/Fakes/GatekeeperWpdb.php';
+
 class AdvancedPageTest extends TestCase
 {
+    /** @var mixed */
+    private $previousWpdb;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -18,15 +24,15 @@ class AdvancedPageTest extends TestCase
         $GLOBALS['wp_test_current_user'] = (object) ['ID' => 1, 'user_email' => 'admin@example.com'];
         $GLOBALS['wp_test_object_cache'] = [];
         $GLOBALS['wp_test_object_cache_expire'] = [];
-        if (isset($GLOBALS['wpdb']->table_rows)) {
-            $GLOBALS['wpdb']->table_rows['wp_clockwork_lockouts'] = [];
-        }
+        $this->previousWpdb = $GLOBALS['wpdb'];
+        $GLOBALS['wpdb'] = new GatekeeperWpdb();
         $_GET = [];
         $_POST = [];
     }
 
     protected function tearDown(): void
     {
+        $GLOBALS['wpdb'] = $this->previousWpdb;
         while (ob_get_level() > 1) {
             ob_end_clean();
         }
