@@ -1515,3 +1515,27 @@ if (! function_exists('maybe_unserialize')) {
         return $data;
     }
 }
+
+// -----------------------------------------------------------------------------
+// Uninstall / deactivation stubs (UninstallerTest).
+// -----------------------------------------------------------------------------
+
+if (! defined('CLOCKWORK_RENEGADE_FILE')) {
+    define('CLOCKWORK_RENEGADE_FILE', dirname(__DIR__) . '/clockwork-renegade.php');
+}
+
+if (! function_exists('wp_clear_scheduled_hook')) {
+    function wp_clear_scheduled_hook(string $hook, array $args = [], bool $wp_error = false): int|false
+    {
+        $GLOBALS['wp_test_cleared_cron'][] = $hook;
+
+        return 1;
+    }
+}
+
+if (! function_exists('register_deactivation_hook')) {
+    function register_deactivation_hook(string $file, callable $callback): void
+    {
+        $GLOBALS['wp_test_deactivation_hooks'][$file][] = $callback;
+    }
+}

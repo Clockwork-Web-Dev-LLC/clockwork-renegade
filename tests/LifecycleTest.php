@@ -74,7 +74,8 @@ class LifecycleTest extends TestCase
         $queries = implode("\n", $GLOBALS['wpdb']->queries);
         $this->assertStringContainsString('DROP TABLE IF EXISTS `wp_clockwork_renegade_action_log`', $queries);
         $this->assertStringContainsString('DROP TABLE IF EXISTS `wp_clockwork_renegade_auth_failures`', $queries);
-        $this->assertStringContainsString('DROP TABLE IF EXISTS `wp_clockwork_renegade_resource_samples`', $queries);
+        $this->assertStringContainsString('DROP TABLE IF EXISTS `wp_clockwork_resource_hourly`', $queries);
+        $this->assertStringContainsString('DROP TABLE IF EXISTS `wp_clockwork_lockouts`', $queries);
     }
 
     public function testCodeSnippetsRouteIsExcluded(): void

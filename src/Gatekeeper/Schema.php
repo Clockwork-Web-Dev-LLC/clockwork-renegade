@@ -117,7 +117,7 @@ class Schema
     {
         global $wpdb;
 
-        if (! is_multisite() || ! function_exists('get_sites')) {
+        if (! is_multisite() || ! function_exists('get_sites') || ! method_exists($wpdb, 'get_blog_prefix')) {
             return [];
         }
 
