@@ -31,5 +31,7 @@ echo "==> Creating distribution zip: ${ZIP_FILE}..."
 
 echo "==> Release zip built successfully!"
 ls -lh "${ZIP_FILE}"
-shasum -a 256 "${ZIP_FILE}" > "${ZIP_FILE}.sha256"
+# Bare file name, so `shasum -a 256 -c clockwork-renegade.zip.sha256` works
+# next to the downloaded zip.
+(cd "$(dirname "${ZIP_FILE}")" && shasum -a 256 "$(basename "${ZIP_FILE}")" > "$(basename "${ZIP_FILE}").sha256")
 cat "${ZIP_FILE}.sha256"
