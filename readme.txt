@@ -141,6 +141,7 @@ No. Clockwork Renegade does not execute arbitrary remote code or eval(). All upd
 == Changelog ==
 
 = Unreleased =
+* Change: Renegade opts into WordPress's background plugin auto-updates, so a release published on GitHub installs itself within about a day. Turn it off with `define('CLOCKWORK_RENEGADE_DISABLE_AUTO_UPDATE', true)` or the `clockwork_renegade_auto_update_enabled` filter; `CLOCKWORK_RENEGADE_DISABLE_SELF_UPDATE` turns off both.
 * Security: Gatekeeper attributes a request from one of Cloudflare's published addresses to the visitor in CF-Connecting-IP when no trusted proxies are configured, so one lockout no longer blocks everyone behind a Cloudflare edge. Set Trusted Proxies to "none" to turn this off.
 * Change: saving Gatekeeper settings no longer deactivates Limit Login Attempts Reloaded; Clockwork Control retires it after confirming Gatekeeper is enforcing.
 * Security: Close a REST nonce (CSRF) bypass in the wp-force-login compatibility filter. It approved REST authentication whenever the URL contained the plugin's namespace, even in a query string, which also skipped core's cookie-nonce check for any REST route. It now acts only on the plugin's own dispatched routes, as an anonymous user.

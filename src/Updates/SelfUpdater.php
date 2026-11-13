@@ -42,6 +42,7 @@ class SelfUpdater
         add_filter('update_plugins_github.com', [self::class, 'filterUpdate'], 10, 4);
         add_filter('plugins_api', [self::class, 'filterPluginsApi'], 10, 3);
         add_filter('upgrader_pre_download', [self::class, 'verifyPackageDownload'], 10, 4);
+        add_filter('auto_update_plugin', [self::class, 'filterAutoUpdate'], 10, 2);
     }
 
     public static function enabled(): bool
@@ -51,6 +52,44 @@ class SelfUpdater
         }
 
         return (bool) apply_filters('clockwork_renegade_self_update_enabled', true);
+    }
+
+    /**
+     * Whether WordPress should install a new Renegade release on its own,
+     * through its twice-daily background auto-update run, so a published
+     * release reaches every site without anyone clicking Update.
+     *
+     * On by default. Turn it off with
+     * `define('CLOCKWORK_RENEGADE_DISABLE_AUTO_UPDATE', true)` or the
+     * `clockwork_renegade_auto_update_enabled` filter; self-update checks being off
+     * turns it off too (the filter is not registered).
+     */
+    public static function autoUpdateEnabled(): bool
+    {
+        if (defined('CLOCKWORK_RENEGADE_DISABLE_AUTO_UPDATE') && constant('CLOCKWORK_RENEGADE_DISABLE_AUTO_UPDATE')) {
+            return false;
+        }
+
+        return (bool) apply_filters('clockwork_renegade_auto_update_enabled', true);
+    }
+
+    /**
+     * `auto_update_plugin` filter: true for this plugin, everything else
+     * untouched.
+     *
+     * @param  mixed  $update
+     * @param  mixed  $item
+     * @return mixed
+     */
+    public static function filterAutoUpdate($update, $item)
+    {
+        $plugin = is_object($item) ? ($item->plugin ?? null) : (is_array($item) ? ($item['plugin'] ?? null) : null);
+
+        if ($plugin !== self::PLUGIN_FILE || ! self::autoUpdateEnabled()) {
+            return $update;
+        }
+
+        return true;
     }
 
     /**
