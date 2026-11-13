@@ -33,9 +33,11 @@ The full changelog is in [`readme.txt`](readme.txt) (`== Changelog ==`).
 
 ### Unreleased
 
+### 1.2.0 (2026-11-13)
+
 The November 2026 audit fixes (Gatekeeper trusted proxies and bypass fix, two-phase secret rotation, 2FA code lockout, working maintenance mode, `%`-safe and verified database dumps, checksum-verified self-update, complete uninstall). See `= Unreleased =` in `readme.txt`.
 
-- **Release step:** `languages/clockwork-renegade.pot` was regenerated on 2026-11-12. Regenerate it again after the version bump so its header shows the new version: `wp i18n make-pot . languages/clockwork-renegade.pot --slug=clockwork-renegade --domain=clockwork-renegade --exclude=vendor,tests,node_modules,bin`.
+- Also: Renegade opts into WordPress background auto-updates (opt out with `CLOCKWORK_RENEGADE_DISABLE_AUTO_UPDATE`).
 
 ## Releasing
 
