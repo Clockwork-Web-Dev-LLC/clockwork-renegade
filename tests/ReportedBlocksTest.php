@@ -76,8 +76,10 @@ class ReportedBlocksTest extends TestCase
         foreach (['10.0.0.5', '127.0.0.1', '::1', '169.254.10.10', '100.64.1.1', 'fc00::5', '0.0.0.0', '192.168.1.1'] as $ip) {
             $this->assertFalse(ReportedBlocks::isBannable($ip), $ip);
         }
-        $this->assertTrue(ReportedBlocks::isBannable('203.0.113.9'));
-        $this->assertTrue(ReportedBlocks::isBannable('2001:db8::9'));
+        // Real public addresses: some PHP builds class the RFC 5737 / 3849
+        // documentation ranges as reserved, so they cannot stand in here.
+        $this->assertTrue(ReportedBlocks::isBannable('8.8.8.8'));
+        $this->assertTrue(ReportedBlocks::isBannable('2606:4700:4700::1111'));
     }
 
     public function testLockoutsAreFilteredAndCapped(): void
