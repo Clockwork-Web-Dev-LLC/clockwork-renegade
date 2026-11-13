@@ -26,7 +26,7 @@ use WP_REST_Response;
  *       "retention_period": 14,
  *       "next_run_time": "2026-05-03T07:00:00+00:00",
  *       "paths_to_exclude": null,
- *       "storage_provider": {"region": "nyc3", "bucket": "clkwrk01"}
+ *       "storage_provider": {"region": "example-region", "bucket": "example-bucket"}
  *     },
  *     "schedules": [...],
  *     "history": [...],

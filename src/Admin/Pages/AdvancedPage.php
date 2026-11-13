@@ -4,6 +4,7 @@ namespace ClockworkRenegade\Admin\Pages;
 
 use ClockworkRenegade\Admin\Layout;
 use ClockworkRenegade\Admin\Menu;
+use ClockworkRenegade\Gatekeeper\ClientIp as GatekeeperClientIp;
 use ClockworkRenegade\Gatekeeper\Settings as GatekeeperSettings;
 use ClockworkRenegade\Gatekeeper\Store as GatekeeperStore;
 use ClockworkRenegade\WhiteLabel\WhiteLabel;
@@ -113,7 +114,43 @@ class AdvancedPage
         $enabled = (bool) ($settings['enabled'] ?? false);
         $ignoreIps = implode("\n", (array) ($settings['ignore_ips'] ?? []));
         $ignoreCidrs = implode("\n", (array) ($settings['ignore_cidrs'] ?? []));
+        $trustedProxies = implode("\n", (array) ($settings['trusted_proxies'] ?? []));
+
+        // The admin's own request travels the same path as a visitor's, so
+        // the address Gatekeeper resolves for it shows whether lockouts can
+        // work at all.
+        $client = GatekeeperClientIp::resolve();
+        $clientIsPrivatePeer = $client['source'] === GatekeeperClientIp::SOURCE_PEER && GatekeeperStore::isPrivate($client['ip']);
+        $clientIsUntrustedCdn = $client['source'] === GatekeeperClientIp::SOURCE_PEER && GatekeeperClientIp::isCloudflare($client['peer']);
         ?>
+
+        <?php if ($clientIsPrivatePeer) : ?>
+            <div class="notice notice-warning" style="margin: 0 0 20px 0; border-radius: 6px; padding: 12px 16px;">
+                <p style="margin:0; font-weight:600;"><?php esc_html_e('Gatekeeper is not protecting this site', 'clockwork-renegade'); ?></p>
+                <p style="margin:4px 0 0 0; font-size:13px;">
+                    <?php
+                    echo esc_html(sprintf(
+                        /* translators: %s: IP address */
+                        __('This request reached WordPress from %s, a private address. Private addresses are never throttled, so if visitors arrive through the same proxy or load balancer, no one can be locked out. Add the proxy under Trusted Proxies (or have the web server pass the real client address in REMOTE_ADDR).', 'clockwork-renegade'),
+                        $client['ip']
+                    ));
+                    ?>
+                </p>
+            </div>
+        <?php elseif ($clientIsUntrustedCdn) : ?>
+            <div class="notice notice-warning" style="margin: 0 0 20px 0; border-radius: 6px; padding: 12px 16px;">
+                <p style="margin:0; font-weight:600;"><?php esc_html_e('Requests arrive from Cloudflare', 'clockwork-renegade'); ?></p>
+                <p style="margin:4px 0 0 0; font-size:13px;">
+                    <?php
+                    echo esc_html(sprintf(
+                        /* translators: %s: IP address */
+                        __('This request came from the Cloudflare address %s. Without "cloudflare" under Trusted Proxies, every visitor shares Cloudflare\'s addresses and a few failed logins by anyone lock out everyone using the same edge.', 'clockwork-renegade'),
+                        $client['peer']
+                    ));
+                    ?>
+                </p>
+            </div>
+        <?php endif; ?>
 
         <?php if (! $isAgency) : ?>
             <div class="notice notice-info" style="margin: 0 0 20px 0; border-radius: 6px; padding: 12px 16px; background:#eff6ff; border-left:4px solid #2563eb;">
@@ -346,7 +383,7 @@ class AdvancedPage
                             <?php esc_html_e('Allowlisted IP Addresses & Subnets', 'clockwork-renegade'); ?>
                         </h3>
                         <p style="margin:0 0 8px 0; font-size:12px; color:var(--cwk-text-muted);">
-                            <?php esc_html_e('These IPs are never throttled or locked out. One per line. Private local networks (127.0.0.1, 10.0.0.0/8, 192.168.0.0/16, etc.) are always automatically whitelisted.', 'clockwork-renegade'); ?>
+                            <?php esc_html_e('These IPs are never throttled or locked out. One per line. Requests whose connection comes from a private network address (127.0.0.1, 10.0.0.0/8, 192.168.0.0/16, etc.) are also never throttled.', 'clockwork-renegade'); ?>
                         </p>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                             <div>
@@ -363,6 +400,29 @@ class AdvancedPage
                                 <textarea name="ignore_cidrs" rows="4" <?php disabled(! $isAgency); ?> style="width:100%; font-family:monospace; font-size:12px;"><?php echo esc_textarea($ignoreCidrs); ?></textarea>
                             </div>
                         </div>
+                    </div>
+
+                    <hr style="border:none; border-top:1px solid #e2e8f0; margin:4px 0;" />
+
+                    <!-- Trusted Proxies -->
+                    <div>
+                        <h3 style="font-size:14px; font-weight:600; margin:0 0 8px 0; color:var(--cwk-text);">
+                            <?php esc_html_e('Trusted Proxies', 'clockwork-renegade'); ?>
+                        </h3>
+                        <p style="margin:0 0 8px 0; font-size:12px; color:var(--cwk-text-muted);">
+                            <?php esc_html_e('Connections from these addresses may name the real visitor in the CF-Connecting-IP or X-Forwarded-For header; from anywhere else those headers are ignored. One IP or CIDR per line, or "cloudflare" for Cloudflare\'s published ranges and "private" for loopback and private networks. When left empty, Cloudflare\'s addresses may still name the visitor in CF-Connecting-IP (and nothing else is trusted); enter "none" to trust no connection at all.', 'clockwork-renegade'); ?>
+                        </p>
+                        <p style="margin:0 0 8px 0; font-size:12px; color:var(--cwk-text-muted);">
+                            <?php
+                            echo esc_html(sprintf(
+                                /* translators: 1: resolved client IP, 2: connecting peer IP */
+                                __('This request: client %1$s, connection from %2$s.', 'clockwork-renegade'),
+                                $client['ip'],
+                                $client['peer']
+                            ));
+                            ?>
+                        </p>
+                        <textarea name="trusted_proxies" rows="3" <?php disabled(! $isAgency); ?> style="width:100%; max-width:540px; font-family:monospace; font-size:12px;"><?php echo esc_textarea($trustedProxies); ?></textarea>
                     </div>
 
                     <?php if ($isAgency) : ?>
@@ -601,26 +661,31 @@ class AdvancedPage
 
         check_admin_referer('clockwork_gatekeeper_save');
 
-        $ignoreIpsRaw = explode("\n", (string) ($_POST['ignore_ips'] ?? ''));
-        $ignoreCidrsRaw = explode("\n", (string) ($_POST['ignore_cidrs'] ?? ''));
+        // WordPress adds slashes to $_POST; without unslashing, an apostrophe
+        // in the headline was stored as \' and gained a backslash per save.
+        $post = wp_unslash($_POST);
 
-        $windowMins = max(1, min(1440, (int) ($_POST['window_minutes'] ?? 20)));
-        $lockoutMins = max(1, min(10080, (int) ($_POST['lockout_minutes'] ?? 20)));
-        $extendedHours = max(1, min(720, (int) ($_POST['extended_lockout_hours'] ?? 24)));
+        $ignoreIpsRaw = explode("\n", (string) ($post['ignore_ips'] ?? ''));
+        $ignoreCidrsRaw = explode("\n", (string) ($post['ignore_cidrs'] ?? ''));
+
+        $windowMins = max(1, min(1440, (int) ($post['window_minutes'] ?? 20)));
+        $lockoutMins = max(1, min(10080, (int) ($post['lockout_minutes'] ?? 20)));
+        $extendedHours = max(1, min(720, (int) ($post['extended_lockout_hours'] ?? 24)));
 
         GatekeeperSettings::update([
-            'enabled' => ! empty($_POST['enabled']),
-            'threshold' => max(1, min(50, (int) ($_POST['threshold'] ?? 4))),
+            'enabled' => ! empty($post['enabled']),
+            'threshold' => max(1, min(50, (int) ($post['threshold'] ?? 4))),
             'window_seconds' => $windowMins * 60,
             'lockout_seconds' => $lockoutMins * 60,
-            'consecutive_lockouts_for_extended' => max(1, min(20, (int) ($_POST['consecutive_lockouts_for_extended'] ?? 4))),
+            'consecutive_lockouts_for_extended' => max(1, min(20, (int) ($post['consecutive_lockouts_for_extended'] ?? 4))),
             'extended_lockout_seconds' => $extendedHours * 3600,
-            'headline' => sanitize_text_field((string) ($_POST['headline'] ?? '')),
-            'body' => sanitize_textarea_field((string) ($_POST['body'] ?? '')),
-            'support_email' => sanitize_email((string) ($_POST['support_email'] ?? '')),
-            'support_url' => esc_url_raw((string) ($_POST['support_url'] ?? '')),
+            'headline' => sanitize_text_field((string) ($post['headline'] ?? '')),
+            'body' => sanitize_textarea_field((string) ($post['body'] ?? '')),
+            'support_email' => sanitize_email((string) ($post['support_email'] ?? '')),
+            'support_url' => esc_url_raw((string) ($post['support_url'] ?? '')),
             'ignore_ips' => $ignoreIpsRaw,
             'ignore_cidrs' => $ignoreCidrsRaw,
+            'trusted_proxies' => (string) ($post['trusted_proxies'] ?? ''),
         ]);
 
         self::redirectAndExit(add_query_arg([

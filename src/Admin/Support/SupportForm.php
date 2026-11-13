@@ -11,9 +11,8 @@ use ClockworkRenegade\Admin\Pages\UptimePage;
 use ClockworkRenegade\WhiteLabel\WhiteLabel;
 
 /**
- * Support ticket form — proxies submissions to a Gravity Forms form (form ID
- * 3) on the operator's own site, defined by the CLOCKWORK_SUPPORT_SITE_URL
- * constant. Unset, the form reports itself as unconfigured rather than posting
+ * Support ticket form — proxies submissions to a Gravity Forms form on the
+ * operator's own site, defined by the CLOCKWORK_SUPPORT_SITE_URL constant. Unset, the form reports itself as unconfigured rather than posting
  * anywhere.
  *
  * Exposes three integration points:
@@ -25,16 +24,12 @@ use ClockworkRenegade\WhiteLabel\WhiteLabel;
  *     that relays sanitised input to the GF REST endpoint so credentials
  *     never appear in the browser.
  *
- * GF field map (form 3, exported 2026-06-23):
- *   input_1_3  = Name / First
- *   input_1_6  = Name / Last
- *   input_3    = Email
- *   input_2    = Website Link (URL)
- *   input_8    = Short Description (subject line)
- *   input_4    = Detailed Description
- *   input_7    = "Have you worked with Clockwork before?" (radio) — hidden, pre-set
- *   input_6_1  = Billing approval checkbox
- *   input_9_1  = Newsletter subscribe checkbox
+ * Which Gravity Forms form and fields receive the ticket is configuration,
+ * not code (see config()): CLOCKWORK_SUPPORT_GF_FORM_ID, an optional
+ * CLOCKWORK_SUPPORT_GF_FIELD_MAP array (logical field => GF input name, e.g.
+ * 'email' => 'input_3'), and the `clockwork_renegade_support_form` filter for
+ * everything else (fixed hidden values, a billing-terms checkbox, a
+ * newsletter opt-in). With no form id the form reports itself unconfigured.
  *
  * Auth: uses GF REST API v2. Define these constants with the keys from that
  * site's Forms → Settings → REST API → Authentication screen (API version 2):
@@ -43,11 +38,74 @@ use ClockworkRenegade\WhiteLabel\WhiteLabel;
  */
 class SupportForm
 {
-    private const GF_FORM_ID = 3;
+    /**
+     * Where and how tickets are submitted. Neutral defaults: no form, no
+     * field mapping, no billing terms, no newsletter opt-in.
+     *
+     * @return array{form_id: int, fields: array<string, string>, static_fields: array<string, string>, billing_notice: string, subscribe_text: string}
+     */
+    public static function config(): array
+    {
+        $fields = array_fill_keys(['first_name', 'last_name', 'email', 'website_url', 'short_desc', 'long_desc', 'approved', 'subscribe'], '');
+        if (defined('CLOCKWORK_SUPPORT_GF_FIELD_MAP') && is_array(constant('CLOCKWORK_SUPPORT_GF_FIELD_MAP'))) {
+            foreach ((array) constant('CLOCKWORK_SUPPORT_GF_FIELD_MAP') as $key => $input) {
+                if (array_key_exists((string) $key, $fields) && is_string($input)) {
+                    $fields[(string) $key] = $input;
+                }
+            }
+        }
 
-    private const BILLING_NOTICE = 'I understand that my request may be subject to a minimum charge of one billable hour at an hourly rate of $200';
+        $config = [
+            'form_id' => defined('CLOCKWORK_SUPPORT_GF_FORM_ID') ? (int) constant('CLOCKWORK_SUPPORT_GF_FORM_ID') : 0,
+            'fields' => $fields,
+            // GF input name => fixed value sent with every ticket.
+            'static_fields' => [],
+            // Shown as a required checkbox when set; sent as the 'approved' field's value.
+            'billing_notice' => '',
+            // Shown as an optional checkbox when set; sent as the 'subscribe' field's value.
+            'subscribe_text' => '',
+        ];
 
-    private const SUBSCRIBE_TEXT = "Yes! I'd like to receive occasional email updates from Clockwork.";
+        $filtered = apply_filters('clockwork_renegade_support_form', $config);
+        if (! is_array($filtered)) {
+            return $config;
+        }
+
+        return [
+            'form_id' => (int) ($filtered['form_id'] ?? 0),
+            'fields' => array_map('strval', array_merge($fields, (array) ($filtered['fields'] ?? []))),
+            'static_fields' => array_map('strval', (array) ($filtered['static_fields'] ?? [])),
+            'billing_notice' => (string) ($filtered['billing_notice'] ?? ''),
+            'subscribe_text' => (string) ($filtered['subscribe_text'] ?? ''),
+        ];
+    }
+
+    /**
+     * The Gravity Forms submission body for a sanitised ticket.
+     *
+     * @param  array{first_name: string, last_name: string, email: string, website_url: string, short_desc: string, long_desc: string, approved: bool, subscribe: bool}  $ticket
+     * @param  array{form_id: int, fields: array<string, string>, static_fields: array<string, string>, billing_notice: string, subscribe_text: string}  $config
+     * @return array<string, mixed>
+     */
+    public static function buildSubmission(array $ticket, array $config): array
+    {
+        $values = $ticket;
+        $values['approved'] = $ticket['approved'] && $config['billing_notice'] !== '' ? $config['billing_notice'] : '';
+        $values['subscribe'] = $ticket['subscribe'] && $config['subscribe_text'] !== '' ? $config['subscribe_text'] : '';
+
+        $body = [];
+        foreach ($config['fields'] as $key => $input) {
+            if ($input !== '' && isset($values[$key]) && $values[$key] !== '') {
+                $body[$input] = $values[$key];
+            }
+        }
+
+        return array_merge($body, $config['static_fields'], [
+            'source_page'  => 1,
+            'target_page'  => 0,
+            'field_values' => '',
+        ]);
+    }
 
     public function register(): void
     {
@@ -322,6 +380,7 @@ class SupportForm
         if (! current_user_can('manage_options')) {
             return;
         }
+        $supportConfig = self::config();
         ?>
         <div id="cwk-support-modal" role="dialog" aria-modal="true" aria-labelledby="cwk-modal-title" style="display:none;">
             <div class="cwk-modal-overlay"></div>
@@ -373,19 +432,23 @@ class SupportForm
                             <textarea id="cwk-message" name="long_desc" required rows="5" placeholder="<?php echo esc_attr__('Please describe your issue in detail…', 'clockwork-renegade'); ?>"></textarea>
                         </div>
 
+                        <?php if ($supportConfig['billing_notice'] !== '') : ?>
                         <div class="cwk-form-group cwk-form-checkbox">
                             <label class="cwk-checkbox-label">
                                 <input type="checkbox" name="approved" value="1" required>
-                                <span><?php esc_html_e('I understand that my request may be subject to a minimum charge of one billable hour at an hourly rate of $200', 'clockwork-renegade'); ?> <span class="cwk-required" aria-hidden="true">*</span></span>
+                                <span><?php echo esc_html($supportConfig['billing_notice']); ?> <span class="cwk-required" aria-hidden="true">*</span></span>
                             </label>
                         </div>
+                        <?php endif; ?>
 
+                        <?php if ($supportConfig['subscribe_text'] !== '') : ?>
                         <div class="cwk-form-group cwk-form-checkbox">
                             <label class="cwk-checkbox-label">
                                 <input type="checkbox" name="subscribe" value="1">
-                                <span><?php esc_html_e('Yes! I\'d like to receive occasional email updates from Clockwork.', 'clockwork-renegade'); ?></span>
+                                <span><?php echo esc_html($supportConfig['subscribe_text']); ?></span>
                             </label>
                         </div>
+                        <?php endif; ?>
 
                         <div class="cwk-form-actions">
                             <button type="submit" class="cwk-submit-btn">
@@ -500,6 +563,30 @@ class SupportForm
         <?php
     }
 
+    /**
+     * Sanitised form fields from a request array. WordPress adds slashes to
+     * $_POST, so values are unslashed first; without that an apostrophe in a
+     * message reached the ticket as \'.
+     *
+     * @param  array<string, mixed>  $post
+     * @return array{first_name: string, last_name: string, email: string, website_url: string, short_desc: string, long_desc: string, approved: bool, subscribe: bool}
+     */
+    public static function readSubmission(array $post): array
+    {
+        $post = wp_unslash($post);
+
+        return [
+            'first_name' => sanitize_text_field((string) ($post['first_name'] ?? '')),
+            'last_name' => sanitize_text_field((string) ($post['last_name'] ?? '')),
+            'email' => sanitize_email((string) ($post['email'] ?? '')),
+            'website_url' => esc_url_raw((string) ($post['website_url'] ?? get_site_url())),
+            'short_desc' => sanitize_text_field((string) ($post['short_desc'] ?? '')),
+            'long_desc' => sanitize_textarea_field((string) ($post['long_desc'] ?? '')),
+            'approved' => ! empty($post['approved']),
+            'subscribe' => ! empty($post['subscribe']),
+        ];
+    }
+
     public static function handleSubmit(): void
     {
         check_ajax_referer('cwk_support_submit', 'nonce');
@@ -513,14 +600,16 @@ class SupportForm
             wp_send_json_error(['message' => __('Insufficient permissions.', 'clockwork-renegade')], 403);
         }
 
-        $firstName = sanitize_text_field((string) ($_POST['first_name'] ?? ''));
-        $lastName  = sanitize_text_field((string) ($_POST['last_name'] ?? ''));
-        $email     = sanitize_email((string) ($_POST['email'] ?? ''));
-        $siteUrl   = esc_url_raw((string) ($_POST['website_url'] ?? get_site_url()));
-        $shortDesc = sanitize_text_field((string) ($_POST['short_desc'] ?? ''));
-        $longDesc  = sanitize_textarea_field((string) ($_POST['long_desc'] ?? ''));
-        $approved  = ! empty($_POST['approved']);
-        $subscribe = ! empty($_POST['subscribe']);
+        [
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => $email,
+            'website_url' => $siteUrl,
+            'short_desc' => $shortDesc,
+            'long_desc' => $longDesc,
+            'approved' => $approved,
+            'subscribe' => $subscribe,
+        ] = self::readSubmission($_POST);
 
         if (! $firstName || ! $lastName || ! $email || ! $shortDesc || ! $longDesc) {
             wp_send_json_error(['message' => __('Please fill in all required fields.', 'clockwork-renegade')], 422);
@@ -528,40 +617,35 @@ class SupportForm
         if (! is_email($email)) {
             wp_send_json_error(['message' => __('Please enter a valid email address.', 'clockwork-renegade')], 422);
         }
-        if (! $approved) {
+        $config = self::config();
+        if (! $approved && $config['billing_notice'] !== '') {
             wp_send_json_error(['message' => __('Please accept the billing terms to continue.', 'clockwork-renegade')], 422);
         }
 
-        $body = [
-            'input_1_3'    => $firstName,
-            'input_1_6'    => $lastName,
-            'input_3'      => $email,
-            'input_2'      => $siteUrl,
-            'input_8'      => $shortDesc,
-            'input_4'      => $longDesc,
-            'input_7'      => 'I am an existing client',
-            'input_6_1'    => self::BILLING_NOTICE,
-            'source_page'  => 1,
-            'target_page'  => 0,
-            'field_values' => '',
-        ];
-        if ($subscribe) {
-            $body['input_9_1'] = self::SUBSCRIBE_TEXT;
-        }
+        $body = self::buildSubmission([
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => $email,
+            'website_url' => $siteUrl,
+            'short_desc' => $shortDesc,
+            'long_desc' => $longDesc,
+            'approved' => $approved,
+            'subscribe' => $subscribe,
+        ], $config);
 
         $baseUrl = defined('CLOCKWORK_SUPPORT_SITE_URL') ? (string) CLOCKWORK_SUPPORT_SITE_URL : '';
 
-        // No support site configured: say so plainly. Without this the empty
-        // base URL would build a relative endpoint, wp_remote_post() would
-        // reject it, and the operator would get a misleading "couldn't reach
-        // the support system" alongside a link to nowhere.
-        if (trim($baseUrl) === '') {
+        // No support site or form configured: say so plainly. Without this the
+        // empty base URL would build a relative endpoint, wp_remote_post()
+        // would reject it, and the operator would get a misleading "couldn't
+        // reach the support system" alongside a link to nowhere.
+        if (trim($baseUrl) === '' || $config['form_id'] <= 0) {
             wp_send_json_error([
-                'message' => __('The support form isn\'t configured on this site. Set CLOCKWORK_SUPPORT_SITE_URL in wp-config.php, or contact your agency directly.', 'clockwork-renegade'),
+                'message' => __('The support form isn\'t configured on this site. Set CLOCKWORK_SUPPORT_SITE_URL and CLOCKWORK_SUPPORT_GF_FORM_ID in wp-config.php, or contact your agency directly.', 'clockwork-renegade'),
             ], 501);
         }
 
-        $endpoint     = rtrim($baseUrl, '/') . '/wp-json/gf/v2/forms/' . self::GF_FORM_ID . '/submissions';
+        $endpoint     = rtrim($baseUrl, '/') . '/wp-json/gf/v2/forms/' . $config['form_id'] . '/submissions';
         $supportUrl   = esc_url(rtrim($baseUrl, '/') . '/support');
         $fallbackLink = ' <a href="' . $supportUrl . '" target="_blank" rel="noopener">' . esc_html__('Open our support page →', 'clockwork-renegade') . '</a>';
 

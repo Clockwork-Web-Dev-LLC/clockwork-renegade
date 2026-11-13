@@ -2,6 +2,8 @@
 
 namespace ClockworkRenegade\Tests;
 
+use ClockworkRenegade\Admin\Pages\AdvancedPage;
+use ClockworkRenegade\Gatekeeper\ClientIp;
 use ClockworkRenegade\Gatekeeper\Gate;
 use ClockworkRenegade\Gatekeeper\Schema;
 use ClockworkRenegade\Gatekeeper\Settings;
@@ -9,24 +11,54 @@ use ClockworkRenegade\Gatekeeper\Store;
 use ClockworkRenegade\Plugin;
 use ClockworkRenegade\Rest\GatekeeperSettingsRoute;
 use ClockworkRenegade\Rest\LockoutsRoute;
+use ClockworkRenegade\Tests\Fakes\GatekeeperWpdb;
 use PHPUnit\Framework\TestCase;
 use WP_Error;
 use WP_REST_Request;
 
+require_once __DIR__ . '/Fakes/GatekeeperWpdb.php';
+
 class GatekeeperTest extends TestCase
 {
+    private GatekeeperWpdb $db;
+
+    /** @var mixed */
+    private $previousWpdb;
+
     protected function setUp(): void
     {
         parent::setUp();
         $GLOBALS['wp_test_options'] = [];
-        $GLOBALS['wpdb'] = new \wpdb();
+        $GLOBALS['wp_test_site_options'] = [];
+        $GLOBALS['wp_test_blog_options'] = [];
+        $GLOBALS['wp_test_is_multisite'] = false;
+        $GLOBALS['wp_test_filters'] = [];
+        $this->previousWpdb = $GLOBALS['wpdb'];
+        $this->db = new GatekeeperWpdb();
+        $GLOBALS['wpdb'] = $this->db;
         $GLOBALS['wp_test_object_cache'] = [];
         $GLOBALS['wp_test_object_cache_expire'] = [];
         $GLOBALS['wp_test_using_ext_object_cache'] = true;
         $GLOBALS['wp_test_status_header'] = 200;
         $_SERVER['REMOTE_ADDR'] = '203.0.113.10'; // TEST-NET-3
         $_SERVER['REQUEST_URI'] = '/wp-login.php';
+        unset($_SERVER['HTTP_CF_CONNECTING_IP'], $_SERVER['HTTP_X_FORWARDED_FOR'], $GLOBALS['wp']);
+        Gate::resetRequestState();
+    }
+
+    protected function tearDown(): void
+    {
+        $GLOBALS['wpdb'] = $this->previousWpdb;
+        $GLOBALS['wp_test_is_multisite'] = false;
+        // Network and other-site options must not leak a Gatekeeper policy
+        // into later multisite tests.
+        $GLOBALS['wp_test_site_options'] = [];
+        $GLOBALS['wp_test_blog_options'] = [];
+        unset($GLOBALS['wp_test_site_ids']);
+        $GLOBALS['wp_test_filters'] = [];
         unset($_SERVER['HTTP_CF_CONNECTING_IP'], $_SERVER['HTTP_X_FORWARDED_FOR']);
+        Gate::resetRequestState();
+        parent::tearDown();
     }
 
     public function testCapabilityIsAdvertised(): void
@@ -103,17 +135,6 @@ class GatekeeperTest extends TestCase
         $this->assertNotEmpty($locked['unlock_at']);
     }
 
-    public function testResetOnSuccessClearsLockout(): void
-    {
-        Settings::update(['enabled' => true, 'threshold' => 1]);
-        $ip = '203.0.113.10';
-
-        Store::incrementFailure($ip);
-        $this->assertNotNull(Store::isLocked($ip));
-
-        Store::resetOnSuccess($ip);
-        $this->assertNull(Store::isLocked($ip));
-    }
 
     public function testEarlyLockoutCheckReturnsErrorForRestAndXmlRpc(): void
     {
@@ -143,6 +164,7 @@ class GatekeeperTest extends TestCase
         $ip = '203.0.113.10';
         $_SERVER['REMOTE_ADDR'] = $ip;
         $_SERVER['REQUEST_URI'] = '/wp-json/clockwork-renegade/v1/lockouts';
+        $GLOBALS['wp'] = (object) ['query_vars' => ['rest_route' => '/clockwork-renegade/v1/lockouts']];
 
         Store::lock($ip);
         $this->assertNotNull(Store::isLocked($ip));
@@ -151,6 +173,47 @@ class GatekeeperTest extends TestCase
         $userObj = (object) ['ID' => 123];
         $result = Gate::earlyLockoutCheck($userObj, '', '');
         $this->assertSame($userObj, $result);
+    }
+
+    /**
+     * The exemption above used to be a substring test on the URL, so adding
+     * `?x=/wp-json/clockwork/` to wp-login.php or xmlrpc.php switched the
+     * lockout off: failures were not counted and a lock was ignored.
+     */
+    public function testNamespaceInALoginUrlDoesNotExemptTheRequest(): void
+    {
+        Settings::update(['enabled' => true, 'threshold' => 2]);
+        $ip = '203.0.113.10';
+        $_SERVER['REMOTE_ADDR'] = $ip;
+        if (! defined('REST_REQUEST')) {
+            define('REST_REQUEST', true); // makes a locked request return WP_Error instead of exit()
+        }
+
+        $probes = [
+            '/wp-login.php?x=/wp-json/clockwork/',
+            '/wp-login.php?x=/wp-json/clockwork-renegade/',
+            '/xmlrpc.php?rest_route=/clockwork/',
+            '/wp-login.php?rest_route=/clockwork-renegade/v1/lockouts',
+            '/wp-login.php?rest_route=%2Fclockwork-renegade%2F',
+        ];
+
+        foreach ($probes as $uri) {
+            Store::unlockIp($ip);
+            $_SERVER['REQUEST_URI'] = $uri;
+            $_SERVER['QUERY_STRING'] = (string) parse_url($uri, PHP_URL_QUERY);
+            parse_str($_SERVER['QUERY_STRING'], $_GET);
+
+            Gate::onLoginFailed('admin');
+            Gate::onLoginFailed('admin');
+            $this->assertNotNull(Store::isLocked($ip), "failures were not counted for {$uri}");
+
+            $result = Gate::earlyLockoutCheck(null, 'admin', 'guess');
+            $this->assertInstanceOf(WP_Error::class, $result, "lockout was skipped for {$uri}");
+            $this->assertSame('gatekeeper_locked', $result->get_error_code());
+        }
+
+        $_GET = [];
+        unset($_SERVER['QUERY_STRING']);
     }
 
     public function testSettingsRouteStoresEscapedFields(): void
@@ -166,11 +229,11 @@ class GatekeeperTest extends TestCase
             'headline' => 'Agency Access Paused',
             'body' => 'Please wait {duration} before next attempt.',
             'support_label' => 'Service Desk',
-            'support_email' => 'helpdesk@example.gov',
-            'support_url' => 'https://example.gov/support',
+            'support_email' => 'helpdesk@example.org',
+            'support_url' => 'https://example.org/support',
             'show_ip' => true,
             'show_unlock_link' => true,
-            'unlock_url' => 'https://clockworkwd.com/unlock',
+            'unlock_url' => 'https://example.com/unlock',
             'ignore_ips' => ['203.0.113.99'],
             'ignore_cidrs' => ['203.0.113.0/24'],
         ];
@@ -187,7 +250,7 @@ class GatekeeperTest extends TestCase
         $this->assertSame(5, $stored['threshold']);
         $this->assertSame(900, $stored['window_seconds']);
         $this->assertSame('Agency Access Paused', $stored['headline']);
-        $this->assertSame('helpdesk@example.gov', $stored['support_email']);
+        $this->assertSame('helpdesk@example.org', $stored['support_email']);
         $this->assertSame(['203.0.113.99'], $stored['ignore_ips']);
         $this->assertSame(['203.0.113.0/24'], $stored['ignore_cidrs']);
     }
@@ -258,9 +321,7 @@ class GatekeeperTest extends TestCase
         $this->assertIsArray($still);
         $this->assertLessThan(2000, $still['retry_after']);
 
-        $row = $GLOBALS['wpdb']->get_row("SELECT consecutive_lockouts FROM `wp_clockwork_lockouts` WHERE ip = '{$ip}'");
-        $this->assertIsArray($row);
-        $this->assertSame(1, (int) $row['consecutive_lockouts']);
+        $this->assertSame(1, (int) $this->db->rows()[$ip]['consecutive_lockouts']);
     }
 
     public function testFourthConsecutiveLockoutUsesExtendedDuration(): void
@@ -311,13 +372,7 @@ class GatekeeperTest extends TestCase
     {
         wp_cache_delete("gatekeeper_locked:{$ip}", 'gatekeeper');
         wp_cache_delete("gatekeeper_attempts:{$ip}", 'gatekeeper');
-        $rows = &$GLOBALS['wpdb']->table_rows['wp_clockwork_lockouts'];
-        foreach ($rows as &$row) {
-            if (($row['ip'] ?? '') === $ip) {
-                $row['unlock_at'] = gmdate('Y-m-d H:i:s', time() - 60);
-            }
-        }
-        unset($row);
+        $this->db->lockoutTables['wp_clockwork_lockouts'][Store::bucket($ip)]['unlock_at'] = gmdate('Y-m-d H:i:s', time() - 60);
     }
 
     public function testZeroMaskCidrIsRejectedAndDoesNotAllowlistAll(): void
@@ -357,7 +412,7 @@ class GatekeeperTest extends TestCase
         Settings::update(["enabled" => true, "threshold" => 4]);
 
         // 1. MySQL store (wp_using_ext_object_cache = false)
-        $GLOBALS["wp_test_ext_object_cache"] = false;
+        $GLOBALS["wp_test_using_ext_object_cache"] = false;
         $ipMysql = "198.51.100.101";
         for ($i = 0; $i < 8; $i++) {
             Store::incrementFailure($ipMysql);
@@ -365,24 +420,405 @@ class GatekeeperTest extends TestCase
         $this->assertNotNull(Store::isLocked($ipMysql), "MySQL store must lock IP after 8 increments with threshold 4");
 
         // 2. Object cache store (wp_using_ext_object_cache = true)
-        $GLOBALS["wp_test_ext_object_cache"] = true;
+        $GLOBALS["wp_test_using_ext_object_cache"] = true;
         $ipCache = "198.51.100.102";
         for ($i = 0; $i < 8; $i++) {
             Store::incrementFailure($ipCache);
         }
         $this->assertNotNull(Store::isLocked($ipCache), "Object cache store must lock IP after 8 increments with threshold 4");
 
-        $GLOBALS["wp_test_ext_object_cache"] = false;
     }
 
-    public function testEnablingGatekeeperDeactivatesLegacyLlar(): void
+    /**
+     * Clockwork retires LLAR itself after confirming Gatekeeper enforces;
+     * saving a policy must not deactivate it on its own, least of all when
+     * Gatekeeper is not enforcing at all.
+     */
+    public function testEnablingGatekeeperLeavesLlarActive(): void
     {
-        $pluginSlug = "limit-login-attempts-reloaded/limit-login-attempts-reloaded.php";
+        $pluginSlug = 'limit-login-attempts-reloaded/limit-login-attempts-reloaded.php';
         activate_plugin($pluginSlug);
+
+        Settings::update(['enabled' => true]);
+
+        $this->assertTrue(Settings::get()['enabled']);
         $this->assertTrue(is_plugin_active($pluginSlug));
+    }
 
-        Settings::update(["enabled" => true]);
+    // ---------------------------------------------------------------------
+    // Client address resolution
+    // ---------------------------------------------------------------------
 
-        $this->assertFalse(is_plugin_active($pluginSlug));
+    public function testForwardingHeadersAreIgnoredWithoutTrustedProxies(): void
+    {
+        $_SERVER['REMOTE_ADDR'] = '203.0.113.10';
+        $_SERVER['HTTP_CF_CONNECTING_IP'] = '198.51.100.7';
+        $_SERVER['HTTP_X_FORWARDED_FOR'] = '198.51.100.8';
+
+        $this->assertSame('203.0.113.10', ClientIp::get());
+    }
+
+    /**
+     * Trusting CF-Connecting-IP from any peer let a client pick its own
+     * address: rotate it to dodge lockouts, or send a victim's to lock them out.
+     */
+    public function testCloudflareHeaderIsHonouredOnlyFromCloudflare(): void
+    {
+        Settings::update(['trusted_proxies' => ['cloudflare']]);
+        $_SERVER['HTTP_CF_CONNECTING_IP'] = '198.51.100.7';
+
+        $_SERVER['REMOTE_ADDR'] = '173.245.48.5';
+        $this->assertSame(['ip' => '198.51.100.7', 'source' => ClientIp::SOURCE_HEADER, 'peer' => '173.245.48.5'], ClientIp::resolve());
+
+        $_SERVER['REMOTE_ADDR'] = '203.0.113.10';
+        $this->assertSame('203.0.113.10', ClientIp::get());
+    }
+
+    /**
+     * With nothing configured, a site behind Cloudflare whose web server does
+     * not rewrite REMOTE_ADDR must still see each visitor's own address;
+     * otherwise everyone using one Cloudflare edge shares one lockout.
+     */
+    public function testCloudflarePeerNamesTheVisitorWhenNoProxiesAreConfigured(): void
+    {
+        $_SERVER['REMOTE_ADDR'] = '173.245.48.5';
+        $_SERVER['HTTP_CF_CONNECTING_IP'] = '198.51.100.7';
+        // X-Forwarded-For stays untrusted under the default.
+        $_SERVER['HTTP_X_FORWARDED_FOR'] = '192.0.2.99';
+
+        $this->assertSame(['ip' => '198.51.100.7', 'source' => ClientIp::SOURCE_HEADER, 'peer' => '173.245.48.5'], ClientIp::resolve());
+
+        unset($_SERVER['HTTP_CF_CONNECTING_IP']);
+        $this->assertSame(['ip' => '173.245.48.5', 'source' => ClientIp::SOURCE_PEER, 'peer' => '173.245.48.5'], ClientIp::resolve());
+    }
+
+    public function testSpoofedCloudflareHeaderFromANonCloudflarePeerIsIgnoredByDefault(): void
+    {
+        $_SERVER['REMOTE_ADDR'] = '203.0.113.10';
+        $_SERVER['HTTP_CF_CONNECTING_IP'] = '198.51.100.7';
+
+        $this->assertSame(['ip' => '203.0.113.10', 'source' => ClientIp::SOURCE_PEER, 'peer' => '203.0.113.10'], ClientIp::resolve());
+    }
+
+    public function testInvalidCloudflareHeaderFallsBackToThePeerByDefault(): void
+    {
+        $_SERVER['REMOTE_ADDR'] = '2606:4700::1';
+        $_SERVER['HTTP_CF_CONNECTING_IP'] = '198.51.100.7, 192.0.2.1';
+
+        $this->assertSame(['ip' => '2606:4700::1', 'source' => ClientIp::SOURCE_PEER, 'peer' => '2606:4700::1'], ClientIp::resolve());
+    }
+
+    public function testNoneTurnsTheCloudflareDefaultOff(): void
+    {
+        Settings::update(['trusted_proxies' => 'none']);
+        $this->assertSame(['none'], Settings::get()['trusted_proxies']);
+        $this->assertSame([], ClientIp::trustedProxies());
+
+        $_SERVER['REMOTE_ADDR'] = '173.245.48.5';
+        $_SERVER['HTTP_CF_CONNECTING_IP'] = '198.51.100.7';
+        $this->assertSame(['ip' => '173.245.48.5', 'source' => ClientIp::SOURCE_PEER, 'peer' => '173.245.48.5'], ClientIp::resolve());
+
+        // The same opt-out through the filter (the constant feeds the same list).
+        Settings::update(['trusted_proxies' => []]);
+        add_filter('clockwork_renegade_trusted_proxies', fn () => ['none']);
+        $this->assertSame('173.245.48.5', ClientIp::get());
+    }
+
+    public function testForwardedForIsReadFromTheRightPastTrustedHops(): void
+    {
+        Settings::update(['trusted_proxies' => "private\n198.51.100.0/24"]);
+        $_SERVER['REMOTE_ADDR'] = '10.0.0.2';
+        // Leftmost entry is whatever the client chose to send.
+        $_SERVER['HTTP_X_FORWARDED_FOR'] = '192.0.2.66, 203.0.113.44, 198.51.100.9, 10.0.0.3';
+
+        $this->assertSame('203.0.113.44', ClientIp::get());
+    }
+
+    public function testInvalidHeaderFallsBackToThePeerNotASharedBucket(): void
+    {
+        Settings::update(['trusted_proxies' => ['cloudflare']]);
+        $_SERVER['REMOTE_ADDR'] = '173.245.48.5';
+        $_SERVER['HTTP_CF_CONNECTING_IP'] = 'not-an-ip';
+
+        $this->assertSame(['ip' => '173.245.48.5', 'source' => ClientIp::SOURCE_PEER, 'peer' => '173.245.48.5'], ClientIp::resolve());
+    }
+
+    public function testTrustedProxiesFilterAndSanitising(): void
+    {
+        add_filter('clockwork_renegade_trusted_proxies', fn (array $list) => array_merge($list, ['192.0.2.1']));
+        Settings::update(['trusted_proxies' => ['0.0.0.0/0', 'bogus', '198.51.100.0/24', 'CloudFlare']]);
+
+        $this->assertSame(['198.51.100.0/24', 'cloudflare'], Settings::get()['trusted_proxies']);
+        $this->assertContains('192.0.2.1', ClientIp::trustedProxies());
+        $this->assertContains('2606:4700::/32', ClientIp::trustedProxies());
+    }
+
+    /**
+     * A private address relayed in a header is the client's claim: it must
+     * not switch Gatekeeper off for that client.
+     */
+    public function testPrivateAddressFromAHeaderIsStillThrottled(): void
+    {
+        Settings::update(['enabled' => true, 'threshold' => 2, 'trusted_proxies' => ['cloudflare']]);
+        $_SERVER['REMOTE_ADDR'] = '173.245.48.5';
+        $_SERVER['HTTP_CF_CONNECTING_IP'] = '10.9.8.7';
+
+        $this->failLogin();
+        $this->failLogin();
+
+        $this->assertNotNull(Store::isLocked('10.9.8.7'));
+    }
+
+    public function testPrivatePeerIsStillNeverThrottled(): void
+    {
+        Settings::update(['enabled' => true, 'threshold' => 1]);
+        $_SERVER['REMOTE_ADDR'] = '10.0.0.5';
+
+        $this->failLogin();
+        $this->failLogin();
+
+        $this->assertNull(Store::isLocked('10.0.0.5'));
+        $this->assertSame([], $this->db->rows());
+    }
+
+    public function testAdminPageWarnsWhenTheClientAddressIsPrivate(): void
+    {
+        $GLOBALS['wp_test_current_user'] = (object) ['ID' => 1, 'user_email' => 'admin@example.com'];
+        $_SERVER['REMOTE_ADDR'] = '10.0.0.5';
+
+        ob_start();
+        AdvancedPage::render('gatekeeper');
+        $private = (string) ob_get_clean();
+
+        $_SERVER['REMOTE_ADDR'] = '203.0.113.10';
+        ob_start();
+        AdvancedPage::render('gatekeeper');
+        $public = (string) ob_get_clean();
+
+        $this->assertStringContainsString('Gatekeeper is not protecting this site', $private);
+        $this->assertStringNotContainsString('Gatekeeper is not protecting this site', $public);
+        $this->assertStringContainsString('name="trusted_proxies"', $public);
+    }
+
+    // ---------------------------------------------------------------------
+    // Counting
+    // ---------------------------------------------------------------------
+
+    /**
+     * Any successful login used to wipe the address's failures, so three
+     * guesses at an admin followed by a login to the attacker's own account
+     * could be repeated forever.
+     */
+    public function testSuccessfulLoginDoesNotClearEarlierFailures(): void
+    {
+        Settings::update(['enabled' => true, 'threshold' => 4]);
+
+        $this->failLogin();
+        $this->failLogin();
+        $this->failLogin();
+        $this->succeedLogin();
+        $this->assertNull(Store::isLocked('203.0.113.10'));
+
+        // The fourth guess reaches the threshold despite the login in between.
+        $this->failLogin();
+        $this->assertNotNull(Store::isLocked('203.0.113.10'));
+    }
+
+    public function testValidLoginsAloneNeverLockAnAddressOut(): void
+    {
+        foreach ([true, false] as $objectCache) {
+            $GLOBALS['wp_test_using_ext_object_cache'] = $objectCache;
+            Settings::update(['enabled' => true, 'threshold' => 2]);
+            $_SERVER['REMOTE_ADDR'] = $objectCache ? '203.0.113.20' : '203.0.113.21';
+
+            for ($i = 0; $i < 6; $i++) {
+                $this->succeedLogin();
+            }
+
+            $this->assertNull(Store::isLocked($_SERVER['REMOTE_ADDR']));
+        }
+    }
+
+    /**
+     * Requests used to be checked against the lock at the start and counted
+     * only when they failed, so every request in flight before the first
+     * failure was recorded got its guess in.
+     */
+    public function testParallelAttemptsCannotExceedTheThreshold(): void
+    {
+        $this->defineRestRequest();
+
+        foreach ([true, false] as $objectCache) {
+            $GLOBALS['wp_test_using_ext_object_cache'] = $objectCache;
+            Settings::update(['enabled' => true, 'threshold' => 4]);
+            $_SERVER['REMOTE_ADDR'] = $objectCache ? '198.51.100.30' : '198.51.100.31';
+
+            $results = [];
+            for ($i = 0; $i < 6; $i++) {
+                // All six are in flight at once: none has failed yet.
+                $results[] = Gate::earlyLockoutCheck(null, 'admin', 'guess-' . $i);
+            }
+
+            $allowed = array_filter($results, fn ($r) => ! ($r instanceof WP_Error));
+            $this->assertCount(4, $allowed, $objectCache ? 'object cache store' : 'database store');
+            $this->assertNotNull(Store::isLocked($_SERVER['REMOTE_ADDR']));
+            Gate::resetRequestState();
+        }
+    }
+
+    public function testDatabaseWithoutLastInsertIdStillCounts(): void
+    {
+        $GLOBALS['wp_test_using_ext_object_cache'] = false;
+        $this->db->rejectLastInsertId = true;
+        Settings::update(['enabled' => true, 'threshold' => 3]);
+
+        $this->assertSame(1, Store::reserveAttempt('203.0.113.10'));
+        $this->assertSame(2, Store::reserveAttempt('203.0.113.10'));
+        Store::releaseAttempt('203.0.113.10');
+        $this->assertSame(2, Store::reserveAttempt('203.0.113.10'));
+    }
+
+    public function testIpv6AddressesInOneSlash64ShareACounter(): void
+    {
+        Settings::update(['enabled' => true, 'threshold' => 4]);
+
+        foreach (['2001:db8:1:2::1', '2001:db8:1:2::2', '2001:db8:1:2:aaaa::3', '2001:db8:1:2:ffff:ffff:ffff:fffe'] as $ip) {
+            Store::incrementFailure($ip);
+        }
+
+        $this->assertNotNull(Store::isLocked('2001:db8:1:2::9'));
+        $this->assertNull(Store::isLocked('2001:db8:1:3::1'));
+        $this->assertSame('2001:db8:1:2::', Store::bucket('2001:db8:1:2:abcd::1'));
+        $this->assertSame('203.0.113.10', Store::bucket('203.0.113.10'));
+
+        $listed = array_column(Store::activeLockouts(), 'ip');
+        $this->assertSame(['2001:db8:1:2::'], $listed);
+
+        Store::unlockIp('2001:db8:1:2::77');
+        $this->assertNull(Store::isLocked('2001:db8:1:2::9'));
+    }
+
+    public function testConsecutiveLockoutsAreForgottenAfterTheResetPeriod(): void
+    {
+        Settings::update([
+            'enabled' => true,
+            'lockout_seconds' => 1200,
+            'consecutive_lockouts_for_extended' => 4,
+            'extended_lockout_seconds' => 86400,
+            'consecutive_reset_seconds' => 86400,
+        ]);
+        $ip = '203.0.113.10';
+
+        for ($n = 1; $n <= 3; $n++) {
+            if ($n > 1) {
+                $this->expireNativeLock($ip);
+            }
+            Store::lock($ip);
+        }
+        $this->assertSame(3, $this->db->rows()[$ip]['consecutive_lockouts']);
+
+        // The third lockout ended two days ago.
+        $this->expireNativeLock($ip);
+        $this->db->lockoutTables['wp_clockwork_lockouts'][$ip]['unlock_at'] = gmdate('Y-m-d H:i:s', time() - 2 * 86400);
+        Store::lock($ip);
+
+        $this->assertSame(1, $this->db->rows()[$ip]['consecutive_lockouts']);
+        $this->assertLessThan(2000, Store::isLocked($ip)['retry_after']);
+    }
+
+    public function testPruneRemovesStaleRowsEvenWithLockoutHistory(): void
+    {
+        Settings::update(['enabled' => true]);
+        $old = gmdate('Y-m-d H:i:s', time() - 10 * 86400);
+        $this->db->lockoutTables['wp_clockwork_lockouts'] = [
+            '203.0.113.1' => ['id' => 1, 'ip' => '203.0.113.1', 'unlock_at' => $old, 'consecutive_lockouts' => 3, 'attempts' => 0, 'attempts_window_start' => null, 'created_at' => $old, 'updated_at' => $old],
+            '203.0.113.2' => ['id' => 2, 'ip' => '203.0.113.2', 'unlock_at' => null, 'consecutive_lockouts' => 1, 'attempts' => 2, 'attempts_window_start' => gmdate('Y-m-d H:i:s'), 'created_at' => gmdate('Y-m-d H:i:s'), 'updated_at' => gmdate('Y-m-d H:i:s')],
+        ];
+
+        Store::prune();
+
+        $this->assertSame(['203.0.113.2'], array_keys($this->db->rows()));
+    }
+
+    public function testConcurrentLockCallsCountAsOneLockout(): void
+    {
+        Settings::update(['enabled' => true]);
+        $GLOBALS['wp_test_using_ext_object_cache'] = false;
+
+        Store::lock('203.0.113.10');
+        Store::lock('203.0.113.10');
+
+        $this->assertSame(1, $this->db->rows()['203.0.113.10']['consecutive_lockouts']);
+    }
+
+    // ---------------------------------------------------------------------
+    // Multisite
+    // ---------------------------------------------------------------------
+
+    public function testMultisiteUsesOneNetworkTableSettingAndCacheGroup(): void
+    {
+        $GLOBALS['wp_test_is_multisite'] = true;
+        $this->db->prefix = 'wp_3_';
+
+        Settings::update(['enabled' => true, 'threshold' => 2]);
+        $this->assertTrue(Settings::enabled());
+        $this->assertTrue($GLOBALS['wp_test_site_options'][Settings::OPTION]['enabled']);
+        $this->assertArrayNotHasKey(Settings::OPTION, $GLOBALS['wp_test_options']);
+        $this->assertSame('wp_clockwork_lockouts', Schema::tableName());
+
+        Store::incrementFailure('203.0.113.10');
+        Store::incrementFailure('203.0.113.10');
+
+        // Seen from another subsite.
+        $this->db->prefix = 'wp_5_';
+        $this->assertNotNull(Store::isLocked('203.0.113.10'));
+        $this->assertArrayHasKey(Store::CACHE_GROUP, $GLOBALS['wp_test_global_cache_groups'] ?? []);
+    }
+
+    public function testMultisiteUpgradeMovesSiteTablesAndPolicyToTheNetwork(): void
+    {
+        $GLOBALS['wp_test_is_multisite'] = true;
+        $GLOBALS['wp_test_site_ids'] = [1, 2];
+        $GLOBALS['wp_test_blog_options'][1][Settings::OPTION] = ['enabled' => true, 'threshold' => 6];
+        $future = gmdate('Y-m-d H:i:s', time() + 600);
+        $past = gmdate('Y-m-d H:i:s', time() - 600);
+        $this->db->lockoutTables['wp_2_clockwork_lockouts'] = [
+            '203.0.113.7' => ['id' => 1, 'ip' => '203.0.113.7', 'unlock_at' => $future, 'consecutive_lockouts' => 2, 'attempts' => 0, 'attempts_window_start' => null, 'created_at' => $past, 'updated_at' => $past],
+            '203.0.113.8' => ['id' => 2, 'ip' => '203.0.113.8', 'unlock_at' => $past, 'consecutive_lockouts' => 1, 'attempts' => 0, 'attempts_window_start' => null, 'created_at' => $past, 'updated_at' => $past],
+        ];
+
+        // Before the upgrade, the main site's old policy is what applies.
+        $this->assertSame(6, Settings::get()['threshold']);
+
+        Schema::ensureInstalled();
+
+        $this->assertSame(2, get_site_option(Schema::VERSION_OPTION));
+        $this->assertArrayNotHasKey('wp_2_clockwork_lockouts', $this->db->lockoutTables);
+        $this->assertSame(['203.0.113.7'], array_keys($this->db->rows()));
+        $this->assertSame(6, $GLOBALS['wp_test_site_options'][Settings::OPTION]['threshold']);
+        $this->assertNotNull(Store::isLocked('203.0.113.7'));
+
+        unset($GLOBALS['wp_test_site_ids']);
+    }
+
+    private function failLogin(): void
+    {
+        $this->defineRestRequest();
+        Gate::earlyLockoutCheck(null, 'admin', 'wrong');
+        Gate::onLoginFailed('admin');
+    }
+
+    private function succeedLogin(): void
+    {
+        $user = new \WP_User('member@example.com', 7, 'member');
+        $result = Gate::earlyLockoutCheck(null, 'member', 'right');
+        Gate::releaseIfAuthenticated($result instanceof WP_Error ? $result : $user, 'member', 'right');
+    }
+
+    private function defineRestRequest(): void
+    {
+        if (! defined('REST_REQUEST')) {
+            define('REST_REQUEST', true); // a locked request returns WP_Error instead of exit()
+        }
     }
 }

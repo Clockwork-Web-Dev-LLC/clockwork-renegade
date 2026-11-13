@@ -329,6 +329,21 @@ class ActivityPage
             'comments_cleanup'        => ['label' => __('Comment cleanups', 'clockwork-renegade'),       'icon' => 'message'],
             'wfls_plugin_removed'     => ['label' => __('WFLS plugin removals', 'clockwork-renegade'),   'icon' => 'trash'],
             'site.provider_migrated'  => ['label' => __('Host migrations', 'clockwork-renegade'),        'icon' => 'migrate'],
+            // Written by Admin\Actions\TwoFactorActions when a user changes
+            // their own second factor (or is refused).
+            '2fa_enabled' => ['label' => __('2FA turned on', 'clockwork-renegade'), 'icon' => 'shield'],
+            '2fa_reenrolled' => ['label' => __('2FA re-enrolled', 'clockwork-renegade'), 'icon' => 'shield'],
+            '2fa_self_disabled' => ['label' => __('2FA turned off', 'clockwork-renegade'), 'icon' => 'shield'],
+            '2fa_backup_codes_regenerated' => ['label' => __('Backup codes regenerated', 'clockwork-renegade'), 'icon' => 'shield'],
+            '2fa_change_refused' => ['label' => __('2FA changes refused', 'clockwork-renegade'), 'icon' => 'ban'],
+            // Recorded by the site itself (Auth\RemoteActionAudit) for
+            // privileged calls made over the signed REST API.
+            'sso_link_minted' => ['label' => __('Login links issued', 'clockwork-renegade'), 'icon' => 'login'],
+            'sso_link_redeemed' => ['label' => __('Login links used', 'clockwork-renegade'), 'icon' => 'login'],
+            'connection_key_rotation' => ['label' => __('Connection key rotations', 'clockwork-renegade'), 'icon' => 'shield'],
+            'plugin_installed' => ['label' => __('Plugin installs', 'clockwork-renegade'), 'icon' => 'plugin'],
+            'plugin_deleted' => ['label' => __('Plugin deletions', 'clockwork-renegade'), 'icon' => 'trash'],
+            'plugin_toggled' => ['label' => __('Plugin activations', 'clockwork-renegade'), 'icon' => 'plugin'],
         ];
     }
 
@@ -356,6 +371,17 @@ class ActivityPage
             'comments_cleanup'        => __('Comment cleanup', 'clockwork-renegade'),
             'wfls_plugin_removed'     => __('WFLS plugin removal', 'clockwork-renegade'),
             'site.provider_migrated'  => __('Host migration', 'clockwork-renegade'),
+            '2fa_enabled' => __('2FA turned on', 'clockwork-renegade'),
+            '2fa_reenrolled' => __('2FA re-enrolled', 'clockwork-renegade'),
+            '2fa_self_disabled' => __('2FA turned off', 'clockwork-renegade'),
+            '2fa_backup_codes_regenerated' => __('Backup codes regenerated', 'clockwork-renegade'),
+            '2fa_change_refused' => __('2FA change refused', 'clockwork-renegade'),
+            'sso_link_minted' => __('Login link issued', 'clockwork-renegade'),
+            'sso_link_redeemed' => __('Login link used', 'clockwork-renegade'),
+            'connection_key_rotation' => __('Connection key rotation', 'clockwork-renegade'),
+            'plugin_installed' => __('Plugin install', 'clockwork-renegade'),
+            'plugin_deleted' => __('Plugin deletion', 'clockwork-renegade'),
+            'plugin_toggled' => __('Plugin activation change', 'clockwork-renegade'),
         ];
         return $labels[$type] ?? ucfirst(str_replace('_', ' ', $type));
     }

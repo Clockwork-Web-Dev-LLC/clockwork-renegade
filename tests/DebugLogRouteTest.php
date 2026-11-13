@@ -99,6 +99,8 @@ Another error line
 
         $this->assertTrue($data['ok']);
         $this->assertTrue($data['cleared']);
+        // filesize() is served from PHP's stat cache, primed by the call above.
+        clearstatcache(true, $this->logFile);
         $this->assertSame(0, filesize($this->logFile));
     }
     public function testAuthorizeLogPathRejectsWpConfigAndPathsOutsideContent(): void

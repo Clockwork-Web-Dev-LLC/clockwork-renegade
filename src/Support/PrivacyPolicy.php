@@ -4,7 +4,17 @@ namespace ClockworkRenegade\Support;
 
 class PrivacyPolicy
 {
+    /**
+     * Core only accepts privacy-policy text from admin_init on: called any
+     * earlier (the plugin boots on plugins_loaded) it raises _doing_it_wrong
+     * on every request and the text is never registered.
+     */
     public static function register(): void
+    {
+        add_action('admin_init', [self::class, 'addContent']);
+    }
+
+    public static function addContent(): void
     {
         if (! function_exists('wp_add_privacy_policy_content')) {
             return;
