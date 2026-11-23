@@ -4,7 +4,7 @@ Tags: monitoring, backups, updates, security, fleet
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -141,6 +141,10 @@ No. Clockwork Renegade does not execute arbitrary remote code or eval(). All upd
 == Changelog ==
 
 = Unreleased =
+
+= 1.2.1 - 2026-11-23 =
+* Fix: Eliminate false-positive `php_handler_in_uploads` findings on plugin hardening `.htaccess` and `.user.ini` blocks (`SetHandler none`, `SetHandler default-handler`, `AddHandler cgi-script` paired with `Options -ExecCGI`, static `ForceType text/plain` / `application/octet-stream`, `auto_prepend_file = none`, `engine = Off`, and comments) while continuing to flag executable handlers (`application/x-httpd-php*`, `proxy:fcgi:...`, `cgi-script` without `-ExecCGI`, `server-parsed`, `Action`, non-empty `auto_prepend_file` / `auto_append_file`, and `engine = On`).
+* Fix: Eliminate false-positive `php_in_uploads` findings on comment-only stubs up to 4 KB, plain-text guard stubs without PHP open tags, static HTTP status `header(...)` / `http_response_code(...)` 403/404 stubs, and `<?php die(); ?>`-prefixed plain-text log files containing no subsequent PHP open tags.
 
 = 1.2.0 - 2026-11-13 =
 * Change: Renegade opts into WordPress's background plugin auto-updates, so a release published on GitHub installs itself within about a day. Turn it off with `define('CLOCKWORK_RENEGADE_DISABLE_AUTO_UPDATE', true)` or the `clockwork_renegade_auto_update_enabled` filter; `CLOCKWORK_RENEGADE_DISABLE_SELF_UPDATE` turns off both.

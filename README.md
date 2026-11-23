@@ -33,6 +33,10 @@ The full changelog is in [`readme.txt`](readme.txt) (`== Changelog ==`).
 
 ### Unreleased
 
+### 1.2.1 (2026-11-23)
+
+- Fix: Eliminate false-positive `php_handler_in_uploads` and `php_in_uploads` malware scan findings on plugin hardening `.htaccess` / `.user.ini` rules, static status-header / plain-text `index.php` stubs, and `<?php die(); ?>`-guarded plain-text log files.
+
 ### 1.2.0 (2026-11-13)
 
 The November 2026 audit fixes (Gatekeeper trusted proxies and bypass fix, two-phase secret rotation, 2FA code lockout, working maintenance mode, `%`-safe and verified database dumps, checksum-verified self-update, complete uninstall). See `= Unreleased =` in `readme.txt`.
